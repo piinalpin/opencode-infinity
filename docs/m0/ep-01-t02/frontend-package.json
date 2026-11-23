@@ -1,0 +1,24 @@
+{
+  "name": "ep-01-t02-frontend-check",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "26.13.1",
+    "npm": "12.2.2"
+  },
+  "packageManager": "npm@12.2.2",
+  "scripts": {
+    "check": "svelte-check --tsconfig ./tsconfig.json && tsc --noEmit",
+    "build": "vite build"
+  },
+  "devDependencies": {
+    "svelte": "5.59.1",
+    "vite": "8.3.8",
+    "svelte-check": "4.7.8",
+    "@sveltejs/vite-plugin-svelte": "7.3.1",
+    "@types/node": "26.6.6",
+    "@playwright/test": "1.65.1",
+    "typescript": "6.0.3"
+  }
+}

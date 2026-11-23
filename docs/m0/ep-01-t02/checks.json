@@ -1,0 +1,245 @@
+{
+  "task": "EP-01-T02",
+  "verified_on": "2026-11-23",
+  "commands": [
+    {
+      "check": "typescript-7-negative",
+      "command": [
+        "npm",
+        "install",
+        "--package-lock-only",
+        "--ignore-scripts",
+        "--strict-peer-deps",
+        "--no-audit",
+        "--no-fund"
+      ],
+      "directory": "frontend-incompatible",
+      "exit": 1,
+      "expected_exit": "nonzero ERESOLVE"
+    },
+    {
+      "check": "frontend-lock",
+      "command": [
+        "npm",
+        "install",
+        "--package-lock-only",
+        "--ignore-scripts",
+        "--strict-peer-deps",
+        "--no-audit",
+        "--no-fund"
+      ],
+      "directory": "frontend",
+      "exit": 0,
+      "expected_exit": 0
+    },
+    {
+      "check": "frontend-ci",
+      "command": [
+        "npm",
+        "ci",
+        "--ignore-scripts",
+        "--strict-peer-deps",
+        "--no-audit",
+        "--no-fund"
+      ],
+      "directory": "frontend",
+      "exit": 0,
+      "expected_exit": 0
+    },
+    {
+      "check": "frontend-check",
+      "command": [
+        "npm",
+        "run",
+        "check"
+      ],
+      "directory": "frontend",
+      "exit": 0,
+      "expected_exit": 0
+    },
+    {
+      "check": "frontend-build",
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "directory": "frontend",
+      "exit": 0,
+      "expected_exit": 0
+    },
+    {
+      "check": "frontend-peer-tree",
+      "command": [
+        "npm",
+        "ls",
+        "--depth=0"
+      ],
+      "directory": "frontend",
+      "exit": 0,
+      "expected_exit": 0
+    },
+    {
+      "check": "playwright-cli-version",
+      "command": [
+        "./node_modules/.bin/playwright",
+        "--version"
+      ],
+      "directory": "frontend",
+      "exit": 0,
+      "expected_exit": 0
+    },
+    {
+      "check": "go-format",
+      "command": [
+        "/gofmt",
+        "-w",
+        "main.go",
+        "main_test.go"
+      ],
+      "directory": "backend",
+      "exit": 0,
+      "expected_exit": 0
+    },
+    {
+      "check": "go-tidy",
+      "command": [
+        "/go",
+        "mod",
+        "tidy"
+      ],
+      "directory": "backend",
+      "exit": 0,
+      "expected_exit": 0
+    },
+    {
+      "check": "go-verify",
+      "command": [
+        "/go",
+        "mod",
+        "verify"
+      ],
+      "directory": "backend",
+      "exit": 0,
+      "expected_exit": 0
+    },
+    {
+      "check": "go-vet",
+      "command": [
+        "/go",
+        "vet",
+        "./..."
+      ],
+      "directory": "backend",
+      "exit": 0,
+      "expected_exit": 0
+    },
+    {
+      "check": "go-tests",
+      "command": [
+        "/go",
+        "test",
+        "-count=1",
+        "-v",
+        "./..."
+      ],
+      "directory": "backend",
+      "exit": 0,
+      "expected_exit": 0
+    },
+    {
+      "check": "go-build",
+      "command": [
+        "/go",
+        "build",
+        "-trimpath",
+        "-o",
+        "fixture",
+        "./"
+      ],
+      "directory": "backend",
+      "exit": 0,
+      "expected_exit": 0
+    },
+    {
+      "check": "go-smoke",
+      "command": [
+        ".//fixture"
+      ],
+      "directory": "backend",
+      "exit": 0,
+      "expected_exit": 0
+    },
+    {
+      "check": "go-modules",
+      "command": [
+        "/go",
+        "list",
+        "-m",
+        "-json",
+        "all"
+      ],
+      "directory": "backend",
+      "exit": 0,
+      "expected_exit": 0
+    },
+    {
+      "check": "go-binary-metadata",
+      "command": [
+        "/go",
+        "version",
+        "-m",
+        "fixture"
+      ],
+      "directory": "backend",
+      "exit": 0,
+      "expected_exit": 0
+    },
+    {
+      "check": "go-elf",
+      "command": [
+        "file",
+        "fixture"
+      ],
+      "directory": "backend",
+      "exit": 0,
+      "expected_exit": 0
+    }
+  ],
+  "results": {
+    "go_top_level_tests": 3,
+    "go_yaml_subcases": 3,
+    "svelte_check_errors": 0,
+    "svelte_check_warnings": 0,
+    "typescript_compiler": "PASS",
+    "frontend_build": "PASS",
+    "typescript7_negative": "ERESOLVE as expected; peer range is TypeScript 5 or 6",
+    "go_module_verify": "PASS",
+    "go_vet": "PASS",
+    "go_tests": "PASS",
+    "static_linux_amd64_build": "PASS",
+    "fixture_binary_execution": "PASS; no network dispatch",
+    "runtime_image_metadata": "linux/amd64; User 65532",
+    "relay_packages": "all 8 direct build/runtime package names present in Alpine 3.24 main catalog",
+    "engine_warnings": "none in final npm 12 runs"
+  },
+  "fixture_output_sha256": {
+    "binary": "81fb2c0686571f1f893273cbd3edae3ebaee8729c5aab0320a0c4558350a354b",
+    "frontend_index": "0a87fe036ffc5ecd11afba2c47d5936a40acbacbb61e561f5f3d7013383d4dde"
+  },
+  "bounds": [
+    "T01 completion and OpenCode Free gateway access",
+    "SOCKS5 DNS, TLS, SSE, cancellation, retry count",
+    "browser integration and UI auth",
+    "image build/runtime for gateway or relay",
+    "resource benchmark and quota-bearing upstream integration"
+  ],
+  "tool_versions_verified": {
+    "go": "go1.27.4 linux/amd64",
+    "node": "v26.13.1",
+    "npm": "12.2.2"
+  },
+  "corrections": [
+    "Initial run used npm 11.20.0 bundled with Node and emitted an engine warning against pinned npm 12.2.2. Installed npm 12.2.2 in a temporary prefix and repeated all frontend checks; final runs have no engine warning. Frontend output byte-identical to the Go embedded fixture, so existing backend verification remains applicable."
+  ]
+}

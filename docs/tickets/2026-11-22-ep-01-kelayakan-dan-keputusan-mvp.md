@@ -1,7 +1,8 @@
 ---
 title: "Gateway layak dibangun pada lingkungan target"
 date: 2026-11-22
-version: 2
+version: 5
+updated_at: 2026-11-23
 status: approved
 approved_by: pengguna
 approved_at: 2026-11-23
@@ -97,7 +98,7 @@ Gateway produksi lengkap, dashboard operasional lengkap, dan implementasi kemamp
 
 O-1–O-3 perlu diubah menjadi input konkret agar spike menilai lingkungan yang benar.
 
-Input terkonfirmasi melalui [D-001–D-003](../DECISIONS.md): penggunaan pribadi, gateway/pool WARP siap container di lokal atau homelab, serta akses homelab melalui Tailscale yang disiapkan pengguna. [D-006](../DECISIONS.md) menetapkan host uji amd64, Docker Compose, dan Tailscale di host; [D-007](../DECISIONS.md) menetapkan client utama OpenCode Desktop dan upstream Chat Completions. Provider/model, versi Desktop, listener final, dan kebutuhan affinity dicatat saat M0. Task ini telah disetujui melalui D-015 dan belum dinyatakan selesai.
+Input terkonfirmasi melalui [D-001–D-003](../DECISIONS.md): penggunaan pribadi, gateway/pool WARP siap container di lokal atau homelab, serta akses homelab melalui Tailscale yang disiapkan pengguna. [D-006](../DECISIONS.md) menetapkan host uji amd64, Docker Compose, dan Tailscale di host; [D-007](../DECISIONS.md) menetapkan client utama OpenCode Desktop dan upstream Chat Completions. D-016 memilih OpenCode Free dan `deepseek-v4.1-flash-free`; versi Desktop/CLI bawaan `2.3.0` tercatat pada hasil M0. Listener final, exact version SDK aktif, dan bukti kelayakan gateway masih terbuka. Task ini telah disetujui melalui D-015 dan belum dinyatakan selesai.
 
 [D-004](../DECISIONS.md) menetapkan pengguna sendiri sebagai pemilik keputusan produk dan penentu target keberhasilan. [D-005](../DECISIONS.md) menetapkan baseline dua tahap (catatan manual lalu pengukuran M0) dan pelaksana pengukurannya; angka baseline serta format pencatatan masih perlu ditetapkan.
 
@@ -114,6 +115,19 @@ Input terkonfirmasi melalui [D-001–D-003](../DECISIONS.md): penggunaan pribadi
 - **AC3:** **Given** data baseline belum tersedia, **When** pemilik pengukuran ditetapkan, **Then** setiap G-1–G-7 mempunyai sumber pengukuran serta baseline aktual atau TBD berpenanggung jawab.
 - **AC4 (negatif/edge):** **Given** model awal membutuhkan Responses API atau jaminan yang belum terpenuhi, **When** hasil validasi ditinjau, **Then** ketidakcocokan dicatat untuk keputusan produk dan M0 tidak ditandai lulus diam-diam.
 
+### Hasil pengerjaan
+
+Pemeriksaan 23 November 2026 dan matriks input tersedia pada [M0 — Lingkungan dan kebutuhan integrasi awal](../M0-lingkungan-dan-integrasi.md). Rencana pengerjaan disetujui pengguna; status task tetap `approved`, dan pekerjaan belum dinyatakan selesai.
+
+| AC | Hasil saat ini | Bukti/tindak lanjut |
+|---|---|---|
+| AC1 | Sebagian | Host/client, OpenCode Free, model `deepseek-v4.1-flash-free`, dan transport D-016 tercatat; exact version SDK aktif serta detail akses final belum lengkap |
+| AC2 | Penilaian dokumentasi tersedia | Endpoint Chat Completions terkonfirmasi pada katalog resmi; batas akses Free, kebutuhan pembuktian sesi, dan JSON/non-stream dijelaskan tanpa klaim gateway kompatibel |
+| AC3 | Terpenuhi pada tingkat dokumentasi | G-1–G-7 memiliki sumber manual/fixture, pemilik pengukuran, dan baseline TBD; pengukuran aktual mengikuti D-005 |
+| AC4 | Terpenuhi pada tingkat dokumentasi | Pembatasan Free untuk penggunaan dalam OpenCode dan risiko `forceStream` tercatat sebagai hambatan M0; tidak ada hasil generasi nyata atau kelulusan gateway yang diklaim |
+
+Pilihan provider/model dan input transport sudah dikonfirmasi pengguna melalui D-016. Detail yang belum terbukti tidak diasumsikan terjawab oleh persetujuan rencana. Tidak ada generasi berbayar atau perubahan konfigurasi/lifecycle deployment pada pekerjaan ini.
+
 ### Batas dan dependensi
 
 - Di luar scope: Gateway produksi lengkap, dashboard operasional lengkap, dan implementasi kemampuan P1.
@@ -128,7 +142,7 @@ Input terkonfirmasi melalui [D-001–D-003](../DECISIONS.md): penggunaan pribadi
 
 ### Konteks
 
-Kandidat TECHSTACK belum menjadi pilihan final atau kumpulan versi yang terbukti kompatibel.
+Kandidat awal TECHSTACK dievaluasi melalui [laporan stack dan versi M0](../M0-stack-dan-versi.md). Pengguna mengizinkan bagian validasi stack yang independen dilanjutkan dengan blocker T01 tetap tercatat (D-017); dependensi di bawah tidak dihapus.
 
 - [PRD](../PRD.md): C-4, C-8, C-10, C-14.
 - Kualitas terkait: Q-2, Q-3, Q-10.
@@ -140,6 +154,19 @@ Kandidat TECHSTACK belum menjadi pilihan final atau kumpulan versi yang terbukti
 - **AC2:** **Given** pilihan toolchain dan paket diajukan, **When** rilis stabil serta dukungan silang diperiksa, **Then** matriks mencatat exact version, sumber resmi, dan hasil kompatibilitas termasuk compiler/checker frontend.
 - **AC3:** **Given** komponen referensi dan base image dipilih, **When** identitas build dicatat, **Then** commit MicroWARP, digest image, dan checksum atau lock dependensi dapat ditelusuri.
 - **AC4 (negatif/edge):** **Given** versi terbaru suatu paket tidak kompatibel atau kandidat YAML v3 sudah perlu ditinjau, **When** versi diputuskan, **Then** alasan pemilihan dicatat dan label latest tidak dianggap bukti kompatibilitas.
+
+### Hasil pengerjaan
+
+Pemeriksaan 23 November 2026 tercatat pada [M0 — Stack, versi, dan bukti kompatibilitas](../M0-stack-dan-versi.md), termasuk [pin dan lock fixture](../m0/ep-01-t02/). Status tetap `approved`; hasil teknis independen tidak menyatakan dependensi T01 atau gerbang M0 selesai.
+
+| AC | Hasil teknis independen | Bukti/batas |
+|---|---|---|
+| AC1 | Tersedia | Go/Svelte dipetakan ke A-1–A-8; batas modul, state, dua listener, dan operator relay tetap |
+| AC2 | Lulus fixture | Exact version dan sumber tercatat; strict peer, compiler/checker frontend, verifikasi modul, vet, tes, serta binary statis amd64 lulus |
+| AC3 | Source/base/fixture terlacak | Commit MicroWARP/microsocks, lisensi, empat digest manifest image, lock/checksum tersedia; image produk/relay final belum dibangun |
+| AC4 | Terbukti pada kasus dependency | TypeScript 7 gagal ERESOLVE; 6.0.3 lulus; YAML v3 ditinjau dan v4 dipilih; Alpine 3.21 EOL tidak dipilih |
+
+Seluruh eksperimen memakai data sintetis di direktori sementara. Tidak ada generasi upstream, bootstrap identitas WARP, atau perubahan container/volume aktif. T03/T04/T05 tetap membuktikan transport, deployment, dan packaging yang tidak dibuktikan oleh kompilasi.
 
 ### Batas dan dependensi
 
@@ -170,6 +197,14 @@ Pengujian deterministik perlu membedakan koneksi proxy, request yang terkirim, d
 - **AC3:** **Given** fixture memutus koneksi pada fase berbeda, **When** skenario gagal dijalankan, **Then** bukti membedakan sebelum dispatch, pengiriman ambigu, dan stream yang sudah dimulai.
 - **AC4:** **Given** client kontrol memutus stream, **When** fixture mengamati lifecycle request upstream, **Then** bukti dapat membedakan pembatalan request dari respons sukses dan mencatat jumlah dispatch.
 - **AC5 (negatif/edge):** **Given** fixture proxy tidak tersedia, **When** request kontrol dijalankan, **Then** pengujian mendeteksi koneksi langsung jika terjadi dan gagal bila jalur itu digunakan.
+
+### Hasil pengerjaan — 23 November 2026
+
+- [Fixture jalur dan attempt request](../M0-fixture-transport.md) memetakan bukti AC1–AC5 ke helper Go reusable serta tes HTTP/TLS/SOCKS5 loopback nyata. Pengguna menyetujui pengerjaan fixture secara independen dengan keterbatasan dependensi tetap dicatat.
+- Bukti mencakup hostname/relay/peer, penghitung koneksi terpisah dari dispatch, fragmentasi/flushing SSE, refusal sebelum tunnel, POST ambigu pada koneksi baru/reusable, stream putus, serta cancellation sebelum handler selesai.
+- Negative control membuktikan upstream dapat dicapai langsung dan oracle menolak bypass. TLS hostname, allowlist, batas body/frame/rekaman/koneksi, serta cleanup konkuren ikut diuji.
+- Distribusi resmi Go 1.27.4: 18 tes utama lulus; format/vet lulus; 50 pengulangan dengan race detector menghasilkan 900 eksekusi tes utama, nol kegagalan atau laporan data race.
+- Hasil ini membuktikan fixture sintetis, bukan jalur WARP/provider, retry SDK/client nyata, performa produksi, dependensi T01/T02, atau gerbang M0. Status persetujuan tiket tetap `approved`.
 
 ### Batas dan dependensi
 

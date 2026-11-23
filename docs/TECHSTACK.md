@@ -1,18 +1,18 @@
 # TECHSTACK opencode-infinity
 
-Versi: 0.1.2  
+Versi: 0.1.3  
 Tanggal: 23 November 2026  
-Status: Kandidat stack MVP; pemilihan mengikuti validasi arsitektur  
+Status: Stack dipilih untuk spike M0; validasi integrasi dan gerbang M0 belum selesai  
 Acuan kebutuhan: [PRD terkini](PRD.md) dan [keputusan pengguna](DECISIONS.md)  
 Acuan desain: [ARCHITECTURE](ARCHITECTURE.md) dan [catatan teknis](PRD-technical-notes.md)
 
-Urutan perancangan adalah **PRD → ARCHITECTURE → TECHSTACK → implementasi**. Pembagian modul, kepemilikan state, alur request/dashboard, dan batas kegagalan mengikuti ARCHITECTURE. Pilihan di bawah masih kandidat yang dievaluasi sesudah arsitektur divalidasi.
+Urutan perancangan adalah **PRD → ARCHITECTURE → TECHSTACK → implementasi**. Pembagian modul, kepemilikan state, alur request/dashboard, dan batas kegagalan mengikuti ARCHITECTURE. Pilihan teknis untuk spike M0 ditetapkan melalui [hasil EP-01-T02](M0-stack-dan-versi.md), dengan batas A-1–A-8 tetap dipertahankan. Pemilihan ini tidak menyatakan seluruh draft arsitektur disetujui atau gerbang M0 lulus.
 
-Kandidat awal adalah **Go untuk gateway, Svelte + TypeScript untuk dashboard, MicroWARP untuk relay, dan Docker Compose untuk deployment**. Pada kandidat ini, hasil build dashboard dimasukkan ke binary Go. Satu container gateway/UI dan pool relay menerapkan batas deployment A-1/A-6 pada ARCHITECTURE.
+Stack yang dipilih untuk spike M0 adalah **Go untuk gateway, Svelte + TypeScript untuk dashboard, MicroWARP untuk relay, dan Docker Compose untuk deployment**. Hasil build dashboard dimasukkan ke binary Go. Satu container gateway/UI dan pool relay menerapkan batas deployment A-1/A-6 pada ARCHITECTURE.
 
-Pilihan ini mengutamakan integrasi melalui SOCKS5 dan jaringan Docker, sedikit proses saat runtime, serta pengujian streaming dan kegagalan sesuai PRD. Seluruh pilihan teknis berikut merupakan usulan **(agent's call)**; kebutuhan dashboard dan referensi warp-relay-pool berasal dari pengguna. Ukuran image dan pemakaian memori aktual perlu dibuktikan melalui M0–M3.
+Pilihan ini mengutamakan integrasi melalui SOCKS5 dan jaringan Docker, sedikit proses saat runtime, serta pengujian streaming dan kegagalan sesuai PRD. Pilihan teknologi dan pin pada [laporan T02](M0-stack-dan-versi.md) merupakan hasil evaluasi teknis dalam rencana yang disetujui pengguna (D-017); rincian desain yang belum diuji tetap usulan **(agent's call)**. Kebutuhan dashboard dan referensi warp-relay-pool berasal dari pengguna. Ukuran image dan pemakaian memori aktual perlu dibuktikan melalui M0–M3.
 
-## 1. Stack yang direkomendasikan
+## 1. Stack yang dipilih untuk spike M0
 
 | Lapisan | Pilihan | Peran dan alasan |
 |---|---|---|
@@ -25,7 +25,7 @@ Pilihan ini mengutamakan integrasi melalui SOCKS5 dan jaringan Docker, sedikit p
 | Styling | Scoped CSS Svelte + CSS variables | Tampilan konsisten dengan aset lokal dan dependensi UI kecil |
 | Penyajian UI | `embed.FS` + HTTP file handler Go | UI dan admin API berasal dari origin yang sama |
 | Pembaruan dashboard | JSON snapshot melalui polling browser | Cukup untuk pemantauan pool; sumber data berasal dari state gateway |
-| Konfigurasi | YAML + environment/file secret | Mengikuti format rancangan PRD; secret tetap di server |
+| Konfigurasi | YAML v4 + environment/file secret | Mengikuti format rancangan PRD; secret tetap di server |
 | State operasional | Memory dengan batas kapasitas | Health, cooldown, inflight, binding, dan sesi dashboard mengikuti lifecycle gateway |
 | Logging | `log/slog`, JSON ke stdout | Log metadata terstruktur untuk dibaca operator dan container runtime |
 | Metrik | `prometheus/client_golang` | Counter, gauge, histogram, serta endpoint `/metrics` pada listener admin |
@@ -37,11 +37,11 @@ Dasar teknis: Go mendukung proxy SOCKS5 dalam [HTTP transport](https://pkg.go.de
 
 ## 2. Hubungan dengan warp-relay-pool
 
-Referensi utama tetap [trefeon/warp-relay-pool](https://github.com/trefeon/warp-relay-pool). Komponen WARP-nya menggunakan Alpine, WireGuard tools, dan microsocks pada port 1080. Aplikasi relay HTTP proyek asal menggunakan Node.js dan Undici. Kedua komponen itu terpisah, sehingga gateway baru dapat mengakses SOCKS5 tanpa memakai bahasa aplikasi relay asal. Lihat [Dockerfile MicroWARP](https://github.com/trefeon/warp-relay-pool/blob/main/warp-lite/Dockerfile), [package.json](https://github.com/trefeon/warp-relay-pool/blob/main/package.json), dan [server.mjs](https://github.com/trefeon/warp-relay-pool/blob/main/server.mjs).
+Referensi utama tetap [trefeon/warp-relay-pool](https://github.com/trefeon/warp-relay-pool). Source MicroWARP dipin pada commit `1a58c904d6a99463f2c48cb02234f44eca7646e6`, dengan lisensi MIT; microsocks `v1.0.5` dipetakan ke commit `98421a21c4adc4c77c0cf3a5d650cc28ad3e0107`. Komponen WARP-nya menggunakan Alpine, WireGuard tools, dan microsocks pada port 1080. Aplikasi relay HTTP proyek asal menggunakan Node.js dan Undici. Kedua komponen itu terpisah, sehingga gateway baru dapat mengakses SOCKS5 tanpa memakai bahasa aplikasi relay asal. Lihat [Dockerfile MicroWARP](https://github.com/trefeon/warp-relay-pool/blob/main/warp-lite/Dockerfile), [package.json](https://github.com/trefeon/warp-relay-pool/blob/main/package.json), dan [server.mjs](https://github.com/trefeon/warp-relay-pool/blob/main/server.mjs).
 
 | Bagian referensi | Pemakaian pada MVP |
 |---|---|
-| Image/source MicroWARP | Dipakai kembali setelah validasi host, lisensi, dan versi |
+| Image/source MicroWARP | Source/base dipin pada laporan T02; adopsi dan validasi host tetap T04 |
 | SOCKS5 per container | Gateway mengakses alamat seperti `warp-1:1080` dari jaringan Docker bersama |
 | Profil WireGuard | Volume terpisah per relay; gateway tidak membaca atau mengubah profil |
 | Relay HTTP Node.js dan header khusus | Integrasi protokol tersebut tetap P1 sesuai PRD; bukan jalur generasi MVP |
@@ -126,11 +126,11 @@ Image gateway yang diusulkan adalah **`gcr.io/distroless/static-debian13:nonroot
 
 Gateway memakai filesystem read-only, config/secret mount read-only, dan tidak membutuhkan capability jaringan atau Docker socket. Health check container direncanakan sebagai subcommand binary agar tidak bergantung pada `curl`/shell di image. Liveness membuktikan proses bekerja; readiness menunjukkan kesiapan relay tanpa membuat probe generasi berbayar.
 
-Container MicroWARP tetap memakai image dan privilege jaringan yang divalidasi untuk host target. Compose referensi memakai `NET_ADMIN` serta volume profil per relay. Keperluan itu tidak diwariskan ke container gateway. Periksa [Compose referensi](https://github.com/trefeon/warp-relay-pool/blob/main/docker-compose.yml) saat menyusun deployment; port publik dan default proyek asal tidak disalin otomatis.
+Target base MicroWARP adalah Alpine `3.24.4` dari repo `main`, dengan digest amd64 pada laporan T02. Alpine `3.21` pada source referensi sudah EOL dan tidak dipilih. Image relay final serta privilege jaringan tetap harus dibangun/divalidasi pada host target di T04. Compose referensi memakai `NET_ADMIN` serta volume profil per relay. Keperluan itu tidak diwariskan ke container gateway. Periksa [Compose referensi](https://github.com/trefeon/warp-relay-pool/blob/main/docker-compose.yml) saat menyusun deployment; port publik dan default proyek asal tidak disalin otomatis.
 
 ## 7. Konfigurasi dan observabilitas
 
-Gunakan **`go.yaml.in/yaml/v3`** untuk membaca konfigurasi YAML, dengan decoding strict, validasi referensi model/relay, dan penolakan secret placeholder sebelum server menerima trafik. Environment atau file secret memasok nilai credential. [Dokumentasi YAML](https://pkg.go.dev/go.yaml.in/yaml/v3).
+Gunakan **`go.yaml.in/yaml/v4 v4.0.0`** untuk membaca konfigurasi YAML, dengan decoding strict, validasi referensi model/relay, dan penolakan secret placeholder sebelum server menerima trafik. Environment atau file secret memasok nilai credential. [Dokumentasi YAML v4](https://pkg.go.dev/go.yaml.in/yaml/v4@v4.0.0). API decoder strict, unknown field, dan duplicate key lulus fixture T02. YAML v3 tetap stabil dengan API beku/perbaikan keamanan; v4 dipilih untuk implementasi baru berdasarkan evaluasi, bukan migrasi kode produk.
 
 State health, binding strict, sesi dashboard, dan counter berada di memory dengan batas kapasitas. Konfigurasi tetap di file. Restart menghapus state sementara sesuai PRD; perilaku sesi strict harus dibuktikan pada AC-14. Penyimpanan database tidak diperlukan untuk kebutuhan MVP saat ini.
 
@@ -166,7 +166,9 @@ Alasan memilih Go adalah kesesuaian dengan deployment binary dan penggunaan stan
 
 ## 10. Versi dan validasi sebelum implementasi
 
-Versi stabil yang masih didukung dipilih pada M0, kemudian exact version/digest dikunci: toolchain Go, Node build, Svelte, TypeScript, Vite/plugin, YAML, library metrik, base image, dan commit/image MicroWARP. Modul Go dan dependensi frontend mempunyai lock/checksum yang direview; tag bergerak tidak menjadi identitas artefak rilis.
+[Matriks pin dan hasil pemeriksaan T02](M0-stack-dan-versi.md) menjadi acuan versi: Go `1.27.4`, Node `26.13.1` LTS, npm `12.2.2`, Svelte `5.59.1`, TypeScript `6.0.3`, Vite `8.3.8`, plugin Svelte `7.3.1`, svelte-check `4.7.8`, YAML v4 `4.0.0`, dan client_golang `1.25.0`. Playwright `1.65.1` serta tipe Node `26.6.6` turut dipin pada fixture. TypeScript 7 ditolak karena peer checker belum mendukungnya.
+
+Lock/checksum fixture, checksum toolchain/source, dan empat digest manifest image `linux/amd64` tersimpan pada [artefak T02](m0/ep-01-t02/). Itu bukan manifest aplikasi produk; source produk ditambahkan bertahap pada task terkait. Digest final image gateway/relay belum tersedia sebelum image tersebut dibangun. Tag bergerak bukan identitas artefak rilis; dukungan dan keamanan versi tetap diperiksa ulang menjelang rilis.
 
 | Tahap | Bukti yang dibutuhkan |
 |---|---|
@@ -179,4 +181,4 @@ Go `testing`/`httptest` dipakai untuk fixture dan integrasi HTTP. Pengujian stre
 
 Pemeriksaan development/CI mencakup format dan analisis Go, race test untuk state pool, pemeriksaan tipe Svelte/TypeScript, build frontend, serta pengecekan kerentanan dependensi. `govulncheck` merupakan alat resmi untuk mengevaluasi kerentanan Go yang relevan terhadap pemakaian kode. [Go Vulnerability Management](https://go.dev/doc/security/vuln/).
 
-Keputusan yang masih perlu ditutup adalah host/arsitektur, exact version dan digest, lifecycle sesi dashboard, target kesegaran O-10, serta batas resource hasil M0. Rekomendasi ini tidak menambah database, riwayat percakapan, atau kontrol container melalui web UI ke cakupan PRD.
+Host/arsitektur mengikuti D-006 dan polling/stale mengikuti D-009. Pemilihan versi serta pin source/base untuk spike telah dicatat T02. Yang masih perlu ditutup adalah dependensi T01 (akses/runtime provider aktif), lifecycle sesi dashboard, batas resource hasil M0, bukti transport/packaging, serta digest final image yang benar-benar dibangun. Rekomendasi ini tidak menambah database, riwayat percakapan, atau kontrol container melalui web UI ke cakupan PRD.

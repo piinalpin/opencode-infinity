@@ -1,6 +1,6 @@
 # Keputusan opencode-infinity
 
-Versi: 0.1.12  
+Versi: 0.1.14  
 Tanggal: 23 November 2026
 
 Catatan ini memisahkan keputusan eksplisit pengguna dari usulan dan pertanyaan yang belum selesai. Keputusan terkonfirmasi diterapkan ke PRD/arsitektur terkait; status keseluruhan draft tidak otomatis menjadi approved.
@@ -64,7 +64,7 @@ Catatan ini memisahkan keputusan eksplisit pengguna dari usulan dan pertanyaan y
 - **Status:** ditetapkan pengguna.
 - **Keputusan:** client utama M0 adalah OpenCode Desktop yang sedang dipakai (versi persis dicatat saat M0), dengan upstream pertama berupa endpoint Chat Completions yang kompatibel OpenAI dan satu model coding besar yang sudah tersedia bagi pengguna. Fixed routing menjadi default. OpenCode CLI ditambahkan sebelum gerbang M3 agar G-1 terbukti; strict affinity diuji setelah sinyal sesi tersedia.
 - **Implikasi:** Responses API (C-11) dan adapter protokol native Anthropic tetap P1. Model awal harus mendukung streaming SSE dan tool calling melalui Chat Completions; tidak ada penggantian credential atau model otomatis saat gagal. Angka baseline G-1–G-7 tetap diukur menurut D-005.
-- **Belum diputuskan:** nama provider/upstream dan model persisnya, versi Desktop persis, serta apakah model tersebut membutuhkan strict affinity atau Responses API. Ketidakcocokan yang ditemukan saat M0 dicatat untuk keputusan produk dan tidak boleh membuat M0 ditandai lulus diam-diam.
+- **Tindak lanjut M0:** provider/model dipilih kemudian melalui D-016; versi Desktop dan CLI bawaan `2.3.0` tercatat pada [matriks lingkungan](M0-lingkungan-dan-integrasi.md). Kesesuaian akses gateway, kebutuhan sesi, dan versi SDK terpisah tetap perlu dibuktikan. Ketidakcocokan tidak boleh membuat M0 ditandai lulus diam-diam.
 - **Acuan:** O-3, G-1, C-1/C-2, EP-01-T01, EP-01-T02, dan EP-02.
 
 ### D-008 Target performa provisional dan fixture benchmark 5×5
@@ -133,8 +133,25 @@ Catatan ini memisahkan keputusan eksplisit pengguna dari usulan dan pertanyaan y
 - **Batas tindakan:** pencatatan dilakukan pada tiket lokal dan indeks dokumentasi; tidak mencakup pembuatan tiket di planner eksternal, commit, push, atau rilis.
 - **Acuan:** [indeks epic MVP](README.md#indeks-epic-mvp), [indeks epic P1](README.md#indeks-epic-p1), dan bagian Keputusan dan kesiapan pada setiap epic.
 
+### D-016 Provider awal OpenCode Free dan DeepSeek V4.1 Flash Free
+
+- **Status:** ditetapkan pengguna pada 23 November 2026.
+- **Keputusan:** provider awal adalah `opencode free`, model `deepseek-v4.1-flash-free`, dengan origin transport `https://opencode.ai`, header `x-opencode-client: desktop`, dan `forceStream: true` sesuai input pengguna. Ini melengkapi pilihan provider/model pada D-007.
+- **Implikasi:** origin transport bukan path endpoint generasi. [Katalog resmi](https://opencode.ai/docs/console/models/) mencantumkan model tersebut pada Chat Completions di `/inference/openai/v1/chat/completions`. [Dokumentasi akses](https://opencode.ai/docs/console/api/inference/) membatasi free-tier chat untuk penggunaan dari dalam OpenCode; pemakaian melalui gateway belum terbukti diterima. Pilihan provider bukan bukti kompatibilitas maupun instruksi mengubah kontrak JSON/SSE gateway.
+- **Belum dibuktikan:** kelayakan jalur OpenCode → gateway → WARP → upstream, semantik JSON/non-stream ketika input adapter memaksa stream, SDK/runtime persis, tool calling aktual, dan kebutuhan affinity. Header client saja tidak dijadikan bukti akses diterima. Tidak ada model pengganti otomatis atau pelonggaran gerbang M0.
+- **Acuan:** O-3, C-1/C-2/C-5, Q-1/Q-3/Q-10, EP-01-T01/T03/T04, serta [hasil pemeriksaan M0](M0-lingkungan-dan-integrasi.md).
+
+### D-017 Validasi stack T02 dapat berjalan independen dari hambatan T01
+
+- **Status:** ditetapkan pengguna pada 23 November 2026.
+- **Dasar:** pengguna menyetujui rencana EP-01-T02 untuk menjalankan validasi stack yang independen, dengan blocker T01 tetap tercatat.
+- **Keputusan:** evaluasi versi/provenance dan eksperimen kompatibilitas terisolasi dapat dilanjutkan sambil mempertahankan dependensi EP-01-T01 yang belum selesai. Tidak ada penghapusan dependency atau kelulusan M0 yang diasumsikan.
+- **Hasil teknis:** [laporan T02](M0-stack-dan-versi.md) mencatat pemilihan Go/Svelte untuk spike, exact version/lock/checksum, digest base image, serta hasil eksperimen. Angka pin adalah hasil evaluasi agent dalam rencana yang diotorisasi, bukan klaim pengguna menyetujui seluruh draft arsitektur atau hasil integrasi upstream.
+- **Batas:** fixture berada di direktori sementara; tidak ada generasi upstream, perubahan deployment aktif, atau implementasi gateway/dashboard produk. Batas OpenCode Free dan input transport D-016 tetap memerlukan pembuktian terkait.
+- **Acuan:** EP-01-T01/T02, A-1–A-8, TECHSTACK, dan [laporan stack](M0-stack-dan-versi.md).
+
 ## Status pertanyaan terbuka
 
-Seluruh pertanyaan keputusan yang dijadwalkan (O-1–O-10) sudah memiliki jawaban pengguna atau batas terbuka yang tercatat. Bagian yang masih `TBD` adalah angka baseline, provider/model/versi persis, listener/tailnet, default timeout/probe, dan detail pelaksanaan yang menunggu pengukuran M0. Tidak ada keputusan baru yang diusulkan tanpa kebutuhan nyata dari spike.
+Seluruh pertanyaan keputusan yang dijadwalkan (O-1–O-10) sudah memiliki jawaban pengguna atau batas terbuka yang tercatat. Provider/model sudah dipilih D-016 dan versi Desktop/CLI bawaan sudah dicatat pada matriks lingkungan. Bagian yang masih `TBD` adalah angka baseline, versi SDK/runtime provider terpisah, listener/tailnet, default timeout/probe, serta bukti kelayakan integrasi M0. Tidak ada keputusan baru yang diusulkan tanpa kebutuhan nyata dari spike.
 
-O-1 tetap terbuka untuk angka baseline dan bukti aktual meskipun metode pelaksanaannya sudah ditetapkan D-005; O-2 terbuka hanya untuk alamat/listener serta detail Tailscale, sedangkan host, CPU image, dan topologi akses sudah ditetapkan D-006; O-3 menetapkan client dan kelas upstream, tetapi provider/model persis serta versi Desktop masih dicatat saat M0 (D-007); O-6 menetapkan target performa provisional dan fixture 5×5 (D-008); O-10 menetapkan polling 5 detik dengan stale >15 detik untuk MVP dan menunda push SSE ke P1 (D-009); O-8 menetapkan rilis event-driven tanpa anggaran baru dengan tag `v0.1.0-mvp` (D-010); O-7 menetapkan tidak ada SLA formal dan pemulihan best-effort (D-011); O-9 menetapkan urutan P1 dengan Responses API lebih dulu (D-012); O-4 menetapkan fixed routing pada MVP dengan lifecycle strict diuji lewat fixture (D-013); O-5 menetapkan drain 60 detik dengan batas keras 30 menit yang tercatat (D-014). Task EP-01-T01 belum dinyatakan selesai hanya dari D-001–D-014.
+O-1 tetap terbuka untuk angka baseline dan bukti aktual meskipun metode pelaksanaannya sudah ditetapkan D-005; O-2 terbuka hanya untuk alamat/listener serta detail Tailscale, sedangkan host, CPU image, dan topologi akses sudah ditetapkan D-006; O-3 menetapkan client dan kelas upstream melalui D-007, lalu OpenCode Free/model `deepseek-v4.1-flash-free` melalui D-016; bukti akses gateway dan runtime provider masih terbuka; O-6 menetapkan target performa provisional dan fixture 5×5 (D-008); O-10 menetapkan polling 5 detik dengan stale >15 detik untuk MVP dan menunda push SSE ke P1 (D-009); O-8 menetapkan rilis event-driven tanpa anggaran baru dengan tag `v0.1.0-mvp` (D-010); O-7 menetapkan tidak ada SLA formal dan pemulihan best-effort (D-011); O-9 menetapkan urutan P1 dengan Responses API lebih dulu (D-012); O-4 menetapkan fixed routing pada MVP dengan lifecycle strict diuji lewat fixture (D-013); O-5 menetapkan drain 60 detik dengan batas keras 30 menit yang tercatat (D-014). Task EP-01-T01 belum dinyatakan selesai hanya dari D-001–D-014.

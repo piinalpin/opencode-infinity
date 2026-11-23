@@ -38,7 +38,7 @@ Keputusan tetap yang mengikat implementasi: host uji amd64 dengan image `linux/a
 
 ## Struktur dan modularitas
 
-Struktur pada ARCHITECTURE adalah rancangan yang diisi bertahap saat tiket dikerjakan. Go/Svelte tetap kandidat sampai keputusan M0; jangan membuat seluruh tree atau menganggap tooling sudah tersedia hanya karena namanya muncul dalam docs.
+Struktur pada ARCHITECTURE adalah rancangan yang diisi bertahap saat tiket dikerjakan. Stack Go/Svelte serta pin untuk spike M0 mengikuti [hasil EP-01-T02](docs/M0-stack-dan-versi.md); validasi integrasi dan gerbang M0 belum selesai. Jangan membuat seluruh tree atau menganggap tooling produk sudah tersedia hanya karena namanya muncul dalam docs. Manifest/lock pada `docs/m0/ep-01-t02/` adalah artefak fixture, bukan tooling aplikasi produk.
 
 - `cmd/` menjadi entrypoint tipis; `internal/app/` merakit dependensi dan lifecycle proses.
 - `internal/httpapi/` menerjemahkan HTTP dan memasang kebijakan API/admin. Aturan routing tidak diletakkan dalam handler.
@@ -50,7 +50,7 @@ Struktur pada ARCHITECTURE adalah rancangan yang diisi bertahap saat tiket diker
 - Suntikkan dependensi saat perakitan aplikasi. Hindari mutable singleton global, dependency cycle, dan package bersama yang tidak punya tanggung jawab jelas. Interface kecil berada dekat package pemakainya bila dibutuhkan.
 - Unit test dekat kode; integrasi lintas modul di `tests/integration/`; uji browser di `web/tests/e2e/`. Helper test tidak menjadi dependensi runtime.
 - Kontrak snapshot frontend mengikuti server. UI tidak memiliki aturan eligibility sendiri atau mengakses state mutable backend.
-- Pada kandidat Go, hasil build UI disiapkan di `internal/webui/dist/` sebelum kompilasi package penyajian. Generated assets, cache, dependency directory, binary, dan hasil benchmark sementara tidak masuk source control.
+- Pada stack Go yang dipilih untuk spike, hasil build UI disiapkan di `internal/webui/dist/` sebelum kompilasi package penyajian. Generated assets, cache, dependency directory, binary, dan hasil benchmark sementara tidak masuk source control.
 
 ## Invariant request dan relay
 

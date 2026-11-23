@@ -1,0 +1,220 @@
+{
+  "task": "EP-01-T02",
+  "verified_on": "2026-11-23",
+  "scope": "independent stack compatibility and provenance; not MVP acceptance",
+  "toolchains": {
+    "go": {
+      "version": "go1.27.4",
+      "source": "https://go.dev/dl/go1.27.4.linux-amd64.tar.gz",
+      "filename": "go1.27.4.linux-amd64.tar.gz",
+      "sha256": "7226736c2339719cda28fbf3a54d71aa63bcefe376e98cef00034268dab24840",
+      "checksum_verified": true
+    },
+    "node": {
+      "version": "v26.13.1",
+      "source": "https://nodejs.org/dist/v26.13.1/node-v26.13.1-linux-x64.tar.xz",
+      "filename": "node-v26.13.1-linux-x64.tar.xz",
+      "sha256": "5c063e46bab0fbc1c17cc445d7ff129cbdcd0471be6ed83b6ab864f8143bc864",
+      "checksum_verified": true
+    }
+  },
+  "npm": "12.2.2",
+  "frontend": {
+    "svelte": {
+      "version": "5.59.1",
+      "source": "https://registry.npmjs.org/svelte/5.59.1",
+      "integrity": "sha512-ADG20W/jYSQut/79AavRRfbXQYebFKMVWT/xAbjVVZfZA4XzIoFfcpanEfYTyN+uWQUaPP+nstFx4qVKwEVnQQ==",
+      "resolved": "https://registry.npmjs.org/svelte/-/svelte-5.59.1.tgz"
+    },
+    "vite": {
+      "version": "8.3.8",
+      "source": "https://registry.npmjs.org/vite/8.3.8",
+      "integrity": "sha512-LzOn3h9rG/0vhLdXrV4yJ4QFA9eEoqCl+Yx+kGJd7aB9w6nfNgVHKSYwLPZUHrz4ZGa+t+kXjV9itvcHDLQouA==",
+      "resolved": "https://registry.npmjs.org/vite/-/vite-8.3.8.tgz"
+    },
+    "svelte-check": {
+      "version": "4.7.8",
+      "source": "https://registry.npmjs.org/svelte-check/4.7.8",
+      "integrity": "sha512-laZ49GFHZ3b0z2PWinJWL0syehc/PTR8aHaUaTiBkWJ+4Y38nhxjmXsSz7CbGa3VdKopViVbrBH3bGNqIAI0bQ==",
+      "resolved": "https://registry.npmjs.org/svelte-check/-/svelte-check-4.7.8.tgz"
+    },
+    "@sveltejs/vite-plugin-svelte": {
+      "version": "7.3.1",
+      "source": "https://registry.npmjs.org/@sveltejs%2fvite-plugin-svelte/7.3.1",
+      "integrity": "sha512-ZPsLN8B1e/En+Ak5s4V7srFDT532oS0qieLsQwu63NGKsS+iAjoO2Js1BochlHlglcU+Pt7WAO3C5Ee+4f6gVA==",
+      "resolved": "https://registry.npmjs.org/@sveltejs/vite-plugin-svelte/-/vite-plugin-svelte-7.3.1.tgz"
+    },
+    "@types/node": {
+      "version": "26.6.6",
+      "source": "https://registry.npmjs.org/@types%2fnode/26.6.6",
+      "integrity": "sha512-MzQj+8Kx3XI40OmUAE6Qoh58ZMNstNNMwn2nfd3qWsfe7nDNSqJNzes4njhz6AHwrSHOffSLwXU6yb474Q4aog==",
+      "resolved": "https://registry.npmjs.org/@types/node/-/node-26.6.6.tgz"
+    },
+    "@playwright/test": {
+      "version": "1.65.1",
+      "source": "https://registry.npmjs.org/@playwright%2ftest/1.65.1",
+      "integrity": "sha512-y+NCIRm2LvY4slUVWvGh1nujJ8RF/hEisIsq2mtUPgdQC4L701bq5hZGMhrpeXjACvwvO9tj5dJqhvM6TP9lbw==",
+      "resolved": "https://registry.npmjs.org/@playwright/test/-/test-1.65.1.tgz"
+    },
+    "typescript": {
+      "version": "6.0.3",
+      "source": "https://registry.npmjs.org/typescript/6.0.3",
+      "integrity": "sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw==",
+      "resolved": "https://registry.npmjs.org/typescript/-/typescript-6.0.3.tgz"
+    }
+  },
+  "backend": {
+    "go": "1.27.4",
+    "direct_modules": {
+      "github.com/prometheus/client_golang": "v1.25.0",
+      "go.yaml.in/yaml/v4": "v4.0.0"
+    },
+    "go_proxy": "https://proxy.golang.org",
+    "checksum_database": "sum.golang.org",
+    "target": {
+      "GOOS": "linux",
+      "GOARCH": "amd64",
+      "CGO_ENABLED": "0"
+    }
+  },
+  "images": {
+    "go-builder": {
+      "image": "docker.io/library/golang:1.27.4-trixie",
+      "linux_amd64": [
+        "sha256:2cd7e1ebf475c6208122d2b9cefc638d98fcc8dfd8554c8872c9dd0c21f4ac61"
+      ],
+      "pinned_reference": "docker.io/library/golang:1.27.4-trixie@sha256:2cd7e1ebf475c6208122d2b9cefc638d98fcc8dfd8554c8872c9dd0c21f4ac61"
+    },
+    "node-builder": {
+      "image": "docker.io/library/node:26.13.1-trixie-slim",
+      "linux_amd64": [
+        "sha256:a5a5adfee3013de54504e0e6aff49993acf7daed072e86be75b8818c0f6ac258"
+      ],
+      "pinned_reference": "docker.io/library/node:26.13.1-trixie-slim@sha256:a5a5adfee3013de54504e0e6aff49993acf7daed072e86be75b8818c0f6ac258"
+    },
+    "gateway-runtime": {
+      "image": "gcr.io/distroless/static-debian13:nonroot",
+      "linux_amd64": [
+        "sha256:89e00a7e78df216bcbf495e7f43135f03ddbd3e98024a4104731872d6c8cf3c6"
+      ],
+      "pinned_reference": "gcr.io/distroless/static-debian13:nonroot@sha256:89e00a7e78df216bcbf495e7f43135f03ddbd3e98024a4104731872d6c8cf3c6"
+    },
+    "relay-base": {
+      "image": "docker.io/library/alpine:3.24.4",
+      "linux_amd64": [
+        "sha256:0f49f331d9212aff11b932863be4eb01cdf962969aa86dab7d1ee21ac6f5f52b"
+      ],
+      "pinned_reference": "docker.io/library/alpine:3.24.4@sha256:0f49f331d9212aff11b932863be4eb01cdf962969aa86dab7d1ee21ac6f5f52b"
+    }
+  },
+  "runtime_image_config": {
+    "image": "gcr.io/distroless/static-debian13@sha256:89e00a7e78df216bcbf495e7f43135f03ddbd3e98024a4104731872d6c8cf3c6",
+    "os": "linux",
+    "architecture": "amd64",
+    "user": "65532",
+    "working_dir": "/home/nonroot"
+  },
+  "relay_source": {
+    "repository": "https://github.com/trefeon/warp-relay-pool",
+    "commit": "1a58c904d6a99463f2c48cb02234f44eca7646e6",
+    "license": "MIT",
+    "files": {
+      "warp-lite/Dockerfile": {
+        "source": "https://raw.githubusercontent.com/trefeon/warp-relay-pool/1a58c904d6a99463f2c48cb02234f44eca7646e6/warp-lite/Dockerfile",
+        "sha256": "fcfec2c9f657cb090770a669c31e8294d289d7cf8f457fef2ccbec8c88ae7016"
+      },
+      "warp-lite/entrypoint.sh": {
+        "source": "https://raw.githubusercontent.com/trefeon/warp-relay-pool/1a58c904d6a99463f2c48cb02234f44eca7646e6/warp-lite/entrypoint.sh",
+        "sha256": "7de64e8fd634fb08ad382a8def3d1edb35b797ee8face2fa4ca09f53d94f89aa"
+      },
+      "LICENSE": {
+        "source": "https://raw.githubusercontent.com/trefeon/warp-relay-pool/1a58c904d6a99463f2c48cb02234f44eca7646e6/LICENSE",
+        "sha256": "85d4410bf86c7b134de77135baf923d48b71592dc24bff6874b9bd9e12bc96b3"
+      }
+    },
+    "microsocks": {
+      "source": "https://api.github.com/repos/rofl0r/microsocks/git/ref/tags/v1.0.5",
+      "tag": "v1.0.5",
+      "object": {
+        "sha": "98421a21c4adc4c77c0cf3a5d650cc28ad3e0107",
+        "type": "commit",
+        "url": "https://api.github.com/repos/rofl0r/microsocks/git/commits/98421a21c4adc4c77c0cf3a5d650cc28ad3e0107"
+      },
+      "license": "MIT",
+      "license_source": "https://github.com/rofl0r/microsocks/blob/98421a21c4adc4c77c0cf3a5d650cc28ad3e0107/COPYING",
+      "license_sha256": "ea4ee014a84580a592d5f5b897d50a96fee3b7ee570e584483b779e9f48eddaf"
+    },
+    "local_source_changes": "none; source inspected, not adopted into product",
+    "adoption_requirements": [
+      "replace unsupported Alpine 3.21 with pinned 3.24.4 main-only base",
+      "pin microsocks to resolved commit rather than a moving tag",
+      "review relay-specific STOPSIGNAL SIGKILL before lifecycle validation; do not apply to gateway",
+      "build relay image and record its final digest on T04; verify package graph then"
+    ]
+  },
+  "relay_package_catalog": {
+    "url": "https://dl-cdn.alpinelinux.org/alpine/v3.24/main/x86_64/APKINDEX.tar.gz",
+    "sha256": "59077b3029f8239065ca473c4a7841f93ca7caedf46e0e9b47ca4ddefca53a17",
+    "required_packages": {
+      "build-base": {
+        "V": "0.5-r4",
+        "L": "MIT",
+        "C": "Q1nzZkq3HEVZFi3l/qBevDd+H7QNc="
+      },
+      "ca-certificates": {
+        "V": "20261020-r0",
+        "L": "MPL-2.0 AND MIT",
+        "C": "Q1u5EAmbDnuKr2yRSXmG/co6uxPTU="
+      },
+      "curl": {
+        "V": "8.23.0-r0",
+        "L": "curl",
+        "C": "Q1k3m4nZR17Catv0Y97/QQ0BpafYA="
+      },
+      "git": {
+        "V": "2.54.1-r0",
+        "L": "GPL-2.0-only",
+        "C": "Q1kcdg5/ZoR9rRdtZ9yJIIOiAhUIo="
+      },
+      "iproute2": {
+        "V": "7.0.0-r0",
+        "L": "GPL-2.0-or-later",
+        "C": "Q1LWXI6w8M1cA+is8dZ//Q77TmNBk="
+      },
+      "iptables": {
+        "V": "1.8.13-r0",
+        "L": "GPL-2.0-or-later",
+        "C": "Q1OUwcoQ3CVHWR1R8L2ZZY+IouSFQ="
+      },
+      "openresolv": {
+        "V": "3.17.4-r0",
+        "L": "BSD-2-Clause",
+        "C": "Q1/i2JoegRWmlmw/esPG2YqqYo48A="
+      },
+      "wireguard-tools": {
+        "V": "1.0.20260223-r0",
+        "L": "GPL-2.0-only",
+        "C": "Q1q1shI2jxsKV557mTM8RlwEOP+UU="
+      }
+    },
+    "missing": []
+  },
+  "not_proven": [
+    "T01 completion and OpenCode Free gateway access",
+    "SOCKS5 DNS, TLS, SSE, cancellation, retry count",
+    "browser integration and UI auth",
+    "image build/runtime for gateway or relay",
+    "resource benchmark and quota-bearing upstream integration"
+  ],
+  "npm_distribution": {
+    "version": "12.2.2",
+    "source": "https://registry.npmjs.org/npm/12.2.2",
+    "resolved": "https://registry.npmjs.org/npm/-/npm-12.2.2.tgz",
+    "integrity": "sha512-KglgbZyacf7jH+FHuNRqVuCzQi8VhI2a7J87Ix43FsPTuZoGWmIXXGdZtBUOA79vwL+IJREqURVzupA7PsQTcA==",
+    "engine": {
+      "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
+    },
+    "integrity_matches_install_lock": true,
+    "installation": "separate temporary prefix; official Node archive bundles npm 11.20.0"
+  }
+}
