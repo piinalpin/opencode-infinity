@@ -58,6 +58,8 @@ Gateway produksi lengkap, dashboard operasional lengkap, dan implementasi kemamp
 - Skenario wajib dihilangkan untuk menandai pekerjaan selesai.
 - Secret/konten percakapan bocor, generasi diulang pada dispatch ambigu, atau target yang belum terpenuhi tetap dinyatakan lulus.
 
+✅ berarti AC memiliki bukti pada lingkup yang disebutkan di hasil pengerjaan (dokumentasi, validasi stack independen, atau fixture lokal). Penanda ini tidak menyatakan dependensi task, integrasi nyata, atau gerbang M0 selesai.
+
 ## Story dan task
 
 | ID lokal | Hasil | Jenis | Jumlah AC | Diblokir oleh |
@@ -112,8 +114,8 @@ Input terkonfirmasi melalui [D-001–D-003](../DECISIONS.md): penggunaan pribadi
 
 - **AC1:** **Given** host dan calon upstream/client belum ditetapkan, **When** pemilik produk bersama operator meninjau kebutuhan, **Then** matriks mencatat host, arsitektur CPU, akses jaringan, upstream/model, versi CLI/Desktop, dan runtime provider.
 - **AC2:** **Given** model awal telah dipilih, **When** protokol dan kebutuhan affinity diperiksa, **Then** keputusan menjelaskan kesesuaian Chat Completions dan kebutuhan konsistensi jalurnya.
-- **AC3:** **Given** data baseline belum tersedia, **When** pemilik pengukuran ditetapkan, **Then** setiap G-1–G-7 mempunyai sumber pengukuran serta baseline aktual atau TBD berpenanggung jawab.
-- **AC4 (negatif/edge):** **Given** model awal membutuhkan Responses API atau jaminan yang belum terpenuhi, **When** hasil validasi ditinjau, **Then** ketidakcocokan dicatat untuk keputusan produk dan M0 tidak ditandai lulus diam-diam.
+- ✅ **AC3:** **Given** data baseline belum tersedia, **When** pemilik pengukuran ditetapkan, **Then** setiap G-1–G-7 mempunyai sumber pengukuran serta baseline aktual atau TBD berpenanggung jawab.
+- ✅ **AC4 (negatif/edge):** **Given** model awal membutuhkan Responses API atau jaminan yang belum terpenuhi, **When** hasil validasi ditinjau, **Then** ketidakcocokan dicatat untuk keputusan produk dan M0 tidak ditandai lulus diam-diam.
 
 ### Hasil pengerjaan
 
@@ -123,8 +125,8 @@ Pemeriksaan 23 November 2026 dan matriks input tersedia pada [M0 — Lingkungan 
 |---|---|---|
 | AC1 | Sebagian | Host/client, OpenCode Free, model `deepseek-v4.1-flash-free`, dan transport D-016 tercatat; exact version SDK aktif serta detail akses final belum lengkap |
 | AC2 | Penilaian dokumentasi tersedia | Endpoint Chat Completions terkonfirmasi pada katalog resmi; batas akses Free, kebutuhan pembuktian sesi, dan JSON/non-stream dijelaskan tanpa klaim gateway kompatibel |
-| AC3 | Terpenuhi pada tingkat dokumentasi | G-1–G-7 memiliki sumber manual/fixture, pemilik pengukuran, dan baseline TBD; pengukuran aktual mengikuti D-005 |
-| AC4 | Terpenuhi pada tingkat dokumentasi | Pembatasan Free untuk penggunaan dalam OpenCode dan risiko `forceStream` tercatat sebagai hambatan M0; tidak ada hasil generasi nyata atau kelulusan gateway yang diklaim |
+| ✅ AC3 | Terpenuhi pada tingkat dokumentasi | G-1–G-7 memiliki sumber manual/fixture, pemilik pengukuran, dan baseline TBD; pengukuran aktual mengikuti D-005 |
+| ✅ AC4 | Terpenuhi pada tingkat dokumentasi | Pembatasan Free untuk penggunaan dalam OpenCode dan risiko `forceStream` tercatat sebagai hambatan M0; tidak ada hasil generasi nyata atau kelulusan gateway yang diklaim |
 
 Pilihan provider/model dan input transport sudah dikonfirmasi pengguna melalui D-016. Detail yang belum terbukti tidak diasumsikan terjawab oleh persetujuan rencana. Tidak ada generasi berbayar atau perubahan konfigurasi/lifecycle deployment pada pekerjaan ini.
 
@@ -150,10 +152,10 @@ Kandidat awal TECHSTACK dievaluasi melalui [laporan stack dan versi M0](../M0-st
 
 ### Acceptance criteria
 
-- **AC1:** **Given** A-1–A-8 dan lingkungan target tersedia, **When** kandidat teknologi dievaluasi, **Then** keputusan memetakan pilihan ke modul arsitektur dan mencatat konsekuensinya.
-- **AC2:** **Given** pilihan toolchain dan paket diajukan, **When** rilis stabil serta dukungan silang diperiksa, **Then** matriks mencatat exact version, sumber resmi, dan hasil kompatibilitas termasuk compiler/checker frontend.
-- **AC3:** **Given** komponen referensi dan base image dipilih, **When** identitas build dicatat, **Then** commit MicroWARP, digest image, dan checksum atau lock dependensi dapat ditelusuri.
-- **AC4 (negatif/edge):** **Given** versi terbaru suatu paket tidak kompatibel atau kandidat YAML v3 sudah perlu ditinjau, **When** versi diputuskan, **Then** alasan pemilihan dicatat dan label latest tidak dianggap bukti kompatibilitas.
+- ✅ **AC1:** **Given** A-1–A-8 dan lingkungan target tersedia, **When** kandidat teknologi dievaluasi, **Then** keputusan memetakan pilihan ke modul arsitektur dan mencatat konsekuensinya.
+- ✅ **AC2:** **Given** pilihan toolchain dan paket diajukan, **When** rilis stabil serta dukungan silang diperiksa, **Then** matriks mencatat exact version, sumber resmi, dan hasil kompatibilitas termasuk compiler/checker frontend.
+- ✅ **AC3:** **Given** komponen referensi dan base image dipilih, **When** identitas build dicatat, **Then** commit MicroWARP, digest image, dan checksum atau lock dependensi dapat ditelusuri.
+- ✅ **AC4 (negatif/edge):** **Given** versi terbaru suatu paket tidak kompatibel atau kandidat YAML v3 sudah perlu ditinjau, **When** versi diputuskan, **Then** alasan pemilihan dicatat dan label latest tidak dianggap bukti kompatibilitas.
 
 ### Hasil pengerjaan
 
@@ -161,10 +163,10 @@ Pemeriksaan 23 November 2026 tercatat pada [M0 — Stack, versi, dan bukti kompa
 
 | AC | Hasil teknis independen | Bukti/batas |
 |---|---|---|
-| AC1 | Tersedia | Go/Svelte dipetakan ke A-1–A-8; batas modul, state, dua listener, dan operator relay tetap |
-| AC2 | Lulus fixture | Exact version dan sumber tercatat; strict peer, compiler/checker frontend, verifikasi modul, vet, tes, serta binary statis amd64 lulus |
-| AC3 | Source/base/fixture terlacak | Commit MicroWARP/microsocks, lisensi, empat digest manifest image, lock/checksum tersedia; image produk/relay final belum dibangun |
-| AC4 | Terbukti pada kasus dependency | TypeScript 7 gagal ERESOLVE; 6.0.3 lulus; YAML v3 ditinjau dan v4 dipilih; Alpine 3.21 EOL tidak dipilih |
+| ✅ AC1 | Tersedia | Go/Svelte dipetakan ke A-1–A-8; batas modul, state, dua listener, dan operator relay tetap |
+| ✅ AC2 | Lulus fixture | Exact version dan sumber tercatat; strict peer, compiler/checker frontend, verifikasi modul, vet, tes, serta binary statis amd64 lulus |
+| ✅ AC3 | Source/base/fixture terlacak | Commit MicroWARP/microsocks, lisensi, empat digest manifest image, lock/checksum tersedia; image produk/relay final belum dibangun |
+| ✅ AC4 | Terbukti pada kasus dependency | TypeScript 7 gagal ERESOLVE; 6.0.3 lulus; YAML v3 ditinjau dan v4 dipilih; Alpine 3.21 EOL tidak dipilih |
 
 Seluruh eksperimen memakai data sintetis di direktori sementara. Tidak ada generasi upstream, bootstrap identitas WARP, atau perubahan container/volume aktif. T03/T04/T05 tetap membuktikan transport, deployment, dan packaging yang tidak dibuktikan oleh kompilasi.
 
@@ -192,11 +194,11 @@ Pengujian deterministik perlu membedakan koneksi proxy, request yang terkirim, d
 
 ### Acceptance criteria
 
-- **AC1:** **Given** fixture upstream dan SOCKS5 dijalankan, **When** request kontrol melewati proxy, **Then** rekaman menunjukkan relay yang dipakai dan hostname tujuan yang diterima proxy.
-- **AC2:** **Given** fixture streaming diatur untuk memecah byte, **When** skenario dijalankan ulang, **Then** content dan tool-call deltas dapat diverifikasi menurut urutan yang sama.
-- **AC3:** **Given** fixture memutus koneksi pada fase berbeda, **When** skenario gagal dijalankan, **Then** bukti membedakan sebelum dispatch, pengiriman ambigu, dan stream yang sudah dimulai.
-- **AC4:** **Given** client kontrol memutus stream, **When** fixture mengamati lifecycle request upstream, **Then** bukti dapat membedakan pembatalan request dari respons sukses dan mencatat jumlah dispatch.
-- **AC5 (negatif/edge):** **Given** fixture proxy tidak tersedia, **When** request kontrol dijalankan, **Then** pengujian mendeteksi koneksi langsung jika terjadi dan gagal bila jalur itu digunakan.
+- ✅ **AC1:** **Given** fixture upstream dan SOCKS5 dijalankan, **When** request kontrol melewati proxy, **Then** rekaman menunjukkan relay yang dipakai dan hostname tujuan yang diterima proxy.
+- ✅ **AC2:** **Given** fixture streaming diatur untuk memecah byte, **When** skenario dijalankan ulang, **Then** content dan tool-call deltas dapat diverifikasi menurut urutan yang sama.
+- ✅ **AC3:** **Given** fixture memutus koneksi pada fase berbeda, **When** skenario gagal dijalankan, **Then** bukti membedakan sebelum dispatch, pengiriman ambigu, dan stream yang sudah dimulai.
+- ✅ **AC4:** **Given** client kontrol memutus stream, **When** fixture mengamati lifecycle request upstream, **Then** bukti dapat membedakan pembatalan request dari respons sukses dan mencatat jumlah dispatch.
+- ✅ **AC5 (negatif/edge):** **Given** fixture proxy tidak tersedia, **When** request kontrol dijalankan, **Then** pengujian mendeteksi koneksi langsung jika terjadi dan gagal bila jalur itu digunakan.
 
 ### Hasil pengerjaan — 23 November 2026
 
@@ -234,6 +236,19 @@ Lulus fixture saja tidak membuktikan WARP, izin jaringan, dan upstream nyata ber
 - **AC2:** **Given** hostname upstream dikirim melalui proxy, **When** jalur TLS dan DNS diuji, **Then** bukti menunjukkan resolusi tujuan lewat SOCKS5 dan verifikasi hostname TLS aktif.
 - **AC3:** **Given** upstream mengirim stream, **When** client menerima respons, **Then** potongan respons diteruskan sebelum keseluruhan respons selesai.
 - **AC4 (negatif/edge):** **Given** relay gagal atau bukti belum terkirim tidak tersedia, **When** skenario gangguan dijalankan, **Then** tidak ada direct fallback dan attempt generasi dibatasi satu pada kondisi ambigu.
+
+### Hasil pengerjaan — 23 November 2026
+
+[Laporan T04](../M0-warp-request.md), [provenance](../m0/ep-01-t04/provenance.json), dan [checks](../m0/ep-01-t04/checks.json) mencatat hasil parsial. Image relay fixture terpin berhasil dibangun, kontrol transport dan bootstrap sintetis diuji. Native smoke mencapai penerus lokal tetapi ditolak dengan `tools_disabled`; nol request diteruskan, nol registrasi WARP, dan nol generasi provider. Langkah native berikutnya menunggu persetujuan revisi setelah tiga upaya GREEN belum lulus.
+
+| AC | Hasil | Batas |
+|---|---|---|
+| AC1 | Belum terbukti | Belum ada respons generasi aktual melalui WARP |
+| AC2 | Fixture lokal saja | Domain SOCKS5/TLS diuji secara lokal; request WARP yang sama belum tersedia |
+| AC3 | Fixture lokal saja | Barrier dan fragmentasi lokal lulus; incremental stream provider belum terbukti |
+| AC4 | Fixture lokal saja | Fault ambigu/dead relay lokal dan latch diuji; fault relay WARP aktual belum dijalankan |
+
+Tidak ada ✅ pada T04, tidak ada pelonggaran wording AC/dependensi, dan status tetap `approved`. Batas otorisasi baru pada D-018 tidak mengizinkan pemakaian profil existing, retry generasi, atau perubahan model.
 
 ### Batas dan dependensi
 

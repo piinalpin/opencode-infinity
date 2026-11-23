@@ -119,7 +119,9 @@ Model yang dipilih telah dievaluasi pada tingkat dokumentasi: endpoint Chat Comp
 |---|---|---|
 | AC1 | Sebagian | Host/client serta provider/model/transport tersedia; exact version SDK aktif dan detail akses final masih terbuka |
 | AC2 | Penilaian dokumentasi tersedia | Bagian 3 menjelaskan Chat Completions, batas akses Free, serta kebutuhan pembuktian sesi/stream; kompatibilitas gateway belum lulus |
-| AC3 | Terpenuhi pada tingkat dokumentasi | Ketujuh G memiliki sumber, pemilik, dan baseline TBD pada bagian 4; tidak ada angka atau hasil benchmark yang direka |
-| AC4 | Terpenuhi pada tingkat dokumentasi | Batas akses Free dan risiko JSON/non-stream dicatat sebagai hambatan M0; tidak ada pelonggaran kontrak atau klaim kelulusan dari katalog |
+| ✅ AC3 | Terpenuhi pada tingkat dokumentasi | Ketujuh G memiliki sumber, pemilik, dan baseline TBD pada bagian 4; tidak ada angka atau hasil benchmark yang direka |
+| ✅ AC4 | Terpenuhi pada tingkat dokumentasi | Batas akses Free dan risiko JSON/non-stream dicatat sebagai hambatan M0; tidak ada pelonggaran kontrak atau klaim kelulusan dari katalog |
 
 Task masih berstatus `approved`, dengan hasil pengerjaan parsial. Dokumen ini tidak menyatakan EP-01-T01 selesai atau mengubah status task lain, keputusan D-001–D-016, maupun cakupan MVP/P1.
+
+✅ pada AC3/AC4 menunjukkan bukti dokumentasi tersebut. [Pemeriksaan T04](M0-warp-request.md) menambahkan SHA-256 CLI native `2.3.0` dan percobaan konfigurasi terisolasi; preflight belum lulus dan tidak mengisi exact version SDK terpisah, detail akses final, atau kelayakan gateway yang masih terbuka pada AC1/AC2.

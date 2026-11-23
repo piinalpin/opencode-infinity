@@ -82,7 +82,7 @@ MicroWARP diambil sebagai referensi source dari [warp-relay-pool](https://github
 | MicroWARP | Commit `1a58c904d6a99463f2c48cb02234f44eca7646e6` | MIT; Dockerfile, entrypoint, dan LICENSE diperiksa; URL immutable dan checksum ada di pins.json |
 | microsocks | Tag `v1.0.5` terselesaikan ke commit `98421a21c4adc4c77c0cf3a5d650cc28ad3e0107` | MIT menurut [COPYING pada commit](https://github.com/rofl0r/microsocks/blob/98421a21c4adc4c77c0cf3a5d650cc28ad3e0107/COPYING) |
 
-Belum ada source relay yang disalin/adopsi sebagai kode produk. Saat T04 mengadopsinya, perubahan lokal yang diperlukan adalah penggantian base Alpine ke digest terpilih dan pin microsocks ke commit, disertai catatan provenance. Source referensi memiliki `STOPSIGNAL SIGKILL`; perilaku relay itu harus ditinjau terhadap prosedur maintenance dan tidak disalin ke gateway yang mengikuti D-014.
+Pada pemeriksaan T02 belum ada source relay yang diadopsi. [T04](M0-warp-request.md) kemudian menambahkan image fixture dengan base/microsocks terpin, lisensi, bootstrap eksplisit, dan startup tanpa probe/retry otomatis. [Provenance T04](m0/ep-01-t04/provenance.json) mencatat perubahan, effective APK, serta ID image lokal. Source referensi memiliki `STOPSIGNAL SIGKILL`; fixture menggunakan SIGTERM/init. Ini belum menjadi image relay/gateway produksi atau bukti WARP berhasil.
 
 Digest final image gateway/relay, graph APK yang benar-benar dipasang, serta perubahan entrypoint belum tersedia karena image produk belum dibangun. Pin base/source dan snapshot katalog paket memberi keterlacakan awal; keduanya tidak menggantikan identitas artefak hasil build atau pengujian WARP. Katalog APK pada pins.json adalah observasi versi dan checksum indeks, bukan lock lengkap dependency APK atau hasil verifikasi signature paket.
 
@@ -143,10 +143,10 @@ Gunakan Go `1.27.4`, Node `26.13.1`, dan npm `12.2.2` yang checksum-nya telah di
 
 | AC T02 | Hasil teknis independen | Bukti |
 |---|---|---|
-| AC1 | Tersedia | Pemetaan A-1–A-8, pilihan, alternatif, dan konsekuensi pada bagian 1 |
-| AC2 | Lulus pada fixture | Versi exact, sumber resmi, dukungan engine/peer, kompilasi, dan checker pada bagian 2/5 serta lock |
-| AC3 | Tersedia untuk source/base/fixture | Commit MicroWARP/microsocks, empat digest base/builder/runtime, checksum/lock pada bagian 4/6; digest final image produk menunggu build pada task terkait |
-| AC4 | Terbukti pada kasus dependency | TypeScript 7 ditolak dan 6 diterima tanpa override; YAML v3 ditinjau; Alpine EOL tidak dipilih |
+| ✅ AC1 | Tersedia | Pemetaan A-1–A-8, pilihan, alternatif, dan konsekuensi pada bagian 1 |
+| ✅ AC2 | Lulus pada fixture | Versi exact, sumber resmi, dukungan engine/peer, kompilasi, dan checker pada bagian 2/5 serta lock |
+| ✅ AC3 | Tersedia untuk source/base/fixture | Commit MicroWARP/microsocks, empat digest base/builder/runtime, checksum/lock pada bagian 4/6; digest final image produk menunggu build pada task terkait |
+| ✅ AC4 | Terbukti pada kasus dependency | TypeScript 7 ditolak dan 6 diterima tanpa override; YAML v3 ditinjau; Alpine EOL tidak dipilih |
 
 Status tiket tetap `approved`. Dependensi T01 belum ditutup, terutama runtime provider aktif dan detail akses. Batas OpenCode Free untuk pemakaian dari dalam OpenCode serta risiko `forceStream` tetap mengikuti D-016 dan [hasil T01](M0-lingkungan-dan-integrasi.md); pemilihan stack tidak menyelesaikan kedua hal itu.
 

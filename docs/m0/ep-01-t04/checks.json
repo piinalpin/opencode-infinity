@@ -1,0 +1,149 @@
+{
+  "task": "EP-01-T04",
+  "date": "2026-11-23",
+  "status": "partial_native_preflight_blocked",
+  "head_before_task": "552f3ed1c3004a0a8d00257fd8ae8b83bba82b4f",
+  "go": "1.27.4 official linux-amd64",
+  "checks": [
+    {
+      "command": "go test -count=1 -timeout=120s ./...",
+      "result": "PASS",
+      "top_level_pass": 27,
+      "including_subtests_pass": 57,
+      "top_level_skip": 1,
+      "skip": "TestNativeFixture requires explicit opt-in"
+    },
+    {
+      "command": "python3 -m unittest discover -s tests/spike/warp-request -p '*_test.py'",
+      "result": "PASS",
+      "tests": 2
+    },
+    {
+      "command": "sh -n deploy/microwarp/entrypoint.sh",
+      "result": "PASS"
+    },
+    {
+      "command": "docker compose run --rm --no-deps runner go test -count=1 -timeout=120s -run '^TestNativeFixture$' ./tests/spike/warp-request",
+      "result": "FAIL",
+      "category": "tools_disabled",
+      "admitted": 0,
+      "denied": 1,
+      "relay_dials": 0,
+      "provider_generation_post": 0
+    },
+    {
+      "command": "docker compose build relay",
+      "result": "PASS"
+    },
+    {
+      "command": "docker run --rm --network none --read-only --cap-drop ALL --entrypoint apk <fixture-image> info -v",
+      "result": "PASS",
+      "runtime_packages": 35
+    },
+    {
+      "command": "go vet ./...",
+      "result": "PASS"
+    },
+    {
+      "command": "gofmt -l internal/testutil tests/integration tests/spike/warp-request",
+      "result": "PASS",
+      "output_empty": true
+    },
+    {
+      "command": "go test -race -count=50 -timeout=10m ./...",
+      "result": "PASS",
+      "top_level_pass": 1350,
+      "top_level_fail": 0,
+      "native_skips": 50,
+      "data_race_reports": 0,
+      "previous_run": "2/50 assertion failures on legitimate capacity rejection; assertion fixed to require exact 409 budget or 503 capacity, keeping single dispatch invariant"
+    },
+    {
+      "command": "docker compose config --quiet",
+      "result": "PASS"
+    },
+    {
+      "command": "local Markdown links/anchors and immutable AC wording/number/status check",
+      "result": "PASS",
+      "markdown_files": 7,
+      "passed_AC_markers_added": 11
+    },
+    {
+      "command": "docker compose run --rm --no-deps runner (readiness guard only)",
+      "result": "EXPECTED_FAILURE",
+      "exit": 78,
+      "category": "t04_live_not_ready",
+      "provider_generation_post": 0
+    }
+  ],
+  "budgets": {
+    "cloudflare_registration_post": {
+      "max": 1,
+      "attempted": 0
+    },
+    "cloudflare_enable_patch": {
+      "max": 1,
+      "attempted": 0
+    },
+    "generation_post": {
+      "max": 1,
+      "attempted": 0
+    },
+    "non_generation_get": {
+      "max": 4,
+      "attempted": 0
+    }
+  },
+  "acceptance": {
+    "T04_AC1": "not_proven",
+    "T04_AC2": "local_fixture_only",
+    "T04_AC3": "local_fixture_only",
+    "T04_AC4": "local_fixture_only"
+  },
+  "limits": [
+    "Native smoke belum GREEN; tidak memulai bootstrap WARP atau jalur provider",
+    "Image ID lokal bukan RepoDigest hasil publish; base dan source dipin, APK transitif adalah observasi build",
+    "Tidak membuktikan gateway produksi, SDK package terpisah, JSON/non-stream, tool-call aktual, affinity, performa, atau gerbang M0"
+  ],
+  "tdd": {
+    "completed_cycles": 7,
+    "native_cycle": "blocked_after_three_configuration_fixes",
+    "deviations": [
+      "Go full suite ran after both Python cycles rather than between each; Python affected suite passed each cycle"
+    ],
+    "race_assertion_correction": "Allowed exact existing 503 control_capacity alongside 409 generation_budget_used; single-dispatch counters unchanged"
+  },
+  "cleanup": {
+    "project": "opencode-infinity-t04-ce3544de",
+    "owned_containers_remaining": 0,
+    "unused_created_runner_removed": [
+      "d3d093f560cc"
+    ],
+    "profile_registration_attempts": 0,
+    "provider_generation_attempts": 0,
+    "internal_network_removed": true,
+    "owned_volumes_remaining": 0,
+    "owned_networks_remaining": 0,
+    "existing_container_count_after": 7,
+    "local_build_image_retained": true,
+    "readiness_guard_smoke_exit": 78,
+    "internal_network_removed_after_readiness_smoke": true
+  },
+  "review": {
+    "depth": "strict",
+    "initial_component_verdicts": [
+      "APPROVE WITH COMMENTS",
+      "APPROVE WITH COMMENTS"
+    ],
+    "confirmed_medium": 1,
+    "fixed": "Native gate now requires TextEvents>0; existing runtime failure tools_disabled remains",
+    "readiness_comment_fixed": "Compose default returns explicit exit78 until live wiring ready",
+    "fix_rereview_verdicts": [
+      "APPROVE",
+      "APPROVE"
+    ],
+    "rounds": 2,
+    "task_complete": false,
+    "remaining_gate": "Approval for up to three more local native fixes, then remaining original plan"
+  }
+}

@@ -9,7 +9,7 @@ Aturan kontribusi dan guardrail agent tersedia di [AGENTS.md](../AGENTS.md).
 | Dokumen | Isi | Status acuan |
 |---|---|---|
 | [PRD](PRD.md) | Masalah, pengguna, cakupan, kapabilitas, target kualitas, dan keputusan terbuka | Draft 0.1.13 |
-| [DECISIONS](DECISIONS.md) | Keputusan eksplisit pengguna dan bagian pertanyaan yang masih terbuka | Catatan 0.1.14; D-001–D-017 terkonfirmasi |
+| [DECISIONS](DECISIONS.md) | Keputusan eksplisit pengguna dan bagian pertanyaan yang masih terbuka | Catatan 0.1.15; D-001–D-018 terkonfirmasi |
 | [ARCHITECTURE](ARCHITECTURE.md) | Komponen, alur, state, lifecycle, dan [struktur project](ARCHITECTURE.md#13-struktur-project-yang-disarankan), termasuk MicroWARP | Draft 0.1.4 |
 | [TECHSTACK](TECHSTACK.md) | Pilihan stack/pin untuk spike serta batas validasi lanjutan | Spike M0 0.1.3; pin dan fixture T02 tersedia |
 | [ROADMAP](ROADMAP.md) | Milestone M0–M3, dependensi, serta gerbang MVP/P1 | Draft 0.1.1 |
@@ -24,8 +24,11 @@ Urutan desain adalah PRD → ARCHITECTURE → TECHSTACK → implementasi. ROADMA
 | [Lingkungan dan kebutuhan integrasi awal](M0-lingkungan-dan-integrasi.md) | [EP-01-T01](tickets/2026-11-22-ep-01-kelayakan-dan-keputusan-mvp.md#ep-01-t01) | Parsial: host/client dan OpenCode Free/DeepSeek tercatat; sumber baseline tersedia; akses Free melalui gateway, JSON/non-stream, versi SDK aktif, serta detail akses final belum terbukti |
 | [Stack, versi, dan bukti kompatibilitas](M0-stack-dan-versi.md) | [EP-01-T02](tickets/2026-11-22-ep-01-kelayakan-dan-keputusan-mvp.md#ep-01-t02) | Go/Svelte dipilih untuk spike; pin source/base, lock/checksum dan pemeriksaan fixture tersedia; dependensi T01 serta bukti integrasi tetap terbuka |
 | [Fixture jalur dan attempt request](M0-fixture-transport.md) | [EP-01-T03](tickets/2026-11-22-ep-01-kelayakan-dan-keputusan-mvp.md#ep-01-t03) | AC1–AC5 fixture lokal terbukti; suite dan race 50 kali lulus; integrasi WARP/provider serta gerbang M0 tetap terbuka |
+| [Request melalui WARP pada host target](M0-warp-request.md) | [EP-01-T04](tickets/2026-11-22-ep-01-kelayakan-dan-keputusan-mvp.md#ep-01-t04) | Parsial: image fixture dibangun dan kontrol transport lokal diuji; native smoke ditolak karena tool masih terbawa; registrasi WARP dan generasi belum dilakukan |
 
 Hasil pemeriksaan lingkungan tidak menyatakan integrasi client, transport WARP, atau gerbang M0 lulus. Status persetujuan tiket terpisah dari hasil pengerjaannya.
+
+✅ pada AC berarti bukti telah tersedia sesuai lingkup hasil pengerjaan. T01 AC3/AC4 bersifat dokumentasi, T02 AC1–AC4 validasi stack independen, dan T03 AC1–AC5 fixture lokal; T04 belum mendapat ✅.
 
 ## Indeks epic MVP
 

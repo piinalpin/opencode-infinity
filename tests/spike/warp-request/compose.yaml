@@ -1,0 +1,100 @@
+# Fixture T04 sementara; tidak menjadi deployment gateway produksi.
+services:
+  runner:
+    image: docker.io/library/golang:1.27.4-trixie@sha256:2cd7e1ebf475c6208122d2b9cefc638d98fcc8dfd8554c8872c9dd0c21f4ac61
+    platform: linux/amd64
+    user: "${T04_UID:?}:${T04_GID:?}"
+    working_dir: /src
+    read_only: true
+    init: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 1g
+    pids_limit: 128
+    cpus: 2
+    environment:
+      GOTOOLCHAIN: local
+      GOPROXY: "off"
+      GOSUMDB: "off"
+      GOENV: "off"
+      GOCACHE: /state/go-cache
+      GOTMPDIR: /tmp
+      GOMAXPROCS: "2"
+      GOFLAGS: "-p=2"
+      T04_NATIVE_BIN: /opt/opencode
+      T04_STATE_DIR: /state
+      T04_RELAY: "${T04_RELAY:-}"
+      T04_MODE: "${T04_MODE:-}"
+    configs:
+      - source: fixture_passwd
+        target: /etc/passwd
+    volumes:
+      - type: bind
+        source: ${T04_REPO:?}
+        target: /src
+        read_only: true
+      - type: bind
+        source: ${T04_NATIVE_BIN:?}
+        target: /opt/opencode
+        read_only: true
+      - type: bind
+        source: ${T04_STATE_DIR:?}
+        target: /state
+    tmpfs:
+      - /tmp:size=512m,mode=1777,exec
+    networks: [test]
+    restart: "no"
+    logging:
+      driver: none
+    # Gate native belum lulus; jangan memberi exit 0 dari tes live yang belum ada.
+    command: ["sh", "-c", "echo t04_live_not_ready >&2; exit 78"]
+  relay:
+    image: opencode-infinity-t04-relay:${T04_RUN_ID:?}
+    build:
+      context: ../../../deploy/microwarp
+    platform: linux/amd64
+    init: true
+    read_only: true
+    cap_drop: [ALL]
+    cap_add: [NET_ADMIN]
+    environment:
+      T04_ALLOW_NO_AUTH: "1"
+    security_opt: [no-new-privileges:true]
+    mem_limit: 128m
+    pids_limit: 64
+    cpus: 1
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: "1"
+      net.ipv6.conf.default.disable_ipv6: "1"
+    volumes:
+      - profile:/etc/wireguard
+      - ./resolv.conf:/etc/resolv.conf:ro
+    tmpfs:
+      - /run:size=4m,mode=0700
+      - /tmp:size=4m,mode=1777
+    networks: [test, uplink]
+    restart: "no"
+    stop_signal: SIGTERM
+    stop_grace_period: 10s
+    logging:
+      driver: local
+      options:
+        max-size: 1m
+        max-file: "1"
+networks:
+  test:
+    internal: true
+    enable_ipv6: false
+  uplink:
+    enable_ipv6: false
+volumes:
+  profile:
+    labels:
+      opencode-infinity.task: EP-01-T04
+      opencode-infinity.run: ${T04_RUN_ID:?}
+
+# NSS entry untuk UID non-root yang sama dengan pemilik state fixture.
+# HOME host tidak dibaca/diubah; akun ini hanya ada di runner.
+configs:
+  fixture_passwd:
+    file: ${T04_STATE_DIR:?}/runner-passwd

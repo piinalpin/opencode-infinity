@@ -1,6 +1,6 @@
 # Keputusan opencode-infinity
 
-Versi: 0.1.14  
+Versi: 0.1.15
 Tanggal: 23 November 2026
 
 Catatan ini memisahkan keputusan eksplisit pengguna dari usulan dan pertanyaan yang belum selesai. Keputusan terkonfirmasi diterapkan ke PRD/arsitektur terkait; status keseluruhan draft tidak otomatis menjadi approved.
@@ -149,6 +149,15 @@ Catatan ini memisahkan keputusan eksplisit pengguna dari usulan dan pertanyaan y
 - **Hasil teknis:** [laporan T02](M0-stack-dan-versi.md) mencatat pemilihan Go/Svelte untuk spike, exact version/lock/checksum, digest base image, serta hasil eksperimen. Angka pin adalah hasil evaluasi agent dalam rencana yang diotorisasi, bukan klaim pengguna menyetujui seluruh draft arsitektur atau hasil integrasi upstream.
 - **Batas:** fixture berada di direktori sementara; tidak ada generasi upstream, perubahan deployment aktif, atau implementasi gateway/dashboard produk. Batas OpenCode Free dan input transport D-016 tetap memerlukan pembuktian terkait.
 - **Acuan:** EP-01-T01/T02, A-1–A-8, TECHSTACK, dan [laporan stack](M0-stack-dan-versi.md).
+
+### D-018 Spike WARP T04 terisolasi dan checklist berdasarkan bukti
+
+- **Status:** ditetapkan pengguna pada 23 November 2026 melalui persetujuan kebutuhan dan rencana T04.
+- **Keputusan:** gunakan satu relay fixture baru dengan profil privat tersendiri; jangan memakai atau mengubah container/volume deployment aktif. Native OpenCode diuji melawan fixture lokal sebelum registrasi atau generasi nyata. Model dan transport tetap D-016.
+- **Batas tindakan:** maksimal satu POST registrasi Cloudflare dan satu PATCH enable tanpa retry, empat GET non-generasi (trace normal, katalog model, trace setelah tunnel turun, trace setelah relay berhenti), serta satu POST generasi total dengan maksimum 512 token output. Budget persisten direservasi sebelum dispatch; error tidak meresetnya. Startup relay tidak meregistrasi ulang atau menjalankan probe otomatis. Cleanup hanya resource baru milik fixture.
+- **Batas klaim:** kegagalan preflight menghalangi request provider; 403/429, stream rusak, atau single batch tidak otomatis meluluskan integrasi/streaming. Tidak ada model/key pengganti, tambahan header untuk mengakali akses, pelonggaran AC, atau kelulusan M0 dari fixture.
+- **Checklist:** tambahkan ✅ hanya pada AC T01–T04 yang didukung bukti; tulis lingkup dokumentasi/stack independen/fixture/aktual. Status `approved` dan wording AC dipertahankan.
+- **Acuan:** [hasil T04](M0-warp-request.md), [EP-01-T04](tickets/2026-11-22-ep-01-kelayakan-dan-keputusan-mvp.md#ep-01-t04), D-006/D-013/D-016/D-017. Persetujuan ini tidak mencakup commit, push, atau rilis.
 
 ## Status pertanyaan terbuka
 

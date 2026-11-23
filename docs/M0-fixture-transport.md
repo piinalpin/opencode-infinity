@@ -4,6 +4,8 @@ Versi: 0.1.0 · Tanggal: 23 November 2026 · Task: [EP-01-T03](tickets/2026-11-2
 
 AC1–AC5 T03 terbukti pada fixture sintetis loopback. Pengguna menyetujui pengerjaan fixture ini secara independen saat keterbatasan T01/T02 masih dicatat. Hasil ini tidak menutup dependensi tersebut, gerbang M0, atau penerimaan AC sumber pada gateway produksi.
 
+✅ pada tabel AC di bawah menyatakan lingkup fixture lokal ini. [Spike T04](M0-warp-request.md) memakai helper tanpa mengubah guard loopback dan menambahkan kontrol test-only terpisah; hasilnya tidak mengubah bukti historis T03 menjadi kelulusan provider/WARP.
+
 ## Struktur dan pemakaian
 
 [go.mod](../go.mod) menetapkan module lokal `opencode-infinity`, Go `1.27.4`, tanpa dependency eksternal. Distribusi resmi dan checksum toolchain mengikuti [bukti T02](M0-stack-dan-versi.md). Module ini menyediakan helper dan tes; belum ada binary gateway.
@@ -35,15 +37,15 @@ Koneksi TCP client ke proxy, socket proxy yang diterima untuk diproses, SOCKS CO
 
 | AC T03 | Skenario otomatis | Bukti |
 |---|---|---|
-| AC1 | `TestRoutingThroughSOCKS5`, `TestReusableConnectionCounters` | Relay B menerima domain `upstream.invalid` dan port; relay A tidak digunakan; peer cocok; dua dispatch dapat memakai satu CONNECT |
-| AC2 | `TestFragmentedSSESemanticsAndFlush` | Tiga pola pemotongan byte, termasuk satu byte per write dan UTF-8; urutan JSON/content/tool-call arguments, usage, field tambahan, serta terminal tetap utuh |
-| AC2 | Barrier event pertama | Event berikutnya/akhir ditahan sampai client menerima event pertama; tes tidak menyamakan batas Write, paket TCP, Read, dan event SSE |
-| AC3 | `TestRefusalBeforeDispatch` | Fault SOCKS ditandai sebelum target dial/tunnel; bukan kesimpulan dari dispatch nol saja |
-| AC3 | `TestAmbiguousPOSTNotReplayed` | Upstream sudah membaca POST, kemudian koneksi diputus sebelum header; koneksi baru dan reusable masing-masing menghasilkan satu dispatch untuk POST ambigu |
-| AC3 | `TestStreamStartedNotReplayed` | Client mengakui event pertama sebelum koneksi diputus; truncation menghasilkan error, tanpa terminal sukses atau dispatch tambahan |
-| AC4 | `TestClientDisconnectCancelsUpstream` | Context cancel dan body-close diamati upstream saat handler masih aktif, dalam batas observasi ≤2 detik; ledger kemudian mencatat cancellation |
-| AC4 | `TestSuccessfulStreamIsNotCancellation` | Terminal SSE dan EOF valid; return normal tidak tercatat sebagai cancellation |
-| AC5 | `TestUnavailableProxyAndDirectOracle` | Proxy mati menggagalkan request; kontrol direct benar-benar mencapai upstream dan ditolak oracle |
+| ✅ AC1 | `TestRoutingThroughSOCKS5`, `TestReusableConnectionCounters` | Relay B menerima domain `upstream.invalid` dan port; relay A tidak digunakan; peer cocok; dua dispatch dapat memakai satu CONNECT |
+| ✅ AC2 | `TestFragmentedSSESemanticsAndFlush` | Tiga pola pemotongan byte, termasuk satu byte per write dan UTF-8; urutan JSON/content/tool-call arguments, usage, field tambahan, serta terminal tetap utuh |
+| ✅ AC2 | Barrier event pertama | Event berikutnya/akhir ditahan sampai client menerima event pertama; tes tidak menyamakan batas Write, paket TCP, Read, dan event SSE |
+| ✅ AC3 | `TestRefusalBeforeDispatch` | Fault SOCKS ditandai sebelum target dial/tunnel; bukan kesimpulan dari dispatch nol saja |
+| ✅ AC3 | `TestAmbiguousPOSTNotReplayed` | Upstream sudah membaca POST, kemudian koneksi diputus sebelum header; koneksi baru dan reusable masing-masing menghasilkan satu dispatch untuk POST ambigu |
+| ✅ AC3 | `TestStreamStartedNotReplayed` | Client mengakui event pertama sebelum koneksi diputus; truncation menghasilkan error, tanpa terminal sukses atau dispatch tambahan |
+| ✅ AC4 | `TestClientDisconnectCancelsUpstream` | Context cancel dan body-close diamati upstream saat handler masih aktif, dalam batas observasi ≤2 detik; ledger kemudian mencatat cancellation |
+| ✅ AC4 | `TestSuccessfulStreamIsNotCancellation` | Terminal SSE dan EOF valid; return normal tidak tercatat sebagai cancellation |
+| ✅ AC5 | `TestUnavailableProxyAndDirectOracle` | Proxy mati menggagalkan request; kontrol direct benar-benar mencapai upstream dan ditolak oracle |
 | Turunan | Tes TLS/allowlist, guard frame/handshake/body/ledger, serta `TestConcurrentFixtureCleanup` | Hostname salah ditolak, tujuan lain tidak didial, input/buffer/koneksi dibatasi, dan resource fixture selesai setelah mixed success/error/cancel |
 
 Label fase berasal dari fault boundary dan observasi positif yang disinkronkan. Nol dispatch, error string, ataupun `httptrace.WroteRequest` saja tidak membuktikan POST aman diulang. Client kontrol memakai body tanpa `GetBody`, tanpa idempotency header, serta tanpa retry loop. Jumlah dispatch menguji interaksi dengan retry internal standard library pada HTTP/1.1; ini belum menguji retry SDK/client nyata.
