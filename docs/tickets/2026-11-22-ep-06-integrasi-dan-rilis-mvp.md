@@ -37,7 +37,7 @@ Fixture dan modul yang lulus sendiri belum membuktikan OpenCode nyata, resource 
 - Developer memakai API model; operator memelihara deployment dan memantau pool.
 - AC-01–AC-22 lulus pada artefak rilis yang dicatat versinya.
 - G-1–G-7 dan Q-1–Q-11 mempunyai bukti; target resource dilaporkan dengan skenario yang ditetapkan.
-- Baseline yang belum terukur tetap TBD; pemilik pengukuran ditetapkan melalui O-1.
+- Baseline yang belum terukur tetap TBD; metode dan pelaksana pengukuran mengikuti D-005 (angka aktual menyusul M0).
 
 ## Scope
 
@@ -225,7 +225,7 @@ Keputusan rilis harus menggabungkan bukti client, pool, dashboard, performa, dan
 
 - **AC1:** **Given** artefak rilis yang sama tersedia, **When** suite penerimaan ditinjau, **Then** AC-01–AC-22 mempunyai hasil dan bukti lulus yang dapat ditelusuri.
 - **AC2:** **Given** hasil integrasi dan benchmark tersedia, **When** G-1–G-7 serta Q-1–Q-11 dievaluasi, **Then** laporan mencatat hasil, versi, batas kompatibilitas, serta baseline aktual atau TBD tanpa angka rekaan.
-- **AC3:** **Given** pemilik produk meninjau kesiapan rilis, **When** O-8 diselesaikan, **Then** penanggung jawab, pengguna awal, target tanggal, dan anggaran rilis ditetapkan.
+- **AC3:** **Given** model rilis sudah ditetapkan D-010 (event-driven, tanpa anggaran baru, tag `v0.1.0-mvp`), **When** kesiapan rilis ditinjau, **Then** isi catatan rilis, mekanisme distribusi image, dan bukti gerbang M3 dicatat sebelum tag dibuat.
 - **AC4:** **Given** SLA tidak diperlukan atau belum ditetapkan pada O-7, **When** klaim rilis disusun, **Then** tidak ada SLA numerik atau jaminan kompatibilitas/IP yang tidak memiliki bukti.
 - **AC5 (negatif/edge):** **Given** satu skenario wajib gagal atau blocker rilis belum selesai, **When** rilis dinilai, **Then** MVP tidak dinyatakan diterima dengan menghilangkan skenario atau menunda dashboard ke P1.
 

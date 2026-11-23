@@ -8,12 +8,12 @@ Aturan kontribusi dan guardrail agent tersedia di [AGENTS.md](../AGENTS.md).
 
 | Dokumen | Isi | Status acuan |
 |---|---|---|
-| [PRD](PRD.md) | Masalah, pengguna, cakupan, kapabilitas, target kualitas, dan keputusan terbuka | Draft 0.1.3 |
-| [DECISIONS](DECISIONS.md) | Keputusan eksplisit pengguna dan bagian pertanyaan yang masih terbuka | Catatan 0.1.1; D-001–D-004 terkonfirmasi |
-| [ARCHITECTURE](ARCHITECTURE.md) | Komponen, alur, state, lifecycle, dan [struktur project](ARCHITECTURE.md#13-struktur-project-yang-disarankan), termasuk MicroWARP | Draft 0.1.3 |
-| [TECHSTACK](TECHSTACK.md) | Kandidat bahasa/library/tooling dan rencana validasi versi | Kandidat 0.1.1; belum pin final |
-| [ROADMAP](ROADMAP.md) | Milestone M0–M3, dependensi, serta gerbang MVP/P1 | Draft 0.1.0 |
-| [Catatan teknis](PRD-technical-notes.md) | Kontrak awal serta AC-01–AC-22 | Pendamping 0.1.2; bagian historis dipertahankan |
+| [PRD](PRD.md) | Masalah, pengguna, cakupan, kapabilitas, target kualitas, dan keputusan terbuka | Draft 0.1.13 |
+| [DECISIONS](DECISIONS.md) | Keputusan eksplisit pengguna dan bagian pertanyaan yang masih terbuka | Catatan 0.1.11; D-001–D-014 terkonfirmasi |
+| [ARCHITECTURE](ARCHITECTURE.md) | Komponen, alur, state, lifecycle, dan [struktur project](ARCHITECTURE.md#13-struktur-project-yang-disarankan), termasuk MicroWARP | Draft 0.1.4 |
+| [TECHSTACK](TECHSTACK.md) | Kandidat bahasa/library/tooling dan rencana validasi versi | Kandidat 0.1.2; belum pin final |
+| [ROADMAP](ROADMAP.md) | Milestone M0–M3, dependensi, serta gerbang MVP/P1 | Draft 0.1.1 |
+| [Catatan teknis](PRD-technical-notes.md) | Kontrak awal serta AC-01–AC-22 | Pendamping 0.1.3; bagian historis dipertahankan |
 
 Urutan desain adalah PRD → ARCHITECTURE → TECHSTACK → implementasi. ROADMAP mengatur urutan pengerjaan. Jika isi bertentangan, selesaikan kebutuhan di PRD dan batas desain di ARCHITECTURE sebelum mengubah kandidat stack atau tiket.
 
@@ -32,7 +32,7 @@ Satu file memuat satu epic beserta seluruh child story/task. Pemecahan dan depen
 
 ## Indeks epic P1
 
-P1 dimulai setelah penerimaan MVP melalui [EP-06-T05](tickets/2026-11-22-ep-06-integrasi-dan-rilis-mvp.md#ep-06-t05). Prioritas lintas P1 ditetapkan oleh [EP-07-T01](tickets/2026-11-22-ep-07-responses-api.md#ep-07-t01); nomor epic bukan urutan implementasi. Epic lain hanya bergantung pada task prioritas itu, bukan pada penyelesaian Responses API.
+P1 dimulai setelah penerimaan MVP melalui [EP-06-T05](tickets/2026-11-22-ep-06-integrasi-dan-rilis-mvp.md#ep-06-t05). Urutan prioritas lintas P1 ditetapkan D-012: C-11 → C-15 → C-16 → C-13 → C-12; EP-07-T01 mencatat alasan serta dependensi saat task itu ditutup. Nomor epic bukan urutan implementasi. Epic lain hanya bergantung pada task prioritas itu, bukan pada penyelesaian Responses API.
 
 | Epic | Hasil | Milestone | Story | Task | AC child |
 |---|---|---|---|---|---|
@@ -121,7 +121,7 @@ Tautan berikut menunjukkan tiket pembuktian terkait. [EP-06-T05](tickets/2026-11
 | O-9 | [EP-07-T01](tickets/2026-11-22-ep-07-responses-api.md#ep-07-t01) |
 | O-10 | [EP-05-T01](tickets/2026-11-22-ep-05-dashboard-dan-observabilitas.md#ep-05-t01) |
 
-Pemilik keputusan produk dan target adalah pengguna sendiri sesuai D-004; pelaksana pengukuran teknis serta peran lain yang belum dipilih tetap TBD. O-1 tidak menahan pembuatan fixture, O-7 hanya memblokir klaim SLA bila diperlukan, dan O-9 tidak menahan penerimaan MVP.
+Pemilik keputusan produk dan target adalah pengguna sendiri sesuai D-004; D-005 menetapkan metode baseline dua tahap serta pelaksana pengukurannya, D-006 menetapkan host amd64 serta Tailscale di host, D-007 menetapkan client utama Desktop dengan upstream Chat Completions, D-008 menetapkan target performa provisional serta fixture benchmark 5×5, D-009 menetapkan polling dashboard MVP dengan push SSE di P1, D-010 menetapkan rilis event-driven dengan tag `v0.1.0-mvp`, D-011 menetapkan tidak ada SLA formal, D-012 menetapkan urutan P1 dengan hot reload tidak diprioritaskan, D-013 menetapkan fixed routing MVP dengan lifecycle strict diuji lewat fixture, dan D-014 menetapkan drain 60 detik dengan batas keras 30 menit. Angka baseline G-1–G-7, listener final, hostname tailnet, provider/model/versi persis, default timeout/probe, serta peran lain yang belum dipilih tetap TBD. O-1 tidak menahan pembuatan fixture, O-7 sudah dijawab tanpa SLA, dan O-9 tidak menahan penerimaan MVP.
 
 ## Ringkasan backlog
 

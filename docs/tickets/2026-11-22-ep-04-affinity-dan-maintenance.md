@@ -37,7 +37,7 @@ Perubahan relay atau identitas dapat merusak percakapan, sedangkan restart gatew
 - Developer memakai API model; operator memelihara deployment dan memantau pool.
 - AC-13–AC-15 lulus dengan binding aktif, restart, dan perubahan identitas yang diketahui.
 - Tidak ada rebinding atau penghentian paksa diam-diam akibat deadline.
-- Baseline yang belum terukur tetap TBD; pemilik pengukuran ditetapkan melalui O-1.
+- Baseline yang belum terukur tetap TBD; metode dan pelaksana pengukuran mengikuti D-005 (angka aktual menyusul M0).
 
 ## Scope
 
@@ -102,6 +102,8 @@ O-4 harus menghasilkan kontrak pembentukan dan lanjutan sesi sebelum implementas
 - [AC sumber](../PRD-technical-notes.md): AC-13, AC-14. Referensi ini menunjukkan area pembuktian, bukan klaim sudah lulus.
 
 - Keputusan yang ditangani task ini: O-4.
+
+D-013 menetapkan MVP memakai fixed routing dan lifecycle strict dibuktikan lewat fixture; task ini menetapkan skema header sesi serta ambang TTL yang dipakai fixture tersebut.
 
 ### Acceptance criteria
 
@@ -224,6 +226,8 @@ O-5 memblokir prosedur shutdown yang konsisten dengan deadline dan termination c
 - [ROADMAP](../ROADMAP.md): M2.2; [ARCHITECTURE](../ARCHITECTURE.md): tanggung jawab dan batas sistem tetap berlaku.
 
 - Keputusan yang ditangani task ini: O-5.
+
+D-014 menetapkan drain 60 detik yang hanya menolak admission baru, batas keras 30 menit, dan pencatatan eksplisit sebelum keluar; task ini menetapkan nilai final `stop_grace_period`, format log shutdown, dan exit code.
 
 ### Acceptance criteria
 

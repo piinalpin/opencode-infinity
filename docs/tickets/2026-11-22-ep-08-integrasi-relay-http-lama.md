@@ -37,7 +37,7 @@ Operator yang mempertahankan warp-relay-pool lama memerlukan adapter protokol he
 - Developer memakai API model; operator memelihara deployment dan memantau pool.
 - Adapter bekerja pada versi referensi yang dicatat dan seluruh skenario kontraknya lulus.
 - Client tetap menggunakan token/endpoint gateway tanpa menentukan target bebas.
-- Baseline yang belum terukur tetap TBD; pemilik pengukuran ditetapkan melalui O-1.
+- Baseline yang belum terukur tetap TBD; metode dan pelaksana pengukuran mengikuti D-005 (angka aktual menyusul M0).
 
 ## Scope
 

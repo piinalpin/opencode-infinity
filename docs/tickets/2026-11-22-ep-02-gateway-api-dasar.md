@@ -37,7 +37,7 @@ Client memerlukan endpoint provider biasa dengan credential terpisah dan transpo
 - Developer memakai API model; operator memelihara deployment dan memantau pool.
 - AC-03–AC-06, AC-10, dan AC-11 lulus pada gateway.
 - Kontrak default upstream dan provider spesifik memberikan perilaku yang konsisten.
-- Baseline yang belum terukur tetap TBD; pemilik pengukuran ditetapkan melalui O-1.
+- Baseline yang belum terukur tetap TBD; metode dan pelaksana pengukuran mengikuti D-005 (angka aktual menyusul M0).
 
 ## Scope
 

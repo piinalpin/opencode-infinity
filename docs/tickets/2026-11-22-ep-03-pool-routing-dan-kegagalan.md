@@ -37,7 +37,7 @@ Pool tanpa reservasi konsisten, pemisahan health, dan batas retry dapat menggand
 - Developer memakai API model; operator memelihara deployment dan memantau pool.
 - AC-07–AC-09, AC-12, AC-15–AC-16, dan AC-18 lulus sesuai scope M2.1.
 - Tidak ada request generasi kedua otomatis setelah pengiriman ambigu atau stream dimulai.
-- Baseline yang belum terukur tetap TBD; pemilik pengukuran ditetapkan melalui O-1.
+- Baseline yang belum terukur tetap TBD; metode dan pelaksana pengukuran mengikuti D-005 (angka aktual menyusul M0).
 
 ## Scope
 

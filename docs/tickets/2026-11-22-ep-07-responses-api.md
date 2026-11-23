@@ -37,7 +37,7 @@ Sebagian client/model memerlukan Responses API, sedangkan MVP hanya menerima Cha
 - Developer memakai API model; operator memelihara deployment dan memantau pool.
 - Bagian kontrak Responses yang disepakati mempunyai uji dan integrasi client lulus.
 - Kontrak Chat Completions yang sudah diterima tidak mengalami regresi.
-- Baseline yang belum terukur tetap TBD; pemilik pengukuran ditetapkan melalui O-1.
+- Baseline yang belum terukur tetap TBD; metode dan pelaksana pengukuran mengikuti D-005 (angka aktual menyusul M0).
 
 ## Scope
 
@@ -98,11 +98,13 @@ O-9 mengatur semua epic P1 dan tidak boleh memaksa Responses API menjadi fitur p
 
 - Keputusan yang ditangani task ini: O-9.
 
+D-012 menetapkan urutan C-11 → C-15 → C-16 → C-13 → C-12 dan menunda hot reload; task ini mencatat alasan, dependensi kontrak, serta penanggung jawab tiap epic saat ditutup setelah MVP diterima.
+
 ### Acceptance criteria
 
-- **AC1:** **Given** MVP telah diterima, **When** pemilik produk meninjau C-11/C-12/C-13/C-15/C-16, **Then** urutan atau penundaan tiap kemampuan serta alasannya tercatat.
+- **AC1:** **Given** MVP telah diterima, **When** pemilik produk meninjau C-11/C-12/C-13/C-15/C-16, **Then** urutan D-012 (C-11 → C-15 → C-16 → C-13 → C-12) beserta alasannya tercatat dan dikonfirmasi ulang.
 - **AC2:** **Given** kemampuan P1 dipilih untuk dimulai, **When** input dan penanggung jawabnya ditetapkan, **Then** dependensi serta keputusan kontrak yang perlu ditutup mempunyai pemilik.
-- **AC3:** **Given** hot reload dibahas, **When** prioritas ditentukan, **Then** hasil tetap TBD atau dicatat sebagai usulan terpisah tanpa otomatis masuk scope epic yang ada.
+- **AC3:** **Given** hot reload dibahas, **When** prioritas ditentukan, **Then** keputusan D-012 dicatat: tidak diprioritaskan dan tetap tanpa tiket sampai ada keputusan cakupan baru.
 - **AC4 (negatif/edge):** **Given** produk memilih epic selain Responses lebih dahulu, **When** task ini ditutup, **Then** epic yang dipilih dapat dimulai tanpa menunggu EP-07-T02/S03/T04.
 
 ### Batas dan dependensi

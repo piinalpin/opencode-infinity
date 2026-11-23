@@ -37,7 +37,7 @@ Status relay, kapasitas, IP teramati, dan penyebab kegagalan perlu dapat ditinja
 - Developer memakai API model; operator memelihara deployment dan memantau pool.
 - AC-17 dan AC-20–AC-22 lulus pada browser dengan fixture state yang berubah.
 - G-3/G-6/G-7 dapat dinilai dari state dan metadata yang konsisten.
-- Baseline yang belum terukur tetap TBD; pemilik pengukuran ditetapkan melalui O-1.
+- Baseline yang belum terukur tetap TBD; metode dan pelaksana pengukuran mengikuti D-005 (angka aktual menyusul M0).
 
 ## Scope
 
@@ -103,12 +103,14 @@ UI memerlukan kontrak data, auth, dan target kesegaran yang pasti sebelum implem
 
 - Keputusan yang ditangani task ini: O-10, A-2, A-5, A-7.
 
+D-009 menetapkan polling 5 detik dengan stale >15 detik untuk MVP; push SSE/WebSocket menjadi kandidat P1. Task ini merinci cara ukur dan kontrak snapshot, bukan memilih target baru.
+
 ### Acceptance criteria
 
 - **AC1:** **Given** state pool telah didefinisikan, **When** kontrak snapshot ditetapkan, **Then** field, satuan, nilai belum tersedia, scope cooldown, serta waktu snapshot/probe/pembaruan dijelaskan.
-- **AC2:** **Given** pemilik produk meninjau O-10, **When** target pembaruan disepakati, **Then** interval dan keterlambatan maksimum dinyatakan numerik beserta cara ukurnya.
+- **AC2:** **Given** target pembaruan sudah ditetapkan D-009 (polling 5 detik, stale >15 detik), **When** kontrak snapshot ditetapkan, **Then** interval, ambang stale, penandaan kegagalan, dan cara ukurnya dijelaskan secara numerik.
 - **AC3:** **Given** browser mengakses listener admin, **When** kontrak auth dibakukan, **Then** otorisasi, sesi/TTL/expiry, logout, perlindungan request browser, dan akses data operasional ditetapkan.
-- **AC4 (negatif/edge):** **Given** target lima detik atau mekanisme sesi pada TECHSTACK belum disahkan, **When** kontrak ditutup, **Then** keputusan eksplisit dicatat dan kandidat tidak dianggap persetujuan pengguna.
+- **AC4 (negatif/edge):** **Given** target kesegaran sudah ditetapkan D-009, **When** kontrak ditutup, **Then** implementasi tidak menambah endpoint push atau mengubah interval tanpa keputusan baru, dan kandidat P1 tidak dianggap disetujui.
 
 ### Batas dan dependensi
 

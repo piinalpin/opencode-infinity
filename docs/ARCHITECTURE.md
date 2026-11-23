@@ -1,9 +1,9 @@
 # ARCHITECTURE opencode-infinity
 
-Versi: 0.1.3  
+Versi: 0.1.4  
 Tanggal: 22 November 2026  
 Status: Draft arsitektur MVP; belum disetujui  
-Acuan kebutuhan: [PRD 0.1.3](PRD.md)  
+Acuan kebutuhan: [PRD 0.1.13](PRD.md)  
 Referensi utama: [warp-relay-pool](https://github.com/trefeon/warp-relay-pool)
 
 opencode-infinity menggunakan **satu aplikasi gateway dengan modul internal yang terpisah tanggung jawabnya, web UI dashboard pada aplikasi yang sama, dan pool relay WARP di container terpisah**. Gateway mengelola request serta state operasional; setiap relay menyediakan jalur SOCKS5 menuju upstream. Dashboard membaca kondisi yang dipakai gateway untuk mengambil keputusan routing.
@@ -64,7 +64,7 @@ MVP memakai satu container aplikasi dan satu container per relay. Angka listener
 
 Gateway dan WARP berkomunikasi melalui jaringan container yang sama atau jaringan bersama dengan pool yang sudah ada. Alamat relay berada di konfigurasi server. Gateway tidak menganggap jumlah container sebagai jumlah alamat IP unik, dan tidak menggunakan jaringan internet langsung sebagai fallback ketika relay gagal.
 
-[D-001–D-003](DECISIONS.md) menetapkan penggunaan awal pribadi pada container lokal atau homelab, dengan akses homelab melalui Tailscale yang disiapkan pengguna. CPU image, host/runtime aktual, penempatan Tailscale, dan terminasi HTTPS belum dipilih. Kebutuhan siap container tidak menyiratkan penyediaan homelab atau Tailscale otomatis oleh aplikasi.
+[D-001–D-003](DECISIONS.md) menetapkan penggunaan awal pribadi pada container lokal atau homelab, dengan akses homelab melalui Tailscale yang disiapkan pengguna. [D-006](DECISIONS.md) menetapkan host uji Linux x86_64/amd64, Docker Compose, Tailscale di host, dan `tailscale serve` sebagai jalur HTTPS; listener final, hostname tailnet, dan detail sertifikat belum dipilih. Kebutuhan siap container tidak menyiratkan penyediaan homelab atau Tailscale otomatis oleh aplikasi.
 
 ## 3. Modul dan kepemilikan tanggung jawab
 
@@ -189,7 +189,7 @@ Health Manager menjalankan probe ringan dengan batas paralelisme, timeout, jitte
 
 Snapshot menggabungkan state yang diperlukan C-9/C-14: ringkasan pool, relay/generasi, mode dan kesehatan, inflight/kapasitas, cooldown, alasan gangguan, observasi IP, serta metadata waktu. Pembacaan snapshot tidak menahan jalur dispatch selama serialisasi atau pengiriman ke browser. Payload dan biaya pembacaan dibatasi sesuai kapasitas deployment.
 
-Web UI melakukan pembaruan otomatis dari admin API. Mekanisme dan interval dipilih pada desain transport UI; O-10 tetap mencatat target kesegaran sebagai `TBD`. Waktu snapshot, probe relay, dan pembaruan browser dibedakan agar pembaruan UI tidak dianggap sebagai probe baru. Membuka banyak tab tidak boleh menjalankan banyak probe upstream.
+Web UI melakukan pembaruan otomatis dari admin API melalui polling 5 detik dengan ambang stale 15 detik (D-009); push SSE/WebSocket ditunda ke P1. Waktu snapshot, probe relay, dan pembaruan browser dibedakan agar pembaruan UI tidak dianggap sebagai probe baru. Membuka banyak tab tidak boleh menjalankan banyak probe upstream.
 
 Dashboard hanya menampilkan metadata operasional. Credential, token, prompt/response, body tool, serta raw session ID tidak masuk ke snapshot. Fitur maintenance tetap tersedia melalui prosedur admin C-7; kontrol lifecycle container melalui UI tidak ditambahkan ke kebutuhan pemantauan C-14.
 
@@ -231,7 +231,7 @@ Operator gateway berada dalam trust boundary yang dapat membaca konten saat pemr
 1. **Startup:** validasi konfigurasi/secret, bangun registry dan state awal, lalu mulai health check. Relay belum dianggap sehat hanya karena proses container hidup. Readiness membedakan kesiapan konfigurasi dan relay; tidak menjanjikan semua model dapat digunakan.
 2. **Drain relay:** ubah mode agar tidak menerima reservasi baru, termasuk assignment baru untuk sesi yang terikat. Request yang sudah di-admit tetap ditangani sampai selesai atau mengalami kegagalan normal. Deadline menampilkan pekerjaan yang belum selesai; tidak memberi izin penghentian paksa diam-diam.
 3. **Maintenance identitas:** operator memeriksa inflight dan binding aktif. Tidak ada stream aktif belum berarti tidak ada binding. Restart/rekey dilakukan setelah syarat maintenance terpenuhi atau pembatalan binding disetujui secara eksplisit; generasi diperbarui dan health diperiksa sebelum trafik dibuka.
-4. **Shutdown gateway:** hentikan admission baru, tandai readiness tidak siap, dan drain request yang berjalan. Kebijakan melewati deadline harus diselaraskan dengan grace period container; O-5 tetap terbuka sebelum M3. Dokumen ini tidak menganggap deadline sebagai bukti seluruh stream pasti selesai.
+4. **Shutdown gateway:** hentikan admission baru, tandai readiness tidak siap, dan drain request yang berjalan. Sesuai D-014, deadline drain 60 detik hanya menolak admission baru; stream yang sudah di-admit berlanjut sampai batas keras 30 menit. Bila batas tercapai, gateway mencatat stream/binding yang diputus lalu keluar dengan exit code eksplisit, dan `stop_grace_period` container disetel lebih besar dari batas tersebut. Dokumen ini tidak menganggap deadline sebagai bukti seluruh stream pasti selesai.
 5. **Restart:** state sementara dibangun ulang, health diperiksa kembali, dan sesi lama diperlakukan sesuai kontrak restart. Konfigurasi baru tidak diterapkan sebagian pada proses yang masih melayani trafik.
 
 Gangguan relay tidak mematikan proses gateway atau stream pada relay lain. Satu proses gateway tetap menjadi titik kegagalan bersama yang diterima pada cakupan satu host; high availability lintas proses/host tidak ditambahkan ke MVP.
@@ -263,9 +263,9 @@ Validasi arsitektur mengikuti gerbang M0–M3 pada PRD. Prioritas sebelum meneta
 | Host/arsitektur CPU dan batas deployment | O-2 | Operator, TBD | Sebelum M0 selesai |
 | Upstream/model serta client/protokol yang diuji | O-3 | Pemilik produk + tim implementasi, TBD | Sebelum M0 selesai |
 | Lifecycle sesi strict dan deteksi lanjutan setelah restart | O-4 | Tim implementasi, TBD | Sebelum klaim dukungan strict per percakapan |
-| Shutdown, deadline drain, dan termination container | O-5 | Tim implementasi + operator, TBD | Sebelum M3 |
+| Shutdown, deadline drain, dan termination container | O-5 | Pengguna; D-014 | Nilai grace period dan exit code pada EP-04-T05 |
 | Anggaran buffer/koneksi/state dan kapasitas benchmark | O-6 | Pemilik produk + tim implementasi, TBD | Sebelum target resource disahkan |
-| Target kesegaran dashboard | O-10 | Pemilik produk + tim implementasi, TBD | Sebelum penerimaan dashboard disahkan |
+| Target kesegaran dashboard | O-10 | Pengguna; D-009 | Polling 5 detik/stale 15 detik ditetapkan; target P1 push belum |
 | Kontrak auth browser, TTL sesi, dan mekanisme pembaruan UI | Penjabaran A-2/A-5/A-7 | Tim implementasi, TBD | Sebelum uji AC-21–AC-22 |
 
 Sesudah keputusan arsitektur divalidasi, kandidat pada [TECHSTACK](TECHSTACK.md) dipetakan ke modul di atas dan diuji terhadap gerbang yang sama. Pilihan teknologi tidak boleh mengubah cakupan produk atau melonggarkan aturan kegagalan untuk menyesuaikan default library.

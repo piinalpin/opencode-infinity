@@ -1,6 +1,6 @@
 # PRD — opencode-infinity
 
-Versi: 0.1.3  
+Versi: 0.1.13  
 Tanggal: 22 November 2026  
 Status: Draft revisi; belum disetujui  
 Ukuran: Full PRD  
@@ -13,7 +13,7 @@ opencode-infinity adalah gateway API yang dapat di-host sendiri untuk menghubung
 
 Visinya adalah memusatkan konfigurasi provider dan pengelolaan jalur keluar agar developer dapat menggunakan agent tanpa mengatur container WARP pada setiap client. Operator memantau relay pool melalui web UI dashboard serta memperoleh aturan kegagalan yang menjaga streaming dan konsistensi percakapan.
 
-Penggunaan awal adalah pribadi: pengguna sendiri menjalankan gateway dan pool WARP dalam container di lokal atau homelab. Akses homelab melalui Tailscale disiapkan pengguna. Linux/Docker Compose masih asumsi teknis yang perlu divalidasi pada host yang dipilih; upstream MVP tetap memakai Chat Completions yang kompatibel OpenAI. Nama “infinity” adalah nama proyek; kuota, biaya, akses model, dan batas penggunaan tetap mengikuti upstream.
+Penggunaan awal adalah pribadi: pengguna sendiri menjalankan gateway dan pool WARP dalam container di lokal atau homelab. Host uji adalah mesin Linux x86_64 dengan Docker amd64 dan Compose; akses homelab melalui Tailscale di host dengan `tailscale serve` untuk HTTPS (D-006). Upstream MVP tetap memakai Chat Completions yang kompatibel OpenAI dengan client utama OpenCode Desktop (D-007); Responses API dan adapter native Anthropic tetap P1. Nama “infinity” adalah nama proyek; kuota, biaya, akses model, dan batas penggunaan tetap mengikuti upstream.
 
 Referensi utama produk adalah [warp-relay-pool](https://github.com/trefeon/warp-relay-pool), sesuai arahan pengguna. Revisi 0.1.2 mempertahankan ide gateway melalui pool WARP dan memasukkan web UI dashboard pemantauan sebagai kebutuhan produk. Dashboard ditempatkan pada MVP **(agent's call: penempatan fase)**; kebutuhan dashboard dan sumber referensinya merupakan arahan pengguna. Format full PRD dipertahankan **(agent's call: pilihan format)**. Tidak ada implementasi, integrasi client, atau hasil benchmark yang dinyatakan selesai.
 
@@ -23,7 +23,7 @@ Referensi utama produk adalah [warp-relay-pool](https://github.com/trefeon/warp-
 - **Dasar revisi:** PRD 0.1.0–0.1.1 dan klarifikasi pengguna pada versi 0.1.2. Kebutuhan dashboard sudah dinyatakan pengguna; rincian dan target penerimaannya tetap berupa draft.
 - **Usulan:** penanda **(agent's call)** menunjukkan asumsi, prioritas hasil pemetaan, atau angka usulan yang belum disahkan pengguna. Ini juga berlaku pada usulan yang diwarisi dari versi 0.1.0.
 - **Data belum tersedia:** ditulis `TBD` dengan pertanyaan dan pemilik keputusan. Dokumen tidak mengarang baseline, jumlah pengguna, anggaran, atau tanggal rilis.
-- **Keputusan pengguna terkini:** [D-001–D-003](DECISIONS.md) menetapkan deployment lokal/homelab yang siap container, akses homelab melalui Tailscale, serta penggunaan awal pribadi. Detail teknis yang belum dijawab tetap terbuka.
+- **Keputusan pengguna terkini:** [D-001–D-003](DECISIONS.md) menetapkan deployment lokal/homelab yang siap container, akses homelab melalui Tailscale, serta penggunaan awal pribadi; [D-005](DECISIONS.md) menetapkan metode baseline; [D-006](DECISIONS.md) menetapkan host amd64 dan Tailscale di host; [D-007](DECISIONS.md) menetapkan client utama Desktop dan upstream Chat Completions. Detail teknis yang belum dijawab tetap terbuka.
 - **Dokumen pendamping:** [Catatan teknis](PRD-technical-notes.md) mempertahankan rincian desain dan seluruh AC-01–AC-19 dari naskah awal, serta menambahkan AC-20–AC-22 untuk dashboard. PRD ini menjadi acuan kebutuhan produk; pilihan implementasi tetap perlu validasi.
 
 ## 3. Masalah dan konteks
@@ -44,7 +44,7 @@ Referensi menjadi dasar konteks produk, sedangkan perilaku gateway mengikuti keb
 
 **Bukti kebutuhan:** masalah di atas berasal dari uraian draft awal. Frekuensi kejadian, waktu konfigurasi saat ini, dan contoh kegagalan pengguna belum tersedia: `TBD`, pemilik produk, O-1. Referensi teknis tidak menggantikan validasi kebutuhan pengguna.
 
-**Cara kerja saat ini:** draft menggambarkan pengaturan relay pada client atau adaptasi protokol relay; penggunaan aktual oleh calon pengguna belum dikonfirmasi. **Alasan waktu pengerjaan:** belum ada tenggat atau urgensi bisnis terukur yang diberikan; `TBD`, pemilik produk, O-1 dan O-8.
+**Cara kerja saat ini:** draft menggambarkan pengaturan relay pada client atau adaptasi protokol relay; penggunaan aktual oleh calon pengguna belum dikonfirmasi. **Alasan waktu pengerjaan:** tidak ada tenggat kalender; rilis bersifat event-driven saat gerbang M3 lulus (D-010), sedangkan bukti waktu aktual tetap dicatat melalui O-1.
 
 ## 4. Pengguna dan perjalanan utama
 
@@ -64,7 +64,7 @@ Perjalanan utama, diringkas dari US-01–US-07 pada draft awal:
 
 ## 5. Tujuan dan ukuran keberhasilan
 
-Seluruh baseline masih `TBD`; tidak ada hasil pengukuran yang diklaim. Target berikut menerjemahkan tujuan dan acceptance criteria awal serta kebutuhan dashboard menjadi ukuran yang dapat diperiksa **(agent's call: rumusan target, belum disetujui)**. Pemilik pengukuran diusulkan sebagai tim implementasi **(agent's call)**; penanggung jawab bernama ditetapkan melalui O-1.
+Seluruh baseline masih `TBD`; tidak ada hasil pengukuran yang diklaim. Target berikut menerjemahkan tujuan dan acceptance criteria awal serta kebutuhan dashboard menjadi ukuran yang dapat diperiksa **(agent's call: rumusan target, belum disetujui)**. Sesuai D-005, baseline diisi dari catatan manual penggunaan saat ini lalu diukur ulang secara terinstrumentasi pada M0; pengguna bertindak sebagai operator/developer, dengan bantuan agent untuk instrumentasi dan perhitungan. Target numerik tetap provisional sampai baseline M0 terkumpul.
 
 | ID | Tujuan | Metrik | Baseline | Target penerimaan | Waktu verifikasi |
 |---|---|---|---|---|---|
@@ -84,7 +84,7 @@ Seluruh baseline masih `TBD`; tidak ada hasil pengukuran yang diklaim. Target be
 
 Cakupan awal dipertahankan: API Chat Completions, JSON/SSE dan tool-call deltas, katalog alias model lokal, satu atau beberapa upstream, pool SOCKS5 WARP, fixed routing sebagai default, opsi least-inflight untuk model stateless yang tervalidasi, health check, circuit breaker, timeout, kapasitas, affinity, drain, pemisahan token, log metadata, metrik, status operasional, serta panduan deployment dan integrasi OpenCode CLI/Desktop. Web UI dashboard pemantauan relay pool ditambahkan ke MVP melalui C-14 **(agent's call: penempatan fase)**, mengikuti kebutuhan eksplisit pengguna.
 
-Batas deployment awal adalah satu deployment pribadi yang siap container di lokal atau homelab. Akses homelab memakai Tailscale yang disiapkan pengguna, sesuai D-001–D-003. Linux dan Docker Compose tetap asumsi teknis **(agent's call)** sampai host/runtime dikonfirmasi pada O-2.
+Batas deployment awal adalah satu deployment pribadi yang siap container di lokal atau homelab. Host uji, image `linux/amd64`, Docker Compose, serta Tailscale di host dengan `tailscale serve` ditetapkan D-006; listener tetap loopback kecuali melalui jalur Tailscale tersebut.
 
 ### 6.2 Tahap lanjutan / P1
 
@@ -116,7 +116,7 @@ ID kapabilitas dipertahankan untuk keterlacakan. Pemetaan P0 menjadi Must dan P1
 | C-3 | Operator memusatkan upstream dan katalog alias model | Must | MVP | Alias mengarah ke upstream/model yang dikonfigurasi; client tidak perlu mengetahui credential atau alamat relay |
 | C-4 | Operator memakai pool WARP dengan routing dan kapasitas terkendali | Must | MVP | Request hanya memakai relay eligible; fixed menjadi default dan least-inflight terbatas pada model stateless yang tervalidasi; tidak ada direct fallback |
 | C-5 | Pengguna memperoleh penanganan kegagalan yang jelas dan konsisten | Must | MVP | Auth, kuota, transport, timeout, dan upstream error dibedakan; dispatch ambigu dan stream aktif tidak memicu generasi ulang otomatis |
-| C-6 | Developer mempertahankan jalur percakapan yang memerlukan affinity | Must | MVP | Binding yang didukung menjaga relay dan generasi identitas; kehilangan binding ditolak secara eksplisit; keterbatasan client tanpa sinyal sesi dijelaskan |
+| C-6 | Developer mempertahankan jalur percakapan yang memerlukan affinity | Must | MVP | Binding yang didukung menjaga relay dan generasi identitas; kehilangan binding ditolak secara eksplisit; keterbatasan client tanpa sinyal sesi dijelaskan. MVP memakai fixed routing, sedangkan lifecycle strict dibuktikan lewat fixture sampai C-15 tersedia (D-013) |
 | C-7 | Operator melakukan maintenance tanpa mengganggu relay lain | Must | MVP | Relay yang di-drain tidak menerima assignment baru; stream relay lain berlanjut; binding strict dan penghentian paksa memerlukan penanganan eksplisit |
 | C-8 | Operator memisahkan akses client, admin, dan credential upstream | Must | MVP | Token terpisah berlaku sesuai perannya; credential upstream tetap di server dan dapat diperbarui tanpa mengganti konfigurasi provider client |
 | C-9 | Operator memahami kondisi jaringan dan request | Must | MVP | Status, log metadata, dan metrik menunjukkan relay, kesehatan, kapasitas, cooldown, serta observasi IP dengan batas pengamatan yang jelas |
@@ -142,7 +142,7 @@ Dashboard menggunakan batas akses admin yang privat. Kebutuhan C-14 mencakup pem
 
 ## 8. Standar kualitas
 
-Angka yang diwarisi dari draft 0.1.0 tetap menjadi target rancangan **(agent's call)**, bukan hasil benchmark atau komitmen yang telah disetujui. Q-11 menjabarkan kualitas dashboard **(agent's call)**. Semua Q berikut adalah syarat penerimaan MVP **(agent's call: label Must)**.
+Angka yang diwarisi dari draft 0.1.0 tetap menjadi target rancangan **(agent's call)**, bukan hasil benchmark atau komitmen yang telah disetujui. Q-4, Q-5, dan host benchmark disetujui sebagai target penerimaan provisional melalui D-008, dengan fixture 5 relay × 5 slot. Q-11 menjabarkan kualitas dashboard **(agent's call)**. Semua Q berikut adalah syarat penerimaan MVP **(agent's call: label Must)**.
 
 | ID | Aspek | Target dan cara verifikasi |
 |---|---|---|
@@ -151,14 +151,14 @@ Angka yang diwarisi dari draft 0.1.0 tetap menjadi target rancangan **(agent's c
 | Q-3 | Retry dan konsistensi | Tidak ada pengulangan saat POST mungkin terkirim atau respons mulai diteruskan; fallback non-strict hanya saat belum terkirim terbukti, maksimal dua attempt total; kehilangan strict binding menghasilkan error |
 | Q-4 | Overhead | p95 tambahan ≤50 ms dibanding jalur SOCKS5 yang sama tanpa gateway, diukur memakai upstream lokal dan SOCKS5 fixture dengan konfigurasi benchmark tercatat |
 | Q-5 | Kapasitas dan memori | 20 stream bersamaan selama 30 menit pada host 2 vCPU/2 GiB dengan fixture dan kapasitas relay memadai; RSS gateway ≤256 MiB, di luar WARP dan agent |
-| Q-6 | Pembatalan dan lifecycle | Pembatalan upstream ≤2 detik setelah disconnect terdeteksi; timeout header, idle stream, dan total terpisah; drain default 60 detik, tanpa penghentian paksa stream relay secara diam-diam; kebijakan shutdown diselesaikan pada O-5 |
+| Q-6 | Pembatalan dan lifecycle | Pembatalan upstream ≤2 detik setelah disconnect terdeteksi; timeout header, idle stream, dan total terpisah; deadline drain default 60 detik yang hanya menolak admission baru, dengan batas keras 30 menit dan catatan stream/binding yang diputus; tidak ada penghentian paksa diam-diam (D-014) |
 | Q-7 | Keamanan akses | Token gateway/admin/upstream terpisah; endpoint model memerlukan token; admin privat; target hanya dari konfigurasi server; redirect tidak diikuti; body default dibatasi 10 MiB termasuk setelah decoding |
 | Q-8 | Privasi | Prompt, respons, body tool, secret, authorization, dan raw session ID tidak dicatat secara default; tidak ada penyimpanan riwayat percakapan; operator tetap berada dalam trust boundary |
 | Q-9 | Diagnosis | Semua error gateway sebelum stream memakai format seragam dan request ID; error upstream tetap dapat dikenali; status membedakan proses, SOCKS5, HTTPS keluar, dan ketersediaan upstream tanpa menganggap probe sebagai bukti seluruhnya |
 | Q-10 | Reproduksibilitas dan kejujuran klaim | Versi client, runtime provider, image/digest, konfigurasi uji, serta benchmark dicatat; IP teramati tidak diklaim identik untuk semua tujuan; usage yang tidak tersedia tidak dilaporkan sebagai nol |
-| Q-11 | Keandalan pemantauan web | Nilai dashboard konsisten dengan sumber status gateway pada pengujian terkontrol; pembaruan berjalan otomatis; kegagalan mengambil data ditandai bersama waktu pembaruan terakhir; akses admin diwajibkan dan secret/konten percakapan tidak ditampilkan. Target interval serta keterlambatan maksimum: TBD, O-10 |
+| Q-11 | Keandalan pemantauan web | Nilai dashboard konsisten dengan sumber status gateway pada pengujian terkontrol; pembaruan berjalan otomatis; kegagalan mengambil data ditandai bersama waktu pembaruan terakhir; akses admin diwajibkan dan secret/konten percakapan tidak ditampilkan. Target interval serta keterlambatan maksimum: polling 5 detik dengan stale >15 detik pada MVP, push SSE/WebSocket ditunda ke P1 (D-009) |
 
-SLA ketersediaan produksi dan target pemulihan belum diberikan: `TBD`, pemilik produk bersama operator, O-7. Default probe, timeout, dan konfigurasi rinci tetap tersedia sebagai usulan pada catatan teknis.
+Tidak ada SLA ketersediaan produksi formal maupun RTO/RPO yang dijanjikan; pemulihan bersifat best-effort dan waktu aktual dicatat sebagai observasi bila tersedia (D-011). Default probe, timeout, dan konfigurasi rinci tetap tersedia sebagai usulan pada catatan teknis.
 
 ## 9. Tahapan dan gerbang penerimaan
 
@@ -208,7 +208,7 @@ Peluang kejadian belum diukur; tidak ada probabilitas atau tingkat risiko numeri
 
 ## 12. Rencana rilis dan pengukuran
 
-Rilis MVP mengikuti gerbang M0–M3 untuk penggunaan pribadi pada container lokal atau homelab. Pengguna awal sudah ditetapkan sebagai pengguna sendiri melalui D-003; tanggal, anggaran, dan penanggung jawab rilis masih `TBD`, O-8. Tidak ada rencana peluncuran publik yang diasumsikan.
+Rilis MVP mengikuti gerbang M0–M3 untuk penggunaan pribadi pada container lokal atau homelab. Pengguna awal sudah ditetapkan sebagai pengguna sendiri melalui D-003; penanggung jawab rilis adalah pengguna sendiri, tanpa tanggal kalender atau anggaran baru, dan rilis ditandai `v0.1.0-mvp` saat gerbang M3 lulus (D-010). Tidak ada rencana peluncuran publik yang diasumsikan.
 
 Bukti penerimaan menggunakan fixture upstream/SOCKS5 yang deterministik, pengujian CLI/Desktop nyata, pengujian dashboard melalui browser, dan laporan benchmark yang dapat direproduksi. Smoke test upstream nyata dilakukan secara eksplisit menggunakan credential operator. Fixture tidak menggantikan bukti integrasi client atau perilaku WARP pada host target.
 
@@ -222,16 +222,16 @@ Pemilik berupa peran adalah usulan **(agent's call)**; nama penanggung jawab `TB
 
 | ID | Pertanyaan/keputusan | Pemilik | Memblokir? |
 |---|---|---|---|
-| O-1 | Pemilik keputusan produk/target adalah pengguna sendiri sesuai D-004. Apa bukti masalah aktual dan baseline G-1–G-7, serta bagaimana pengukuran teknis dilakukan? | Pengguna untuk keputusan produk; pelaksana pengukuran TBD | Memblokir evaluasi dampak terhadap baseline; pengujian fixture dapat dimulai |
-| O-2 | D-001/D-002 sudah menetapkan container lokal/homelab dan akses homelab via Tailscale. CPU image, host/runtime uji aktual, dan topologi akses mana yang dipilih? | Operator, TBD | Ya, sebelum M0 dinyatakan selesai |
-| O-3 | Upstream/model dan versi OpenCode CLI/Desktop/runtime provider mana yang diuji? Apakah model memerlukan Responses API atau strict affinity? | Pemilik produk + tim implementasi, TBD | Ya, sebelum M0 selesai; ketidakcocokan scope perlu keputusan produk |
-| O-4 | Bagaimana membuktikan lifecycle sesi baru/lanjutan, TTL/kedaluwarsa, serta penolakan sesi strict lama setelah restart dengan kemampuan client yang tersedia? | Tim implementasi, TBD | Ya, sebelum klaim dukungan strict affinity per percakapan; detail desain lanjutan |
-| O-5 | Apa perilaku shutdown setelah deadline drain ketika stream atau binding strict masih aktif, agar tidak bertentangan dengan larangan penghentian paksa diam-diam? | Tim implementasi + operator, TBD | Ya, sebelum M3; detail desain lanjutan |
-| O-6 | Apakah target performa dan seluruh default usulan sesuai kebutuhan, dan konfigurasi fixture mana yang menyediakan kapasitas untuk benchmark 20 stream? | Pemilik produk + tim implementasi, TBD | Ya, sebelum target penerimaan benchmark disahkan |
-| O-7 | Apakah diperlukan SLA ketersediaan dan target waktu pemulihan produksi; jika ya, berapa targetnya? | Pemilik produk + operator, TBD | Tidak untuk validasi fixture; sebelum klaim SLA |
-| O-8 | Pengguna awal adalah pengguna sendiri sesuai D-003. Siapa penanggung jawab rilis, berapa anggaran, dan kapan target rilis? | Pemilik produk, TBD | Sebelum komitmen jadwal/anggaran atau rilis |
-| O-9 | Setelah MVP, bagaimana urutan C-11, C-12, C-13, C-15, C-16; apakah hot reload perlu diprioritaskan? | Pemilik produk, TBD | Tidak untuk MVP |
-| O-10 | Berapa target interval pembaruan dashboard dan keterlambatan maksimum dari data status gateway ke tampilan browser? | Pemilik produk + tim implementasi, TBD | Ya, sebelum target penerimaan kesegaran data dashboard disahkan |
+| O-1 | Pemilik keputusan produk/target adalah pengguna sendiri sesuai D-004. Apa bukti masalah aktual dan baseline G-1–G-7, serta bagaimana pengukuran teknis dilakukan? | Pengguna sebagai operator/developer; bantuan agent untuk instrumentasi | Metode dan pelaksana ditetapkan D-005; angka baseline tetap TBD sampai M0. Tidak memblokir fixture, menahan klaim dampak dan pengesahan target |
+| O-2 | D-001/D-002 sudah menetapkan container lokal/homelab dan akses homelab via Tailscale. CPU image, host/runtime uji aktual, dan topologi akses mana yang dipilih? | Operator/pengguna; D-006 | Host amd64, Docker Compose, dan Tailscale di host ditetapkan D-006. Terbuka untuk alamat/port listener, hostname tailnet, dan detail sertifikat |
+| O-3 | Upstream/model dan versi OpenCode CLI/Desktop/runtime provider mana yang diuji? Apakah model memerlukan Responses API atau strict affinity? | Pengguna + agent; D-007 | Client utama Desktop dan kelas upstream Chat Completions ditetapkan D-007. Provider/model persis, versi Desktop, dan kebutuhan strict affinity dicatat saat M0 |
+| O-4 | Bagaimana membuktikan lifecycle sesi baru/lanjutan, TTL/kedaluwarsa, serta penolakan sesi strict lama setelah restart dengan kemampuan client yang tersedia? | Pengguna + agent; D-013 | Fixed routing pada MVP; lifecycle strict diuji lewat fixture. Dukungan client menunggu C-15 |
+| O-5 | Apa perilaku shutdown setelah deadline drain ketika stream atau binding strict masih aktif, agar tidak bertentangan dengan larangan penghentian paksa diam-diam? | Pengguna + agent; D-014 | Drain 60 detik + batas keras 30 menit dengan catatan eksplisit. Nilai `stop_grace_period` dan exit code dicatat pada EP-04-T05 |
+| O-6 | Apakah target performa dan seluruh default usulan sesuai kebutuhan, dan konfigurasi fixture mana yang menyediakan kapasitas untuk benchmark 20 stream? | Pengguna + agent; D-008 | Target Q-4/Q-5 dan fixture 5×5 ditetapkan provisional. Terbuka untuk default timeout/probe final dan ukuran aset/image |
+| O-7 | Apakah diperlukan SLA ketersediaan dan target waktu pemulihan produksi; jika ya, berapa targetnya? | Pengguna; D-011 | Tidak ada SLA formal; pemulihan best-effort. Selesai untuk MVP |
+| O-8 | Pengguna awal adalah pengguna sendiri sesuai D-003. Siapa penanggung jawab rilis, berapa anggaran, dan kapan target rilis? | Pengguna; D-010 | Penanggung jawab, anggaran, dan model rilis ditetapkan (event-driven, `v0.1.0-mvp`). Catatan rilis dan distribusi ditetapkan EP-06-T05 |
+| O-9 | Setelah MVP, bagaimana urutan C-11, C-12, C-13, C-15, C-16; apakah hot reload perlu diprioritaskan? | Pengguna; D-012 | Urutan ditetapkan C-11 → C-15 → C-16 → C-13 → C-12; hot reload tidak diprioritaskan |
+| O-10 | Berapa target interval pembaruan dashboard dan keterlambatan maksimum dari data status gateway ke tampilan browser? | Pengguna + agent; D-009 | Polling 5 detik/stale >15 detik ditetapkan untuk MVP; push SSE menjadi P1. Terbuka hanya untuk target P1 push |
 
 ## 14. Log keputusan dan perubahan
 
@@ -245,6 +245,16 @@ Pemilik berupa peran adalah usulan **(agent's call)**; nama penanggung jawab `TB
 | PRD 0.1.2 | C-14 menjadi Must/MVP, dengan G-7, Q-11, AC-20–AC-22 dan rincian pemantauan | Penjabaran kebutuhan dan prioritas/fase (agent's call); seluruh draft belum disetujui |
 | Klarifikasi pengguna pada revisi 0.1.3 | Deployment lokal atau homelab siap container, akses homelab melalui Tailscale yang disiapkan pengguna, dan penggunaan awal pribadi | D-001–D-003; keputusan eksplisit pengguna, tanpa menyetujui seluruh draft |
 | Jawaban O-1 | Pengguna sendiri menjadi pemilik keputusan produk dan penentu target keberhasilan | D-004; bagian bukti/baseline dan pelaksanaan pengukuran tetap terbuka |
+| Jawaban O-1 | Baseline diisi dua tahap: catatan manual penggunaan saat ini, lalu pengukuran terinstrumentasi pada M0; pelaksana pengguna dengan bantuan agent | D-005; angka baseline dan target numerik tetap terbuka |
+| Jawaban O-2 | Host uji Linux x86_64 (Docker amd64, Compose 5.7.1), image `linux/amd64`, Tailscale di host dengan `tailscale serve`; listener loopback | D-006; listener final dan detail tailnet tetap terbuka |
+| Jawaban O-3 | Client utama OpenCode Desktop, upstream Chat Completions kompatibel OpenAI, fixed routing; CLI sebelum M3 | D-007; provider/model/versi persis dicatat saat M0 |
+| Jawaban O-6 | Target Q-4 p95 ≤50 ms, Q-5 20 stream × 30 menit pada 2 vCPU/2 GiB, RSS gateway ≤256 MiB; fixture benchmark 5 relay × 5 slot | D-008; provisional, default timeout/probe menunggu pengujian |
+| Jawaban O-10 | Dashboard MVP polling 5 detik, stale >15 detik, kegagalan fetch ditandai; push SSE/WebSocket ditunda ke P1 | D-009; target dan auth push P1 masih terbuka |
+| Jawaban O-8 | Rilis event-driven saat gerbang M3 lulus, penanggung jawab pengguna, tanpa anggaran baru, tag `v0.1.0-mvp` | D-010; catatan rilis dan distribusi menyusul di EP-06-T05 |
+| Jawaban O-7 | Tidak ada SLA formal; pemulihan best-effort, waktu aktual dicatat sebagai observasi | D-011; tidak ada klaim uptime atau alerting wajib |
+| Jawaban O-9 | Urutan P1: C-11 → C-15 → C-16 → C-13 → C-12; hot reload tidak diprioritaskan | D-012; penanggung jawab tiap epic dicatat saat EP-07-T01 |
+| Jawaban O-4 | MVP fixed routing; lifecycle strict dibuktikan via fixture dengan header sesi eksplisit; client nyata menunggu C-15 | D-013; skema header dan TTL dicatat pada EP-04-T01 |
+| Jawaban O-5 | Drain 60 detik hanya menolak admission; stream aktif sampai batas keras 30 menit, diputus dengan catatan eksplisit; `stop_grace_period` lebih besar dari batas | D-014; nilai final grace period dan exit code menyusul |
 
 Riwayat:
 
@@ -252,6 +262,16 @@ Riwayat:
 - **0.1.1 — 22 November 2026:** struktur, ukuran keberhasilan, keterlacakan, asumsi, gerbang rilis, dan pertanyaan berpenanggung jawab diperjelas; ide dan cakupan dipertahankan; detail teknis beserta AC-01–AC-19 dipindahkan utuh ke dokumen pendamping.
 - **0.1.2 — 22 November 2026:** warp-relay-pool ditetapkan sebagai referensi utama sesuai arahan pengguna; dashboard pemantauan C-14 dimasukkan ke MVP; tujuan, kualitas, acceptance, milestone, risiko, dan deliverable diselaraskan tanpa mengubah ID yang sudah ada.
 - **0.1.3 — 22 November 2026:** D-001–D-003 dicatat; persona dan target deployment awal diselaraskan; O-2/O-8 tetap terbuka untuk bagian yang belum dijawab.
+- **0.1.4 — 22 November 2026:** D-005 dicatat; metode dan pelaksana pengukuran baseline G-1–G-7 ditetapkan, tanpa mengesahkan angka target; O-1 tetap terbuka untuk angka aktual.
+- **0.1.5 — 22 November 2026:** D-006 dicatat; host uji amd64, Docker Compose, dan Tailscale di host ditetapkan untuk O-2; asumsi Linux/Compose pada deployment diperbarui.
+- **0.1.6 — 22 November 2026:** D-007 dicatat; client utama Desktop dan upstream Chat Completions ditetapkan untuk O-3, tanpa mengesahkan provider/model atau angka target.
+- **0.1.7 — 22 November 2026:** D-008 dicatat; target Q-4/Q-5 dan fixture benchmark 5×5 disetujui sebagai target provisional.
+- **0.1.8 — 22 November 2026:** D-009 dicatat; dashboard MVP memakai polling 5 detik dengan stale >15 detik, push SSE/WebSocket dipindahkan ke P1.
+- **0.1.9 — 22 November 2026:** D-010 dicatat; rilis MVP bersifat event-driven, penanggung jawab pengguna, tanpa anggaran baru, tag `v0.1.0-mvp`.
+- **0.1.10 — 22 November 2026:** D-011 dicatat; tidak ada SLA formal, pemulihan best-effort, tanpa klaim uptime.
+- **0.1.11 — 22 November 2026:** D-012 dicatat; urutan P1 ditetapkan dengan C-11 lebih dulu dan hot reload tidak diprioritaskan.
+- **0.1.12 — 22 November 2026:** D-013 dicatat; MVP memakai fixed routing dan lifecycle strict dibuktikan lewat fixture sampai C-15 tersedia.
+- **0.1.13 — 22 November 2026:** D-014 dicatat; drain 60 detik dengan batas keras 30 menit dan catatan eksplisit menggantikan kebijakan shutdown yang tertunda.
 
 ## 15. Referensi
 

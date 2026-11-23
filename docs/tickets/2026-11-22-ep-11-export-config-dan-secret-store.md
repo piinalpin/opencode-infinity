@@ -37,7 +37,7 @@ Konfigurasi client dan penyimpanan token perlu disederhanakan tanpa menyebarkan 
 - Developer memakai API model; operator memelihara deployment dan memantau pool.
 - Konfigurasi hasil export dapat dipakai client yang dipilih tanpa membawa credential upstream.
 - Token gateway dapat dipakai melalui secret store target dan kegagalannya tidak membocorkan secret.
-- Baseline yang belum terukur tetap TBD; pemilik pengukuran ditetapkan melalui O-1.
+- Baseline yang belum terukur tetap TBD; metode dan pelaksana pengukuran mengikuti D-005 (angka aktual menyusul M0).
 
 ## Scope
 

@@ -1,6 +1,6 @@
 # TECHSTACK opencode-infinity
 
-Versi: 0.1.1  
+Versi: 0.1.2  
 Tanggal: 22 November 2026  
 Status: Kandidat stack MVP; pemilihan mengikuti validasi arsitektur  
 Acuan kebutuhan: [PRD terkini](PRD.md) dan [keputusan pengguna](DECISIONS.md)  
@@ -86,7 +86,7 @@ flowchart LR
 
 Jumlah container inti saat runtime adalah **1 + jumlah relay**. Node.js dipakai pada tahap build UI dan pengujian browser. Go menyajikan hasil build UI pada listener admin; tidak ada service frontend tambahan dalam rancangan ini.
 
-Port host API dan admin dipublikasikan ke loopback secara default. Akses remote mengikuti jaringan privat dan HTTPS sesuai deployment. SOCKS5 tetap hanya dapat dijangkau oleh komponen tepercaya pada jaringan container. Jaringan relay harus tetap menyediakan egress yang dibutuhkan WARP.
+Port host API dan admin dipublikasikan ke loopback secara default. Akses remote mengikuti jaringan privat dan HTTPS sesuai deployment. Sesuai D-006, host uji adalah Linux x86_64 dengan image `linux/amd64` dan Docker Compose, sedangkan akses tailnet melewati Tailscale di host dengan `tailscale serve`. SOCKS5 tetap hanya dapat dijangkau oleh komponen tepercaya pada jaringan container. Jaringan relay harus tetap menyediakan egress yang dibutuhkan WARP.
 
 ## 4. Desain transport Go
 
@@ -108,7 +108,7 @@ Styling memakai scoped CSS dan CSS variables untuk warna state, spacing, tipogra
 
 Dashboard membaca snapshot yang sama dengan status admin: ringkasan pool, relay/generasi, state, inflight/kapasitas, IP teramati, cooldown, alasan gangguan, serta waktu observasi. Snapshot berasal dari hasil probe dan counter yang sudah dikumpulkan gateway; refresh browser tidak menjalankan probe WARP atau request generasi baru.
 
-Usulan awal polling adalah **setiap 5 detik (agent's call)**, hanya satu request pembaruan aktif per tab, dengan backoff saat gagal dan pengurangan aktivitas ketika tab tidak terlihat. Target ini merupakan kandidat untuk O-10, belum menggantikan `TBD` pada PRD. Waktu pengambilan snapshot dibedakan dari waktu probe relay; polling berhasil tidak berarti probe relay baru saja berjalan.
+Interval polling dashboard ditetapkan 5 detik dengan ambang stale 15 detik pada MVP (D-009); hanya satu request pembaruan aktif per tab, dengan backoff saat gagal dan pengurangan aktivitas ketika tab tidak terlihat. Push SSE/WebSocket ditunda ke P1. Waktu pengambilan snapshot dibedakan dari waktu probe relay; polling berhasil tidak berarti probe relay baru saja berjalan.
 
 UI menampilkan pembaruan terakhir dan kegagalan koneksi. Counter/latensi yang belum tersedia diberi status belum tersedia. Riwayat metrik persisten belum menjadi kebutuhan MVP; grafik, jika digunakan, hanya memakai sampel sementara dengan batas kapasitas dan penjelasan rentangnya.
 

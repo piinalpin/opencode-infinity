@@ -37,7 +37,7 @@ Otomasi dari stack referensi perlu memahami drain, binding, dan generasi agar ti
 - Developer memakai API model; operator memelihara deployment dan memantau pool.
 - Maintenance terkontrol tidak memutus stream relay lain atau memindahkan binding aktif diam-diam.
 - Relay hanya kembali menerima assignment setelah kondisi re-enable terpenuhi.
-- Baseline yang belum terukur tetap TBD; pemilik pengukuran ditetapkan melalui O-1.
+- Baseline yang belum terukur tetap TBD; metode dan pelaksana pengukuran mengikuti D-005 (angka aktual menyusul M0).
 
 ## Scope
 

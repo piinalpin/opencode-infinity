@@ -1,6 +1,6 @@
 # Catatan teknis — opencode-infinity
 
-Versi pendamping: 0.1.2  
+Versi pendamping: 0.1.3  
 Tanggal revisi: 22 November 2026  
 Status: Draft; belum disetujui  
 Dokumen utama: [PRD](PRD.md)  
@@ -31,7 +31,7 @@ Uji browser mencakup relay sehat, relay gagal, drain, cooldown, IP tidak tersedi
 ### Klarifikasi untuk pembacaan
 
 - Listener `0.0.0.0` dalam contoh adalah binding di dalam container; akses host secara default tetap loopback sebagaimana dijelaskan pada bagian 11. Admin tetap privat.
-- Contoh dua relay dengan masing-masing kapasitas empat hanya menyediakan delapan slot. Benchmark 20 stream memerlukan konfigurasi fixture dan total kapasitas relay yang memadai; contoh YAML tersebut bukan konfigurasi benchmark.
+- Contoh dua relay dengan masing-masing kapasitas empat hanya menyediakan delapan slot. Benchmark 20 stream memerlukan konfigurasi fixture dan total kapasitas relay yang memadai; D-008 menetapkan fixture benchmark 5 relay × 5 slot, sedangkan contoh YAML dua relay tersebut bukan konfigurasi benchmark.
 - Jaminan strict affinity setelah restart bergantung pada sinyal sesi eksplisit dan integrasi client. Detail masa berlaku sesi, pembedaan sesi baru/lanjutan, dan penolakan sesi lama perlu divalidasi sebelum klaim kompatibilitas; lihat O-4 di PRD.
 - Deadline drain memberi operator status request yang belum selesai; deadline bukan izin menghentikan paksa stream. Kebijakan shutdown proses harus diselaraskan dengan prinsip tersebut sebelum rilis; lihat O-5 di PRD.
 - Referensi eksternal menjelaskan proyek lain atau dokumentasi integrasi. Klaimnya tidak otomatis menjadi jaminan perilaku opencode-infinity.

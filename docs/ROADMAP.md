@@ -1,9 +1,9 @@
 # ROADMAP opencode-infinity
 
-Versi: 0.1.0  
+Versi: 0.1.1  
 Tanggal: 22 November 2026  
 Status: Draft rencana pengerjaan  
-Target rilis dan penanggung jawab: TBD, mengikuti O-8 pada PRD
+Target rilis dan penanggung jawab: rilis event-driven saat M3 lulus, penanggung jawab pengguna, tag `v0.1.0-mvp` (D-010)
 
 Target pertama adalah MVP gateway satu host yang menghubungkan coding agent ke upstream melalui pool WARP, dengan **web UI dashboard sebagai bagian dari penerimaan MVP**. Pengerjaan mengikuti urutan **validasi kebutuhan dan arsitektur → pemilihan stack → pembuktian transport → gateway → pool dan dashboard → integrasi serta rilis**.
 
@@ -11,14 +11,14 @@ Target pertama adalah MVP gateway satu host yang menghubungkan coding agent ke u
 
 | Dokumen | Versi acuan | Peran |
 |---|---|---|
-| [PRD](PRD.md) | 0.1.3 | Cakupan, C-1–C-16, tujuan G-1–G-7, kualitas Q-1–Q-11, dan pertanyaan O-1–O-10 |
-| [ARCHITECTURE](ARCHITECTURE.md) | 0.1.3 | Keputusan A-1–A-8, pembagian modul, struktur project, sumber state, alur, serta batas kegagalan |
-| [TECHSTACK](TECHSTACK.md) | 0.1.1 | Kandidat teknologi; versi, kompatibilitas, dan digest harus divalidasi pada M0 |
-| [Catatan teknis](PRD-technical-notes.md) | 0.1.2 | Kontrak awal, AC-01–AC-19, dan tambahan dashboard AC-20–AC-22 |
+| [PRD](PRD.md) | 0.1.13 | Cakupan, C-1–C-16, tujuan G-1–G-7, kualitas Q-1–Q-11, dan pertanyaan O-1–O-10 |
+| [ARCHITECTURE](ARCHITECTURE.md) | 0.1.4 | Keputusan A-1–A-8, pembagian modul, struktur project, sumber state, alur, serta batas kegagalan |
+| [TECHSTACK](TECHSTACK.md) | 0.1.2 | Kandidat teknologi; versi, kompatibilitas, dan digest harus divalidasi pada M0 |
+| [Catatan teknis](PRD-technical-notes.md) | 0.1.3 | Kontrak awal, AC-01–AC-19, dan tambahan dashboard AC-20–AC-22 |
 
 Milestone M0–M3 tetap mengikuti PRD. Pembagian M2 menjadi beberapa bagian, urutan pekerjaan rinci, dan pembagian peran merupakan usulan **(agent's call)**. Seluruh checkbox adalah pekerjaan yang direncanakan; item hanya ditandai selesai setelah buktinya tersedia.
 
-[D-001–D-003](DECISIONS.md) sudah menetapkan penggunaan pribadi dan deployment container lokal/homelab, dengan akses homelab melalui Tailscale yang disiapkan pengguna. Sisa keputusan CPU/host/runtime serta upstream/client tetap ditangani pada M0.
+[D-001–D-003](DECISIONS.md) sudah menetapkan penggunaan pribadi dan deployment container lokal/homelab, dengan akses homelab melalui Tailscale yang disiapkan pengguna. [D-006](DECISIONS.md) menetapkan host uji amd64 dan Tailscale di host; sisa keputusan listener/tailnet serta upstream/client tetap ditangani pada M0.
 
 Tanggal dan durasi tiap milestone tetap **TBD**. Estimasi disusun setelah M0 berdasarkan host, upstream, hasil spike, dan kapasitas pelaksana. C-11, C-12, C-13, C-15, dan C-16 tetap P1. Marketplace, multi-host, riwayat percakapan, serta kontrol lifecycle container melalui dashboard tidak ditambahkan ke MVP.
 
@@ -144,7 +144,7 @@ M2 melengkapi C-4–C-7, C-9, dan C-14. Pemilik usulan: backend, web UI, operato
 - [ ] Tampilkan ringkasan pool dan seluruh relay terkonfigurasi: state, generasi, inflight/kapasitas, observasi IP, cooldown, serta alasan gangguan.
 - [ ] Sediakan log metadata dan metrik operasional dengan label yang dibatasi; raw session/request ID tidak menjadi label metrik.
 - [ ] Tetapkan kontrak autentikasi browser, lifecycle sesi admin, dan perlindungan endpoint status/metrik.
-- [ ] Tentukan target interval pembaruan serta keterlambatan maksimum; tutup O-10. Usulan lima detik pada TECHSTACK tetap kandidat sampai diputuskan.
+- [ ] Terapkan polling 5 detik dengan ambang stale 15 detik sesuai D-009 dan tutup O-10 untuk MVP; push SSE/WebSocket dicatat sebagai kandidat P1.
 - [ ] Terapkan pembaruan otomatis, waktu data terakhir, dan penanda gagal/stale; bedakan waktu snapshot dari waktu probe relay.
 - [ ] Pastikan refresh UI atau banyak tab tidak memicu probe upstream baru dan tidak menahan dispatch generasi.
 - [ ] Integrasikan UI ke artefak aplikasi; uji pemantauan melalui browser terhadap fixture yang berubah.
@@ -163,13 +163,13 @@ M2 melengkapi C-4–C-7, C-9, dan C-14. Pemilik usulan: backend, web UI, operato
 - [ ] Jalankan percakapan dan satu siklus tool calling nyata pada OpenCode CLI serta Desktop; catat versi client/runtime provider dan model.
 - [ ] Verifikasi seluruh AC-01–AC-22 pada artefak rilis yang sama; hasil fixture tidak menggantikan pengujian client dan WARP nyata.
 - [ ] Ukur overhead p95 tambahan ≤50 ms terhadap jalur SOCKS5 pembanding yang sama.
-- [ ] Uji 20 stream selama 30 menit pada host 2 vCPU/2 GiB dengan RSS gateway ≤256 MiB, dashboard aktif, dan kapasitas relay mencukupi.
+- [ ] Uji 20 stream selama 30 menit pada host 2 vCPU/2 GiB dengan RSS gateway ≤256 MiB, dashboard aktif, dan kapasitas relay mencukupi; fixture benchmark 5 relay × 5 slot sesuai D-008.
 - [ ] Ukur ukuran aset/image dan pemakaian WARP/total deployment secara terpisah; target tambahan yang belum disahkan diselesaikan melalui O-6.
 - [ ] Periksa kembali kompatibilitas, dukungan, dan keamanan versi yang dipilih; catat exact version, commit, digest, serta perubahan sejak M0.
 - [ ] Siapkan binary/image gateway beserta UI, Compose contoh minimal dua relay, dan konfigurasi/secret placeholder.
 - [ ] Uji pemasangan dari konfigurasi bersih, startup, status, akses dashboard, drain, maintenance, restart, serta shutdown sesuai prosedur.
 - [ ] Lengkapi panduan integrasi CLI/Desktop dan troubleshooting IPv4/IPv6, quota, WARP unreachable, serta stream terputus.
-- [ ] Tetapkan penanggung jawab, pengguna awal, tanggal, dan anggaran rilis melalui O-8; dokumentasikan hasil G-1–G-7 dan Q-1–Q-11.
+- [ ] Tetapkan isi catatan rilis dan mekanisme distribusi image; rilis ditandai `v0.1.0-mvp` saat seluruh gerbang lulus, lalu dokumentasikan hasil G-1–G-7 dan Q-1–Q-11 (D-010).
 
 **Hasil:** paket MVP yang versinya terkunci, suite dan laporan penerimaan, benchmark yang dapat direproduksi, serta panduan operasional/integrasi.
 
@@ -199,16 +199,16 @@ Milestone berikut adalah tempat bukti pertama diwajibkan. M3 memverifikasi kesel
 
 | Acuan | Keputusan | Pemilik usulan | Dibutuhkan sebelum |
 |---|---|---|---|
-| O-1 | Pemilik produk/pengukuran, bukti masalah, dan baseline | Pemilik produk, TBD | Evaluasi dampak terhadap baseline; tidak menahan fixture |
-| O-2 | Host, arsitektur CPU, dan asumsi deployment | Operator, TBD | M0 selesai |
-| O-3 | Upstream/model dan versi/protokol client | Pemilik produk + backend, TBD | M0 selesai |
-| O-4 | Lifecycle sesi strict serta perilaku restart | Backend, TBD | M2.2 dinyatakan mendukung strict per percakapan |
-| O-5 | Shutdown setelah deadline dan termination container | Backend + operator, TBD | Prosedur shutdown dibakukan dan M3 selesai |
-| O-6 | Target performa/default, anggaran resource, dan konfigurasi benchmark | Pemilik produk + pelaksana teknis, TBD | Target penerimaan resource disahkan dan benchmark dinilai |
-| O-7 | Kebutuhan dan nilai SLA produksi | Pemilik produk + operator, TBD | Klaim SLA produksi |
-| O-8 | Pemilik rilis, pengguna awal, tanggal, dan anggaran | Pemilik produk, TBD | Komitmen jadwal/anggaran dan rilis |
-| O-9 | Urutan kemampuan P1 dan prioritas hot reload | Pemilik produk, TBD | Penjadwalan P1 |
-| O-10 | Target kesegaran data dashboard | Pemilik produk + backend/UI, TBD | AC-21 dinyatakan lulus |
+| O-1 | Pemilik produk/pengukuran, bukti masalah, dan baseline | Pengguna (operator/developer) + agent; D-005 | Angka baseline G-1–G-7 sebelum M1; klaim dampak/pengesahan target |
+| O-2 | Host, arsitektur CPU, dan asumsi deployment | Pengguna/operator; D-006 | Listener final dan detail tailnet sebelum M0 selesai |
+| O-3 | Upstream/model dan versi/protokol client | Pengguna + agent; D-007 | Provider/model, versi Desktop, dan kebutuhan strict affinity sebelum M0 selesai |
+| O-4 | Lifecycle sesi strict serta perilaku restart | Pengguna + agent; D-013 | Skema/TTL fixture sebelum M2.2 ditutup |
+| O-5 | Shutdown setelah deadline dan termination container | Pengguna + agent; D-014 | Nilai `stop_grace_period`/exit code sebelum M3 |
+| O-6 | Target performa/default, anggaran resource, dan konfigurasi benchmark | Pengguna + agent; D-008 | Default timeout/probe dan ukuran image sebelum M3 |
+| O-7 | Kebutuhan dan nilai SLA produksi | Pengguna; D-011 | Tidak ada klaim SLA; pemulihan best-effort |
+| O-8 | Pemilik rilis, pengguna awal, tanggal, dan anggaran | Pengguna; D-010 | Catatan rilis/distribusi sebelum tag `v0.1.0-mvp` |
+| O-9 | Urutan kemampuan P1 dan prioritas hot reload | Pengguna; D-012 | Tidak ada; urutan sudah ditetapkan. Dependensi dicatat saat EP-07-T01 |
+| O-10 | Target kesegaran data dashboard | Pengguna; D-009 | Target P1 push sebelum fitur itu disahkan |
 | A-2/A-5/A-7 | Auth browser, TTL sesi, dan mekanisme pembaruan UI | Backend/UI, TBD | AC-21–AC-22 dinyatakan lulus |
 
 Jika hasil spike bertentangan dengan kebutuhan, catat dampaknya dan perbarui keputusan pada PRD/ARCHITECTURE sebelum mengubah cakupan. Target client, protokol, affinity, dan dashboard tidak boleh dianggap selesai dengan menghilangkan skenario yang belum lulus.

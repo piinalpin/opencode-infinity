@@ -37,7 +37,7 @@ Client tanpa identitas percakapan dinamis hanya mendapat fixed scope bersama dan
 - Developer memakai API model; operator memelihara deployment dan memantau pool.
 - Percakapan pada client yang diuji memperoleh ID dinamis yang mengikuti kontrak sesi.
 - Kehilangan affinity tetap terlihat dan tidak ditutupi plugin dengan perpindahan jalur otomatis.
-- Baseline yang belum terukur tetap TBD; pemilik pengukuran ditetapkan melalui O-1.
+- Baseline yang belum terukur tetap TBD; metode dan pelaksana pengukuran mengikuti D-005 (angka aktual menyusul M0).
 
 ## Scope
 

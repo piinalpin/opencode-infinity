@@ -37,7 +37,7 @@ Host, upstream/client, kontrak transport, dan versi kandidat belum dipastikan se
 - Developer memakai API model; operator memelihara deployment dan memantau pool.
 - Gerbang M0 pada ROADMAP terpenuhi dengan bukti yang dapat dijalankan ulang.
 - Pilihan host/client/model, exact version, dan sumber artefak tercatat tanpa secret.
-- Baseline yang belum terukur tetap TBD; pemilik pengukuran ditetapkan melalui O-1.
+- Baseline yang belum terukur tetap TBD; metode dan pelaksana pengukuran mengikuti D-005 (angka aktual menyusul M0).
 
 ## Scope
 
@@ -95,9 +95,9 @@ Gateway produksi lengkap, dashboard operasional lengkap, dan implementasi kemamp
 
 O-1–O-3 perlu diubah menjadi input konkret agar spike menilai lingkungan yang benar.
 
-Input terkonfirmasi melalui [D-001–D-003](../DECISIONS.md): penggunaan pribadi, gateway/pool WARP siap container di lokal atau homelab, serta akses homelab melalui Tailscale yang disiapkan pengguna. CPU, OS/runtime aktual, dan upstream/client masih perlu ditetapkan. Task ini tetap draft dan belum dinyatakan selesai.
+Input terkonfirmasi melalui [D-001–D-003](../DECISIONS.md): penggunaan pribadi, gateway/pool WARP siap container di lokal atau homelab, serta akses homelab melalui Tailscale yang disiapkan pengguna. [D-006](../DECISIONS.md) menetapkan host uji amd64, Docker Compose, dan Tailscale di host; [D-007](../DECISIONS.md) menetapkan client utama OpenCode Desktop dan upstream Chat Completions. Provider/model, versi Desktop, listener final, dan kebutuhan affinity dicatat saat M0. Task ini tetap draft dan belum dinyatakan selesai.
 
-[D-004](../DECISIONS.md) menetapkan pengguna sendiri sebagai pemilik keputusan produk dan penentu target keberhasilan. Bukti masalah, baseline, serta pelaksanaan pengukuran teknis tetap perlu ditetapkan.
+[D-004](../DECISIONS.md) menetapkan pengguna sendiri sebagai pemilik keputusan produk dan penentu target keberhasilan. [D-005](../DECISIONS.md) menetapkan baseline dua tahap (catatan manual lalu pengukuran M0) dan pelaksana pengukurannya; angka baseline serta format pencatatan masih perlu ditetapkan.
 
 - [PRD](../PRD.md): C-1, C-4, C-10.
 - Kualitas terkait: kriteria keputusan dan reproduksibilitas pada ROADMAP.
@@ -247,10 +247,12 @@ Hasil spike perlu menjadi batas keputusan dan rencana pembuktian, bukan klaim MV
 
 - Keputusan yang ditangani task ini: O-6.
 
+D-008 sudah menetapkan target Q-4/Q-5 provisional dan fixture benchmark 5 relay × 5 slot; task ini merinci anggaran buffer/state serta default timeout/probe yang belum ditetapkan.
+
 ### Acceptance criteria
 
 - **AC1:** **Given** seluruh hasil spike tersedia, **When** gerbang M0 ditinjau, **Then** laporan menghubungkan host/client/model, versi, bukti WARP, dan kendala ke keputusan arsitektur.
-- **AC2:** **Given** target Q-4–Q-6 masih usulan, **When** rencana penerimaan ditetapkan, **Then** pemilik menetapkan target, anggaran buffer/state, dan kapasitas fixture benchmark melalui O-6.
+- **AC2:** **Given** target Q-4–Q-6 sebagian sudah ditetapkan D-008 sebagai provisional, **When** rencana penerimaan ditetapkan, **Then** target, anggaran buffer/state, serta kapasitas fixture benchmark 5×5 dikonfirmasi dan default yang belum diputuskan dicatat penanggung jawabnya.
 - **AC3:** **Given** AC-01–AC-22 perlu dibuktikan, **When** rencana pengujian dibakukan, **Then** setiap AC mempunyai metode, lingkungan, serta bukti yang harus disimpan pada milestone terkait.
 - **AC4 (negatif/edge):** **Given** spike gagal atau membutuhkan perubahan scope, **When** M0 dinilai, **Then** milestone tetap belum lulus sampai keputusan produk dan dokumen terkait diperbarui.
 
