@@ -1,8 +1,10 @@
 ---
 title: "Maintenance WARP berjalan otomatis tanpa melanggar binding"
 date: 2026-11-22
-version: 1
-status: draft
+version: 2
+status: approved
+approved_by: pengguna
+approved_at: 2026-11-23
 planner: none
 project: ""
 hierarchy: epic
@@ -14,7 +16,7 @@ capabilities: ["C-7", "C-9", "C-13"]
 
 # EP-09 Maintenance WARP berjalan otomatis tanpa melanggar binding
 
-**Milestone:** P1 · **Prioritas:** P1 sesuai pembagian docs · **Status:** draft · **Pemilik:** pengguna · **Tanggal:** TBD
+**Milestone:** P1 · **Prioritas:** P1 sesuai pembagian docs · **Status:** approved · **Pemilik:** pengguna · **Tanggal:** TBD
 
 ## Ringkasan
 
@@ -76,16 +78,16 @@ Docker socket pada gateway, rotasi key/akun, jaminan IP unik, dan restart akibat
 ## Keputusan dan kesiapan
 
 - Satu file untuk satu epic dengan banyak story/task adalah arahan pengguna.
-- Pembagian epic, ID lokal, urutan/dependensi, serta penjabaran AC adalah **(agent's call)** berdasarkan docs dan tetap draft.
+- Pembagian epic, ID lokal, urutan/dependensi, serta penjabaran AC berasal dari usulan agent dan telah disetujui pengguna pada 23 November 2026 ([D-015](../DECISIONS.md#d-015-persetujuan-seluruh-tiket-mvp-dan-p1)).
 - Nilai/kontrak yang belum ditetapkan menjadi hasil task pendahulu. Story yang bergantung padanya belum siap diimplementasikan sampai hasil task tersedia.
 - Kebutuhan P1 menunggu penerimaan MVP dan keputusan prioritas O-9; task bersama EP-07-T01 tidak mewajibkan Responses API dikerjakan lebih dahulu.
-- Persetujuan draft tidak diasumsikan. Tidak ada tiket yang dibuat pada planner eksternal.
+- Persetujuan mencakup epic dan seluruh child story/task pada file ini. Status `approved` menyatakan persetujuan tiket; implementasi, pemenuhan dependensi, dan kelulusan AC tetap memerlukan bukti. Tidak ada tiket yang dibuat pada planner eksternal.
 
 <a id="ep-09-t01"></a>
 
 ## [TASK] EP-09-T01 Tetapkan trigger dan kontrak maintenance controller
 
-**Status:** draft · **Parent:** EP-09 · **Milestone:** P1 · **Prioritas:** P1
+**Status:** approved · **Parent:** EP-09 · **Milestone:** P1 · **Prioritas:** P1
 
 ### Konteks
 
@@ -106,13 +108,13 @@ C-13 memerlukan controller dengan kebijakan yang berbeda dari rotasi otomatis ta
 
 - Di luar scope: Docker socket pada gateway, rotasi key/akun, jaminan IP unik, dan restart akibat 429 tanpa kebijakan yang dibuktikan.
 - Diblokir oleh: [EP-07-T01](2026-11-22-ep-07-responses-api.md#ep-07-t01), [EP-04-S06](2026-11-22-ep-04-affinity-dan-maintenance.md#ep-04-s06)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
 
 <a id="ep-09-s02"></a>
 
 ## [STORY] EP-09-S02 Lakukan maintenance relay melalui controller terpisah
 
-**Status:** draft · **Parent:** EP-09 · **Milestone:** P1 · **Prioritas:** P1
+**Status:** approved · **Parent:** EP-09 · **Milestone:** P1 · **Prioritas:** P1
 
 **Sebagai** operator, **saya ingin** menjalankan maintenance WARP otomatis yang terkoordinasi, **agar** operasi rutin tetap mematuhi aturan percakapan.
 
@@ -135,13 +137,13 @@ Otomasi harus menjalankan prosedur drain dan identitas yang sudah terbukti secar
 
 - Di luar scope: Docker socket pada gateway, rotasi key/akun, jaminan IP unik, dan restart akibat 429 tanpa kebijakan yang dibuktikan.
 - Diblokir oleh: [EP-09-T01](#ep-09-t01)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
 
 <a id="ep-09-s03"></a>
 
 ## [STORY] EP-09-S03 Ketahui maintenance yang tertahan atau gagal diverifikasi
 
-**Status:** draft · **Parent:** EP-09 · **Milestone:** P1 · **Prioritas:** P1
+**Status:** approved · **Parent:** EP-09 · **Milestone:** P1 · **Prioritas:** P1
 
 **Sebagai** operator, **saya ingin** mengetahui maintenance yang belum aman diselesaikan, **agar** kegagalan otomasi tidak tersembunyi di belakang status sehat.
 
@@ -164,4 +166,4 @@ Controller tidak boleh mengulang tindakan tanpa batas atau menyatakan identitas 
 
 - Di luar scope: Docker socket pada gateway, rotasi key/akun, jaminan IP unik, dan restart akibat 429 tanpa kebijakan yang dibuktikan.
 - Diblokir oleh: [EP-09-S02](#ep-09-s02)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.

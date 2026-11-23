@@ -1,8 +1,10 @@
 ---
 title: "Agent dapat memakai Responses API yang diuji"
 date: 2026-11-22
-version: 1
-status: draft
+version: 2
+status: approved
+approved_by: pengguna
+approved_at: 2026-11-23
 planner: none
 project: ""
 hierarchy: epic
@@ -14,7 +16,7 @@ capabilities: ["C-11", "C-12", "C-13", "C-15", "C-16"]
 
 # EP-07 Agent dapat memakai Responses API yang diuji
 
-**Milestone:** P1 · **Prioritas:** P1 sesuai pembagian docs · **Status:** draft · **Pemilik:** pengguna · **Tanggal:** TBD
+**Milestone:** P1 · **Prioritas:** P1 sesuai pembagian docs · **Status:** approved · **Pemilik:** pengguna · **Tanggal:** TBD
 
 ## Ringkasan
 
@@ -77,16 +79,16 @@ Perubahan cakupan MVP secara retroaktif, translasi Anthropic/Gemini native, dan 
 ## Keputusan dan kesiapan
 
 - Satu file untuk satu epic dengan banyak story/task adalah arahan pengguna.
-- Pembagian epic, ID lokal, urutan/dependensi, serta penjabaran AC adalah **(agent's call)** berdasarkan docs dan tetap draft.
+- Pembagian epic, ID lokal, urutan/dependensi, serta penjabaran AC berasal dari usulan agent dan telah disetujui pengguna pada 23 November 2026 ([D-015](../DECISIONS.md#d-015-persetujuan-seluruh-tiket-mvp-dan-p1)).
 - Nilai/kontrak yang belum ditetapkan menjadi hasil task pendahulu. Story yang bergantung padanya belum siap diimplementasikan sampai hasil task tersedia.
 - Kebutuhan P1 menunggu penerimaan MVP dan keputusan prioritas O-9; task bersama EP-07-T01 tidak mewajibkan Responses API dikerjakan lebih dahulu.
-- Persetujuan draft tidak diasumsikan. Tidak ada tiket yang dibuat pada planner eksternal.
+- Persetujuan mencakup epic dan seluruh child story/task pada file ini. Status `approved` menyatakan persetujuan tiket; implementasi, pemenuhan dependensi, dan kelulusan AC tetap memerlukan bukti. Tidak ada tiket yang dibuat pada planner eksternal.
 
 <a id="ep-07-t01"></a>
 
 ## [TASK] EP-07-T01 Tetapkan urutan backlog P1 berdasarkan kebutuhan produk
 
-**Status:** draft · **Parent:** EP-07 · **Milestone:** P1 · **Prioritas:** P1
+**Status:** approved · **Parent:** EP-07 · **Milestone:** P1 · **Prioritas:** P1
 
 ### Konteks
 
@@ -111,13 +113,13 @@ D-012 menetapkan urutan C-11 → C-15 → C-16 → C-13 → C-12 dan menunda hot
 
 - Di luar scope: Implementasi kemampuan P1 dan perubahan syarat penerimaan MVP.
 - Diblokir oleh: [EP-06-T05](2026-11-22-ep-06-integrasi-dan-rilis-mvp.md#ep-06-t05)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
 
 <a id="ep-07-t02"></a>
 
 ## [TASK] EP-07-T02 Tetapkan kontrak Responses dan client yang didukung
 
-**Status:** draft · **Parent:** EP-07 · **Milestone:** P1 · **Prioritas:** P1
+**Status:** approved · **Parent:** EP-07 · **Milestone:** P1 · **Prioritas:** P1
 
 ### Konteks
 
@@ -138,13 +140,13 @@ C-11 mensyaratkan kontrak terpisah sebelum dukungan protokol diumumkan.
 
 - Di luar scope: Implementasi adapter dan dukungan operasi yang belum disepakati.
 - Diblokir oleh: [EP-07-T01](#ep-07-t01)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
 
 <a id="ep-07-s03"></a>
 
 ## [STORY] EP-07-S03 Kirim request Responses melalui relay yang dipilih gateway
 
-**Status:** draft · **Parent:** EP-07 · **Milestone:** P1 · **Prioritas:** P1
+**Status:** approved · **Parent:** EP-07 · **Milestone:** P1 · **Prioritas:** P1
 
 **Sebagai** developer, **saya ingin** memakai Responses API melalui gateway, **agar** client yang membutuhkan protokol tersebut dapat dipakai dengan pool WARP.
 
@@ -167,13 +169,13 @@ Client yang memerlukan Responses membutuhkan jalur end to end yang mempertahanka
 
 - Di luar scope: Perubahan cakupan MVP secara retroaktif, translasi Anthropic/Gemini native, dan klaim seluruh fitur Responses tanpa pengujian.
 - Diblokir oleh: [EP-07-T02](#ep-07-t02)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
 
 <a id="ep-07-t04"></a>
 
 ## [TASK] EP-07-T04 Buktikan integrasi Responses dan regresi protokol lama
 
-**Status:** draft · **Parent:** EP-07 · **Milestone:** P1 · **Prioritas:** P1
+**Status:** approved · **Parent:** EP-07 · **Milestone:** P1 · **Prioritas:** P1
 
 ### Konteks
 
@@ -194,4 +196,4 @@ Lulus handler Responses saja tidak membuktikan client nyata atau menjaga fitur y
 
 - Di luar scope: Perubahan cakupan MVP secara retroaktif, translasi Anthropic/Gemini native, dan klaim seluruh fitur Responses tanpa pengujian.
 - Diblokir oleh: [EP-07-S03](#ep-07-s03)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.

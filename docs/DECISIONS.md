@@ -1,6 +1,6 @@
 # Keputusan opencode-infinity
 
-Versi: 0.1.11  
+Versi: 0.1.12  
 Tanggal: 23 November 2026
 
 Catatan ini memisahkan keputusan eksplisit pengguna dari usulan dan pertanyaan yang belum selesai. Keputusan terkonfirmasi diterapkan ke PRD/arsitektur terkait; status keseluruhan draft tidak otomatis menjadi approved.
@@ -123,6 +123,15 @@ Catatan ini memisahkan keputusan eksplisit pengguna dari usulan dan pertanyaan y
 - **Implikasi:** tidak ada SIGKILL tanpa catatan; penghentian paksa hanya tindakan operator atau sistem setelah batas keras. Drain tetap menolak assignment baru untuk sesi terikat. Readiness berubah tidak siap sejak drain dimulai. Binding strict yang hilang tetap menghasilkan error eksplisit.
 - **Belum diputuskan:** nilai final `stop_grace_period`, format log ringkasan shutdown, dan exit code yang dipakai; dicatat pada EP-04-T05 dan EP-06-T03.
 - **Acuan:** O-5, C-7, Q-6, ARCHITECTURE §10, EP-04-T05, dan EP-06-T03.
+
+### D-015 Persetujuan seluruh tiket MVP dan P1
+
+- **Status:** ditetapkan pengguna pada 23 November 2026.
+- **Dasar:** instruksi eksplisit pengguna: “approve semua tiket”.
+- **Keputusan:** seluruh 11 epic EP-01–EP-11 beserta 27 story dan 24 task disetujui dengan status `approved`, termasuk 208 AC child yang tercantum pada tiket saat persetujuan diberikan.
+- **Implikasi:** persetujuan tiket tidak menyatakan implementasi selesai, dependensi terpenuhi, atau AC lulus. Gerbang M0–M3, urutan P1 D-012, input TBD, dan keputusan D-001–D-014 tetap berlaku. Persetujuan ini tidak otomatis mengubah status keseluruhan PRD, ARCHITECTURE, ROADMAP, TECHSTACK, atau catatan teknis menjadi approved.
+- **Batas tindakan:** pencatatan dilakukan pada tiket lokal dan indeks dokumentasi; tidak mencakup pembuatan tiket di planner eksternal, commit, push, atau rilis.
+- **Acuan:** [indeks epic MVP](README.md#indeks-epic-mvp), [indeks epic P1](README.md#indeks-epic-p1), dan bagian Keputusan dan kesiapan pada setiap epic.
 
 ## Status pertanyaan terbuka
 

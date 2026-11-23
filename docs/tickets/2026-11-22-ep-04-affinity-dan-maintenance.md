@@ -1,8 +1,10 @@
 ---
 title: "Percakapan mempertahankan jalur saat relay dipelihara"
 date: 2026-11-22
-version: 1
-status: draft
+version: 2
+status: approved
+approved_by: pengguna
+approved_at: 2026-11-23
 planner: none
 project: ""
 hierarchy: epic
@@ -14,7 +16,7 @@ capabilities: ["C-6", "C-7", "C-10"]
 
 # EP-04 Percakapan mempertahankan jalur saat relay dipelihara
 
-**Milestone:** M2.2 · **Prioritas:** P0 sesuai pembagian docs · **Status:** draft · **Pemilik:** pengguna · **Tanggal:** TBD
+**Milestone:** M2.2 · **Prioritas:** P0 sesuai pembagian docs · **Status:** approved · **Pemilik:** pengguna · **Tanggal:** TBD
 
 ## Ringkasan
 
@@ -80,16 +82,16 @@ Plugin session ID otomatis, persistence percakapan, controller WARP otomatis, da
 ## Keputusan dan kesiapan
 
 - Satu file untuk satu epic dengan banyak story/task adalah arahan pengguna.
-- Pembagian epic, ID lokal, urutan/dependensi, serta penjabaran AC adalah **(agent's call)** berdasarkan docs dan tetap draft.
+- Pembagian epic, ID lokal, urutan/dependensi, serta penjabaran AC berasal dari usulan agent dan telah disetujui pengguna pada 23 November 2026 ([D-015](../DECISIONS.md#d-015-persetujuan-seluruh-tiket-mvp-dan-p1)).
 - Nilai/kontrak yang belum ditetapkan menjadi hasil task pendahulu. Story yang bergantung padanya belum siap diimplementasikan sampai hasil task tersedia.
 - Kebutuhan P1 menunggu penerimaan MVP dan keputusan prioritas O-9; task bersama EP-07-T01 tidak mewajibkan Responses API dikerjakan lebih dahulu.
-- Persetujuan draft tidak diasumsikan. Tidak ada tiket yang dibuat pada planner eksternal.
+- Persetujuan mencakup epic dan seluruh child story/task pada file ini. Status `approved` menyatakan persetujuan tiket; implementasi, pemenuhan dependensi, dan kelulusan AC tetap memerlukan bukti. Tidak ada tiket yang dibuat pada planner eksternal.
 
 <a id="ep-04-t01"></a>
 
 ## [TASK] EP-04-T01 Tetapkan kontrak sesi strict yang dapat dibuktikan
 
-**Status:** draft · **Parent:** EP-04 · **Milestone:** M2.2 · **Prioritas:** P0
+**Status:** approved · **Parent:** EP-04 · **Milestone:** M2.2 · **Prioritas:** P0
 
 ### Konteks
 
@@ -116,13 +118,13 @@ D-013 menetapkan MVP memakai fixed routing dan lifecycle strict dibuktikan lewat
 
 - Di luar scope: Plugin session ID otomatis, persistence percakapan, controller WARP otomatis, dan jaminan IP absolut yang tidak dapat dibuktikan.
 - Diblokir oleh: [EP-01-T01](2026-11-22-ep-01-kelayakan-dan-keputusan-mvp.md#ep-01-t01), [EP-02-S04](2026-11-22-ep-02-gateway-api-dasar.md#ep-02-s04)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
 
 <a id="ep-04-s02"></a>
 
 ## [STORY] EP-04-S02 Lanjutkan sesi pada relay dan generasi yang sama
 
-**Status:** draft · **Parent:** EP-04 · **Milestone:** M2.2 · **Prioritas:** P0
+**Status:** approved · **Parent:** EP-04 · **Milestone:** M2.2 · **Prioritas:** P0
 
 **Sebagai** developer, **saya ingin** melanjutkan percakapan pada jalur yang terikat, **agar** model yang memerlukan affinity menerima lanjutan secara konsisten.
 
@@ -147,13 +149,13 @@ Sesi yang memerlukan konsistensi harus terikat sebelum dispatch dan tetap teriso
 
 - Di luar scope: Plugin session ID otomatis, persistence percakapan, controller WARP otomatis, dan jaminan IP absolut yang tidak dapat dibuktikan.
 - Diblokir oleh: [EP-04-T01](#ep-04-t01), [EP-03-S02](2026-11-22-ep-03-pool-routing-dan-kegagalan.md#ep-03-s02)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
 
 <a id="ep-04-s03"></a>
 
 ## [STORY] EP-04-S03 Kenali kehilangan binding setelah restart atau perubahan identitas
 
-**Status:** draft · **Parent:** EP-04 · **Milestone:** M2.2 · **Prioritas:** P0
+**Status:** approved · **Parent:** EP-04 · **Milestone:** M2.2 · **Prioritas:** P0
 
 **Sebagai** developer, **saya ingin** mengetahui bahwa jalur sesi sudah tidak valid, **agar** percakapan tidak diteruskan dengan identitas yang berbeda tanpa pemberitahuan.
 
@@ -178,13 +180,13 @@ Restart atau perubahan identitas tidak boleh menjadi alasan menganggap percakapa
 
 - Di luar scope: Plugin session ID otomatis, persistence percakapan, controller WARP otomatis, dan jaminan IP absolut yang tidak dapat dibuktikan.
 - Diblokir oleh: [EP-04-S02](#ep-04-s02), [EP-03-S06](2026-11-22-ep-03-pool-routing-dan-kegagalan.md#ep-03-s06)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
 
 <a id="ep-04-s04"></a>
 
 ## [STORY] EP-04-S04 Pelihara satu relay tanpa memutus pekerjaan pada relay lain
 
-**Status:** draft · **Parent:** EP-04 · **Milestone:** M2.2 · **Prioritas:** P0
+**Status:** approved · **Parent:** EP-04 · **Milestone:** M2.2 · **Prioritas:** P0
 
 **Sebagai** operator, **saya ingin** melakukan maintenance relay secara terkontrol, **agar** percakapan dan relay lain tetap mengikuti kontraknya.
 
@@ -209,13 +211,13 @@ Maintenance harus mempertimbangkan stream aktif dan binding yang masih memerluka
 
 - Di luar scope: Plugin session ID otomatis, persistence percakapan, controller WARP otomatis, dan jaminan IP absolut yang tidak dapat dibuktikan.
 - Diblokir oleh: [EP-04-S03](#ep-04-s03), [EP-03-S02](2026-11-22-ep-03-pool-routing-dan-kegagalan.md#ep-03-s02)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
 
 <a id="ep-04-t05"></a>
 
 ## [TASK] EP-04-T05 Tetapkan kebijakan shutdown ketika drain belum selesai
 
-**Status:** draft · **Parent:** EP-04 · **Milestone:** M2.2 · **Prioritas:** P0
+**Status:** approved · **Parent:** EP-04 · **Milestone:** M2.2 · **Prioritas:** P0
 
 ### Konteks
 
@@ -240,13 +242,13 @@ D-014 menetapkan drain 60 detik yang hanya menolak admission baru, batas keras 3
 
 - Di luar scope: Plugin session ID otomatis, persistence percakapan, controller WARP otomatis, dan jaminan IP absolut yang tidak dapat dibuktikan.
 - Diblokir oleh: [EP-04-T01](#ep-04-t01), [EP-03-S06](2026-11-22-ep-03-pool-routing-dan-kegagalan.md#ep-03-s06)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
 
 <a id="ep-04-s06"></a>
 
 ## [STORY] EP-04-S06 Hentikan gateway sesuai kebijakan drain yang terdokumentasi
 
-**Status:** draft · **Parent:** EP-04 · **Milestone:** M2.2 · **Prioritas:** P0
+**Status:** approved · **Parent:** EP-04 · **Milestone:** M2.2 · **Prioritas:** P0
 
 **Sebagai** operator, **saya ingin** menghentikan gateway dengan perilaku yang diketahui, **agar** pemeliharaan deployment tidak bergantung pada asumsi deadline.
 
@@ -269,4 +271,4 @@ Operator memerlukan shutdown nyata yang mengikuti kebijakan, bukan hanya dokumen
 
 - Di luar scope: Plugin session ID otomatis, persistence percakapan, controller WARP otomatis, dan jaminan IP absolut yang tidak dapat dibuktikan.
 - Diblokir oleh: [EP-04-T05](#ep-04-t05), [EP-04-S04](#ep-04-s04)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.

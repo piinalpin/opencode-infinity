@@ -9,7 +9,7 @@ Aturan kontribusi dan guardrail agent tersedia di [AGENTS.md](../AGENTS.md).
 | Dokumen | Isi | Status acuan |
 |---|---|---|
 | [PRD](PRD.md) | Masalah, pengguna, cakupan, kapabilitas, target kualitas, dan keputusan terbuka | Draft 0.1.13 |
-| [DECISIONS](DECISIONS.md) | Keputusan eksplisit pengguna dan bagian pertanyaan yang masih terbuka | Catatan 0.1.11; D-001–D-014 terkonfirmasi |
+| [DECISIONS](DECISIONS.md) | Keputusan eksplisit pengguna dan bagian pertanyaan yang masih terbuka | Catatan 0.1.12; D-001–D-015 terkonfirmasi |
 | [ARCHITECTURE](ARCHITECTURE.md) | Komponen, alur, state, lifecycle, dan [struktur project](ARCHITECTURE.md#13-struktur-project-yang-disarankan), termasuk MicroWARP | Draft 0.1.4 |
 | [TECHSTACK](TECHSTACK.md) | Kandidat bahasa/library/tooling dan rencana validasi versi | Kandidat 0.1.2; belum pin final |
 | [ROADMAP](ROADMAP.md) | Milestone M0–M3, dependensi, serta gerbang MVP/P1 | Draft 0.1.1 |
@@ -19,7 +19,7 @@ Urutan desain adalah PRD → ARCHITECTURE → TECHSTACK → implementasi. ROADMA
 
 ## Indeks epic MVP
 
-Satu file memuat satu epic beserta seluruh child story/task. Pemecahan dan dependensi merupakan **(agent's call)**; seluruh tiket berstatus `draft`.
+Satu file memuat satu epic beserta seluruh child story/task. Seluruh 11 epic MVP/P1, 27 story, dan 24 task berstatus `approved`, sesuai persetujuan eksplisit pengguna pada 23 November 2026 ([D-015](DECISIONS.md#d-015-persetujuan-seluruh-tiket-mvp-dan-p1)). Persetujuan mencakup tiket beserta AC-nya; implementasi dan kelulusan AC belum dinyatakan selesai. Dependensi, gerbang milestone, dan input TBD tetap berlaku.
 
 | Epic | Hasil | Milestone | Story | Task | AC child |
 |---|---|---|---|---|---|
@@ -47,12 +47,12 @@ P1 dimulai setelah penerimaan MVP melalui [EP-06-T05](tickets/2026-11-22-ep-06-i
 1. Buka epic menurut milestone dan pilih ID child pada tabel Story dan task.
 2. Ikuti dependensi child yang tertulis. M2.2 dan M2.3 dapat berjalan bersamaan setelah kontrak state/snapshot tersedia.
 3. Selesaikan task keputusan sebelum story yang menggunakannya, terutama versi, sesi strict, shutdown, dan kesegaran UI.
-4. Tinjau draft beserta AC-nya sebelum implementasi; status `approved` hanya diberikan setelah persetujuan eksplisit atas draft tersebut.
+4. Gunakan tiket beserta AC yang telah disetujui melalui D-015; persetujuan tidak menggantikan pemenuhan dependensi atau bukti hasil implementasi. Perubahan cakupan atau keputusan produk tetap mengikuti otorisasi pengguna.
 5. Simpan bukti hasil AC pada pekerjaan implementasi dan verifikasi kembali keseluruhan kontrak saat M3.
 
-ID `EP-xx` dan `EP-xx-Sxx/Txx` adalah ID lokal, bukan key planner. `AC1` di dalam child adalah kriteria tiket; `AC-01` adalah skenario penerimaan sumber. Masing-masing child mempunyai tautan ke PRD, kapabilitas, quality bars, scope, dan blocker. File dapat dipakai sebagai draft lokal atau diimpor ke planner dengan pemetaan hierarki epic/child.
+ID `EP-xx` dan `EP-xx-Sxx/Txx` adalah ID lokal, bukan key planner. `AC1` di dalam child adalah kriteria tiket; `AC-01` adalah skenario penerimaan sumber. Masing-masing child mempunyai tautan ke PRD, kapabilitas, quality bars, scope, dan blocker. File menjadi tiket lokal yang telah disetujui; impor ke planner memerlukan otorisasi tersendiri dan pemetaan hierarki epic/child.
 
-Tanggal, assignee, sprint, dan estimasi belum ditetapkan. Versi teknologi di TECHSTACK masih kandidat; pemilihan serta pin dilakukan melalui [EP-01-T02](tickets/2026-11-22-ep-01-kelayakan-dan-keputusan-mvp.md#ep-01-t02), lalu ditinjau kembali menjelang rilis. Hot reload tetap TBD dan tidak mendapat tiket implementasi tanpa keputusan cakupan.
+Tanggal persetujuan tiket adalah 23 November 2026; `date` pada frontmatter mempertahankan tanggal pembuatan, sedangkan `approved_at` mencatat tanggal persetujuan. Tanggal pengerjaan, assignee, sprint, dan estimasi belum ditetapkan. Versi teknologi di TECHSTACK masih kandidat; pemilihan serta pin dilakukan melalui [EP-01-T02](tickets/2026-11-22-ep-01-kelayakan-dan-keputusan-mvp.md#ep-01-t02), lalu ditinjau kembali menjelang rilis. Hot reload tetap TBD dan tidak mendapat tiket implementasi tanpa keputusan cakupan.
 
 ## Pemetaan kapabilitas PRD
 
@@ -127,4 +127,4 @@ Pemilik keputusan produk dan target adalah pengguna sendiri sesuai D-004; D-005 
 
 ## Ringkasan backlog
 
-**11 epic, 27 story, 24 task, dan 208 AC child.** Enam epic mencakup MVP dan lima epic mencakup P1. Seluruh C-1–C-16 dan AC-01–AC-22 mempunyai tautan pekerjaan; tidak ada progres implementasi atau persetujuan draft yang diasumsikan.
+**11 epic, 27 story, 24 task, dan 208 AC child.** Enam epic mencakup MVP dan lima epic mencakup P1. Seluruh C-1–C-16 dan AC-01–AC-22 mempunyai tautan pekerjaan. Seluruh epic dan child story/task telah disetujui melalui D-015; progres implementasi serta kelulusan AC tetap memerlukan bukti.

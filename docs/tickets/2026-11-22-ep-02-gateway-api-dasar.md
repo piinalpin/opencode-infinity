@@ -1,8 +1,10 @@
 ---
 title: "Agent memakai kontrak provider melalui satu gateway"
 date: 2026-11-22
-version: 1
-status: draft
+version: 2
+status: approved
+approved_by: pengguna
+approved_at: 2026-11-23
 planner: none
 project: ""
 hierarchy: epic
@@ -14,7 +16,7 @@ capabilities: ["C-1", "C-2", "C-3", "C-5", "C-8", "C-9", "C-10"]
 
 # EP-02 Agent memakai kontrak provider melalui satu gateway
 
-**Milestone:** M1 · **Prioritas:** P0 sesuai pembagian docs · **Status:** draft · **Pemilik:** pengguna · **Tanggal:** TBD
+**Milestone:** M1 · **Prioritas:** P0 sesuai pembagian docs · **Status:** approved · **Pemilik:** pengguna · **Tanggal:** TBD
 
 ## Ringkasan
 
@@ -80,16 +82,16 @@ Routing pool dinamis, lifecycle binding per percakapan, dashboard operasional le
 ## Keputusan dan kesiapan
 
 - Satu file untuk satu epic dengan banyak story/task adalah arahan pengguna.
-- Pembagian epic, ID lokal, urutan/dependensi, serta penjabaran AC adalah **(agent's call)** berdasarkan docs dan tetap draft.
+- Pembagian epic, ID lokal, urutan/dependensi, serta penjabaran AC berasal dari usulan agent dan telah disetujui pengguna pada 23 November 2026 ([D-015](../DECISIONS.md#d-015-persetujuan-seluruh-tiket-mvp-dan-p1)).
 - Nilai/kontrak yang belum ditetapkan menjadi hasil task pendahulu. Story yang bergantung padanya belum siap diimplementasikan sampai hasil task tersedia.
 - Kebutuhan P1 menunggu penerimaan MVP dan keputusan prioritas O-9; task bersama EP-07-T01 tidak mewajibkan Responses API dikerjakan lebih dahulu.
-- Persetujuan draft tidak diasumsikan. Tidak ada tiket yang dibuat pada planner eksternal.
+- Persetujuan mencakup epic dan seluruh child story/task pada file ini. Status `approved` menyatakan persetujuan tiket; implementasi, pemenuhan dependensi, dan kelulusan AC tetap memerlukan bukti. Tidak ada tiket yang dibuat pada planner eksternal.
 
 <a id="ep-02-t01"></a>
 
 ## [TASK] EP-02-T01 Tolak konfigurasi yang tidak dapat dilayani
 
-**Status:** draft · **Parent:** EP-02 · **Milestone:** M1 · **Prioritas:** P0
+**Status:** approved · **Parent:** EP-02 · **Milestone:** M1 · **Prioritas:** P0
 
 ### Konteks
 
@@ -110,13 +112,13 @@ Registry yang tidak valid harus gagal sebelum menerima trafik atau memilih targe
 
 - Di luar scope: Routing pool dinamis, lifecycle binding per percakapan, dashboard operasional lengkap, dan Responses API.
 - Diblokir oleh: [EP-01-T06](2026-11-22-ep-01-kelayakan-dan-keputusan-mvp.md#ep-01-t06)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
 
 <a id="ep-02-s02"></a>
 
 ## [STORY] EP-02-S02 Akses model dengan token gateway tanpa membawa secret upstream
 
-**Status:** draft · **Parent:** EP-02 · **Milestone:** M1 · **Prioritas:** P0
+**Status:** approved · **Parent:** EP-02 · **Milestone:** M1 · **Prioritas:** P0
 
 **Sebagai** developer, **saya ingin** mengakses model memakai token gateway, **agar** credential provider cukup dikelola operator.
 
@@ -142,13 +144,13 @@ Token client, admin, dan upstream harus mempunyai peran terpisah.
 
 - Di luar scope: Routing pool dinamis, lifecycle binding per percakapan, dashboard operasional lengkap, dan Responses API.
 - Diblokir oleh: [EP-02-T01](#ep-02-t01)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
 
 <a id="ep-02-s03"></a>
 
 ## [STORY] EP-02-S03 Pilih alias model dan terima respons JSON dari upstream yang benar
 
-**Status:** draft · **Parent:** EP-02 · **Milestone:** M1 · **Prioritas:** P0
+**Status:** approved · **Parent:** EP-02 · **Milestone:** M1 · **Prioritas:** P0
 
 **Sebagai** developer, **saya ingin** memilih model alias dan menerima hasil JSON, **agar** konfigurasi provider tetap terpusat.
 
@@ -173,13 +175,13 @@ Client harus memakai katalog lokal dan alias tanpa mengetahui detail relay/provi
 
 - Di luar scope: Routing pool dinamis, lifecycle binding per percakapan, dashboard operasional lengkap, dan Responses API.
 - Diblokir oleh: [EP-02-S02](#ep-02-s02)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
 
 <a id="ep-02-s04"></a>
 
 ## [STORY] EP-02-S04 Terima streaming content dan tool calls tanpa menunggu respons lengkap
 
-**Status:** draft · **Parent:** EP-02 · **Milestone:** M1 · **Prioritas:** P0
+**Status:** approved · **Parent:** EP-02 · **Milestone:** M1 · **Prioritas:** P0
 
 **Sebagai** developer, **saya ingin** menerima output dan tool calls secara streaming, **agar** agent dapat melanjutkan pekerjaan tanpa buffering seluruh jawaban.
 
@@ -204,13 +206,13 @@ Agent membutuhkan token dan tool-call deltas bertahap, termasuk ketika jaringan 
 
 - Di luar scope: Routing pool dinamis, lifecycle binding per percakapan, dashboard operasional lengkap, dan Responses API.
 - Diblokir oleh: [EP-02-S03](#ep-02-s03), [EP-01-T03](2026-11-22-ep-01-kelayakan-dan-keputusan-mvp.md#ep-01-t03)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
 
 <a id="ep-02-s05"></a>
 
 ## [STORY] EP-02-S05 Kenali error dan batas request sebelum dispatch
 
-**Status:** draft · **Parent:** EP-02 · **Milestone:** M1 · **Prioritas:** P0
+**Status:** approved · **Parent:** EP-02 · **Milestone:** M1 · **Prioritas:** P0
 
 **Sebagai** developer, **saya ingin** mendapat error yang dapat ditelusuri, **agar** penyebab request ditolak tidak tertukar dengan gangguan provider.
 
@@ -235,13 +237,13 @@ Gateway perlu menjaga target, ukuran request, dan perbedaan error tanpa menerusk
 
 - Di luar scope: Routing pool dinamis, lifecycle binding per percakapan, dashboard operasional lengkap, dan Responses API.
 - Diblokir oleh: [EP-02-S03](#ep-02-s03)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
 
 <a id="ep-02-t06"></a>
 
 ## [TASK] EP-02-T06 Bedakan proses hidup dari kesiapan melayani request
 
-**Status:** draft · **Parent:** EP-02 · **Milestone:** M1 · **Prioritas:** P0
+**Status:** approved · **Parent:** EP-02 · **Milestone:** M1 · **Prioritas:** P0
 
 ### Konteks
 
@@ -262,4 +264,4 @@ Operator membutuhkan health dasar yang tidak menghabiskan kuota atau menyamakan 
 
 - Di luar scope: Routing pool dinamis, lifecycle binding per percakapan, dashboard operasional lengkap, dan Responses API.
 - Diblokir oleh: [EP-02-S05](#ep-02-s05)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.

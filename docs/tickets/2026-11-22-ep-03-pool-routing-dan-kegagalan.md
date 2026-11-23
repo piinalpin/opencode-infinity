@@ -1,8 +1,10 @@
 ---
 title: "Request tetap terkendali ketika kondisi relay berubah"
 date: 2026-11-22
-version: 1
-status: draft
+version: 2
+status: approved
+approved_by: pengguna
+approved_at: 2026-11-23
 planner: none
 project: ""
 hierarchy: epic
@@ -14,7 +16,7 @@ capabilities: ["C-2", "C-4", "C-5", "C-9"]
 
 # EP-03 Request tetap terkendali ketika kondisi relay berubah
 
-**Milestone:** M2.1 · **Prioritas:** P0 sesuai pembagian docs · **Status:** draft · **Pemilik:** pengguna · **Tanggal:** TBD
+**Milestone:** M2.1 · **Prioritas:** P0 sesuai pembagian docs · **Status:** approved · **Pemilik:** pengguna · **Tanggal:** TBD
 
 ## Ringkasan
 
@@ -80,16 +82,16 @@ Rebinding strict otomatis, pergantian upstream/key, rotasi WARP otomatis, serta 
 ## Keputusan dan kesiapan
 
 - Satu file untuk satu epic dengan banyak story/task adalah arahan pengguna.
-- Pembagian epic, ID lokal, urutan/dependensi, serta penjabaran AC adalah **(agent's call)** berdasarkan docs dan tetap draft.
+- Pembagian epic, ID lokal, urutan/dependensi, serta penjabaran AC berasal dari usulan agent dan telah disetujui pengguna pada 23 November 2026 ([D-015](../DECISIONS.md#d-015-persetujuan-seluruh-tiket-mvp-dan-p1)).
 - Nilai/kontrak yang belum ditetapkan menjadi hasil task pendahulu. Story yang bergantung padanya belum siap diimplementasikan sampai hasil task tersedia.
 - Kebutuhan P1 menunggu penerimaan MVP dan keputusan prioritas O-9; task bersama EP-07-T01 tidak mewajibkan Responses API dikerjakan lebih dahulu.
-- Persetujuan draft tidak diasumsikan. Tidak ada tiket yang dibuat pada planner eksternal.
+- Persetujuan mencakup epic dan seluruh child story/task pada file ini. Status `approved` menyatakan persetujuan tiket; implementasi, pemenuhan dependensi, dan kelulusan AC tetap memerlukan bukti. Tidak ada tiket yang dibuat pada planner eksternal.
 
 <a id="ep-03-s01"></a>
 
 ## [STORY] EP-03-S01 Kirim request hanya ketika relay dan kapasitas tersedia
 
-**Status:** draft · **Parent:** EP-03 · **Milestone:** M2.1 · **Prioritas:** P0
+**Status:** approved · **Parent:** EP-03 · **Milestone:** M2.1 · **Prioritas:** P0
 
 **Sebagai** operator, **saya ingin** membatasi request pada pool, **agar** kapasitas relay dan gateway tidak terlampaui.
 
@@ -114,13 +116,13 @@ Admission harus mengikat pemilihan relay dengan reservasi agar request serentak 
 
 - Di luar scope: Rebinding strict otomatis, pergantian upstream/key, rotasi WARP otomatis, serta controller P1.
 - Diblokir oleh: [EP-02-S05](2026-11-22-ep-02-gateway-api-dasar.md#ep-02-s05), [EP-01-T06](2026-11-22-ep-01-kelayakan-dan-keputusan-mvp.md#ep-01-t06)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
 
 <a id="ep-03-s02"></a>
 
 ## [STORY] EP-03-S02 Tentukan eligibility dari health dan mode operasi yang terpisah
 
-**Status:** draft · **Parent:** EP-03 · **Milestone:** M2.1 · **Prioritas:** P0
+**Status:** approved · **Parent:** EP-03 · **Milestone:** M2.1 · **Prioritas:** P0
 
 **Sebagai** operator, **saya ingin** membedakan health dan mode relay, **agar** routing mengikuti kondisi yang benar.
 
@@ -145,13 +147,13 @@ Relay hidup, relay sehat, dan relay diaktifkan operator adalah kondisi yang berb
 
 - Di luar scope: Rebinding strict otomatis, pergantian upstream/key, rotasi WARP otomatis, serta controller P1.
 - Diblokir oleh: [EP-03-S01](#ep-03-s01), [EP-02-T06](2026-11-22-ep-02-gateway-api-dasar.md#ep-02-t06)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
 
 <a id="ep-03-s03"></a>
 
 ## [STORY] EP-03-S03 Sebarkan request stateless ke relay dengan inflight terendah
 
-**Status:** draft · **Parent:** EP-03 · **Milestone:** M2.1 · **Prioritas:** P0
+**Status:** approved · **Parent:** EP-03 · **Milestone:** M2.1 · **Prioritas:** P0
 
 **Sebagai** operator, **saya ingin** menyeimbangkan request model stateless, **agar** relay yang tersedia dapat dimanfaatkan sesuai kapasitas.
 
@@ -174,13 +176,13 @@ Least-inflight hanya aman untuk model yang dinyatakan stateless dan tidak memaka
 
 - Di luar scope: Rebinding strict otomatis, pergantian upstream/key, rotasi WARP otomatis, serta controller P1.
 - Diblokir oleh: [EP-03-S02](#ep-03-s02)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
 
 <a id="ep-03-s04"></a>
 
 ## [STORY] EP-03-S04 Hindari duplikasi generasi saat failover
 
-**Status:** draft · **Parent:** EP-03 · **Milestone:** M2.1 · **Prioritas:** P0
+**Status:** approved · **Parent:** EP-03 · **Milestone:** M2.1 · **Prioritas:** P0
 
 **Sebagai** developer, **saya ingin** menghindari pengulangan generasi yang ambigu, **agar** kegagalan transport tidak menggandakan pekerjaan dan biaya.
 
@@ -205,13 +207,13 @@ POST yang mungkin sudah diproses tidak boleh dikirim ulang hanya karena koneksi 
 
 - Di luar scope: Rebinding strict otomatis, pergantian upstream/key, rotasi WARP otomatis, serta controller P1.
 - Diblokir oleh: [EP-03-S02](#ep-03-s02), [EP-01-T03](2026-11-22-ep-01-kelayakan-dan-keputusan-mvp.md#ep-01-t03)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
 
 <a id="ep-03-s05"></a>
 
 ## [STORY] EP-03-S05 Kenali batas upstream tanpa merotasi relay secara sembarang
 
-**Status:** draft · **Parent:** EP-03 · **Milestone:** M2.1 · **Prioritas:** P0
+**Status:** approved · **Parent:** EP-03 · **Milestone:** M2.1 · **Prioritas:** P0
 
 **Sebagai** operator, **saya ingin** mengetahui penyebab batas provider, **agar** tindakan pemulihan sesuai masalah sebenarnya.
 
@@ -236,13 +238,13 @@ Auth, akses, quota, timeout, dan gangguan jaringan memerlukan tindakan yang berb
 
 - Di luar scope: Rebinding strict otomatis, pergantian upstream/key, rotasi WARP otomatis, serta controller P1.
 - Diblokir oleh: [EP-03-S04](#ep-03-s04)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
 
 <a id="ep-03-s06"></a>
 
 ## [STORY] EP-03-S06 Batalkan pekerjaan upstream dan lepaskan resource tepat waktu
 
-**Status:** draft · **Parent:** EP-03 · **Milestone:** M2.1 · **Prioritas:** P0
+**Status:** approved · **Parent:** EP-03 · **Milestone:** M2.1 · **Prioritas:** P0
 
 **Sebagai** developer, **saya ingin** membatalkan stream yang tidak lagi diperlukan, **agar** pekerjaan upstream dan kapasitas gateway segera dilepas.
 
@@ -267,4 +269,4 @@ Stream panjang dan client lambat tidak boleh menahan slot atau menumbuhkan buffe
 
 - Di luar scope: Rebinding strict otomatis, pergantian upstream/key, rotasi WARP otomatis, serta controller P1.
 - Diblokir oleh: [EP-03-S01](#ep-03-s01), [EP-03-S04](#ep-03-s04)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.

@@ -1,8 +1,10 @@
 ---
 title: "MVP dapat dipakai dan dioperasikan pada deployment yang teruji"
 date: 2026-11-22
-version: 1
-status: draft
+version: 2
+status: approved
+approved_by: pengguna
+approved_at: 2026-11-23
 planner: none
 project: ""
 hierarchy: epic
@@ -14,7 +16,7 @@ capabilities: ["C-1", "C-2", "C-3", "C-4", "C-5", "C-6", "C-7", "C-8", "C-9", "C
 
 # EP-06 MVP dapat dipakai dan dioperasikan pada deployment yang teruji
 
-**Milestone:** M3 · **Prioritas:** P0 sesuai pembagian docs · **Status:** draft · **Pemilik:** pengguna · **Tanggal:** TBD
+**Milestone:** M3 · **Prioritas:** P0 sesuai pembagian docs · **Status:** approved · **Pemilik:** pengguna · **Tanggal:** TBD
 
 ## Ringkasan
 
@@ -79,16 +81,16 @@ Implementasi fitur P1, klaim semua versi client kompatibel, dan SLA yang belum d
 ## Keputusan dan kesiapan
 
 - Satu file untuk satu epic dengan banyak story/task adalah arahan pengguna.
-- Pembagian epic, ID lokal, urutan/dependensi, serta penjabaran AC adalah **(agent's call)** berdasarkan docs dan tetap draft.
+- Pembagian epic, ID lokal, urutan/dependensi, serta penjabaran AC berasal dari usulan agent dan telah disetujui pengguna pada 23 November 2026 ([D-015](../DECISIONS.md#d-015-persetujuan-seluruh-tiket-mvp-dan-p1)).
 - Nilai/kontrak yang belum ditetapkan menjadi hasil task pendahulu. Story yang bergantung padanya belum siap diimplementasikan sampai hasil task tersedia.
 - Kebutuhan P1 menunggu penerimaan MVP dan keputusan prioritas O-9; task bersama EP-07-T01 tidak mewajibkan Responses API dikerjakan lebih dahulu.
-- Persetujuan draft tidak diasumsikan. Tidak ada tiket yang dibuat pada planner eksternal.
+- Persetujuan mencakup epic dan seluruh child story/task pada file ini. Status `approved` menyatakan persetujuan tiket; implementasi, pemenuhan dependensi, dan kelulusan AC tetap memerlukan bukti. Tidak ada tiket yang dibuat pada planner eksternal.
 
 <a id="ep-06-s01"></a>
 
 ## [STORY] EP-06-S01 Pakai gateway dari OpenCode CLI yang diuji
 
-**Status:** draft · **Parent:** EP-06 · **Milestone:** M3 · **Prioritas:** P0
+**Status:** approved · **Parent:** EP-06 · **Milestone:** M3 · **Prioritas:** P0
 
 **Sebagai** developer, **saya ingin** memakai gateway dari OpenCode CLI, **agar** pekerjaan coding dapat berjalan lewat satu custom provider.
 
@@ -113,13 +115,13 @@ Developer membutuhkan bukti integrasi client nyata, bukan hanya kompatibilitas p
 
 - Di luar scope: Implementasi fitur P1, klaim semua versi client kompatibel, dan SLA yang belum ditetapkan.
 - Diblokir oleh: [EP-05-T06](2026-11-22-ep-05-dashboard-dan-observabilitas.md#ep-05-t06), [EP-04-S06](2026-11-22-ep-04-affinity-dan-maintenance.md#ep-04-s06)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
 
 <a id="ep-06-s02"></a>
 
 ## [STORY] EP-06-S02 Pakai gateway dari OpenCode Desktop yang diuji
 
-**Status:** draft · **Parent:** EP-06 · **Milestone:** M3 · **Prioritas:** P0
+**Status:** approved · **Parent:** EP-06 · **Milestone:** M3 · **Prioritas:** P0
 
 **Sebagai** developer, **saya ingin** memakai gateway dari OpenCode Desktop, **agar** jalur yang sama tersedia pada client desktop yang diuji.
 
@@ -144,13 +146,13 @@ Integrasi CLI tidak otomatis membuktikan Desktop dengan runtime/config berbeda b
 
 - Di luar scope: Implementasi fitur P1, klaim semua versi client kompatibel, dan SLA yang belum ditetapkan.
 - Diblokir oleh: [EP-05-T06](2026-11-22-ep-05-dashboard-dan-observabilitas.md#ep-05-t06), [EP-04-S06](2026-11-22-ep-04-affinity-dan-maintenance.md#ep-04-s06)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
 
 <a id="ep-06-t03"></a>
 
 ## [TASK] EP-06-T03 Buktikan target performa dengan dashboard aktif
 
-**Status:** draft · **Parent:** EP-06 · **Milestone:** M3 · **Prioritas:** P0
+**Status:** approved · **Parent:** EP-06 · **Milestone:** M3 · **Prioritas:** P0
 
 ### Konteks
 
@@ -173,13 +175,13 @@ Target resource perlu dibuktikan pada artefak dan kapasitas relay yang cukup, te
 
 - Di luar scope: Implementasi fitur P1, klaim semua versi client kompatibel, dan SLA yang belum ditetapkan.
 - Diblokir oleh: [EP-05-T06](2026-11-22-ep-05-dashboard-dan-observabilitas.md#ep-05-t06), [EP-04-S06](2026-11-22-ep-04-affinity-dan-maintenance.md#ep-04-s06), [EP-03-S03](2026-11-22-ep-03-pool-routing-dan-kegagalan.md#ep-03-s03), [EP-01-T06](2026-11-22-ep-01-kelayakan-dan-keputusan-mvp.md#ep-01-t06)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
 
 <a id="ep-06-t04"></a>
 
 ## [TASK] EP-06-T04 Sediakan paket deployment dan panduan yang dapat direproduksi
 
-**Status:** draft · **Parent:** EP-06 · **Milestone:** M3 · **Prioritas:** P0
+**Status:** approved · **Parent:** EP-06 · **Milestone:** M3 · **Prioritas:** P0
 
 ### Konteks
 
@@ -201,13 +203,13 @@ Operator harus dapat memasang dan memelihara paket yang sama dengan yang diuji.
 
 - Di luar scope: Implementasi fitur P1, klaim semua versi client kompatibel, dan SLA yang belum ditetapkan.
 - Diblokir oleh: [EP-05-T06](2026-11-22-ep-05-dashboard-dan-observabilitas.md#ep-05-t06), [EP-04-S06](2026-11-22-ep-04-affinity-dan-maintenance.md#ep-04-s06), [EP-06-S01](#ep-06-s01), [EP-06-S02](#ep-06-s02)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
 
 <a id="ep-06-t05"></a>
 
 ## [TASK] EP-06-T05 Tetapkan penerimaan rilis berdasarkan bukti lengkap
 
-**Status:** draft · **Parent:** EP-06 · **Milestone:** M3 · **Prioritas:** P0
+**Status:** approved · **Parent:** EP-06 · **Milestone:** M3 · **Prioritas:** P0
 
 ### Konteks
 
@@ -233,4 +235,4 @@ Keputusan rilis harus menggabungkan bukti client, pool, dashboard, performa, dan
 
 - Di luar scope: Implementasi fitur P1, klaim semua versi client kompatibel, dan SLA yang belum ditetapkan.
 - Diblokir oleh: [EP-06-S01](#ep-06-s01), [EP-06-S02](#ep-06-s02), [EP-06-T03](#ep-06-t03), [EP-06-T04](#ep-06-t04)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.

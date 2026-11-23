@@ -1,8 +1,10 @@
 ---
 title: "Client memasok identitas sesi dinamis untuk affinity"
 date: 2026-11-22
-version: 1
-status: draft
+version: 2
+status: approved
+approved_by: pengguna
+approved_at: 2026-11-23
 planner: none
 project: ""
 hierarchy: epic
@@ -14,7 +16,7 @@ capabilities: ["C-6", "C-15"]
 
 # EP-10 Client memasok identitas sesi dinamis untuk affinity
 
-**Milestone:** P1 · **Prioritas:** P1 sesuai pembagian docs · **Status:** draft · **Pemilik:** pengguna · **Tanggal:** TBD
+**Milestone:** P1 · **Prioritas:** P1 sesuai pembagian docs · **Status:** approved · **Pemilik:** pengguna · **Tanggal:** TBD
 
 ## Ringkasan
 
@@ -76,16 +78,16 @@ Penyimpanan riwayat oleh gateway, penebakan sesi dari prompt, dan klaim semua cl
 ## Keputusan dan kesiapan
 
 - Satu file untuk satu epic dengan banyak story/task adalah arahan pengguna.
-- Pembagian epic, ID lokal, urutan/dependensi, serta penjabaran AC adalah **(agent's call)** berdasarkan docs dan tetap draft.
+- Pembagian epic, ID lokal, urutan/dependensi, serta penjabaran AC berasal dari usulan agent dan telah disetujui pengguna pada 23 November 2026 ([D-015](../DECISIONS.md#d-015-persetujuan-seluruh-tiket-mvp-dan-p1)).
 - Nilai/kontrak yang belum ditetapkan menjadi hasil task pendahulu. Story yang bergantung padanya belum siap diimplementasikan sampai hasil task tersedia.
 - Kebutuhan P1 menunggu penerimaan MVP dan keputusan prioritas O-9; task bersama EP-07-T01 tidak mewajibkan Responses API dikerjakan lebih dahulu.
-- Persetujuan draft tidak diasumsikan. Tidak ada tiket yang dibuat pada planner eksternal.
+- Persetujuan mencakup epic dan seluruh child story/task pada file ini. Status `approved` menyatakan persetujuan tiket; implementasi, pemenuhan dependensi, dan kelulusan AC tetap memerlukan bukti. Tidak ada tiket yang dibuat pada planner eksternal.
 
 <a id="ep-10-t01"></a>
 
 ## [TASK] EP-10-T01 Tetapkan client dan lifecycle plugin sesi yang didukung
 
-**Status:** draft · **Parent:** EP-10 · **Milestone:** P1 · **Prioritas:** P1
+**Status:** approved · **Parent:** EP-10 · **Milestone:** P1 · **Prioritas:** P1
 
 ### Konteks
 
@@ -106,13 +108,13 @@ Plugin harus sesuai kemampuan client nyata dan kontrak O-4 yang sudah selesai.
 
 - Di luar scope: Penyimpanan riwayat oleh gateway, penebakan sesi dari prompt, dan klaim semua client mendukung plugin yang sama.
 - Diblokir oleh: [EP-07-T01](2026-11-22-ep-07-responses-api.md#ep-07-t01), [EP-04-T01](2026-11-22-ep-04-affinity-dan-maintenance.md#ep-04-t01)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
 
 <a id="ep-10-s02"></a>
 
 ## [STORY] EP-10-S02 Kirim identitas sesi yang tepat dari percakapan client
 
-**Status:** draft · **Parent:** EP-10 · **Milestone:** P1 · **Prioritas:** P1
+**Status:** approved · **Parent:** EP-10 · **Milestone:** P1 · **Prioritas:** P1
 
 **Sebagai** developer, **saya ingin** mengirim identitas sesi dari client secara otomatis, **agar** affinity per percakapan tidak perlu disusun manual pada setiap request.
 
@@ -135,13 +137,13 @@ Identitas harus melekat pada percakapan, bukan pada seluruh proses client atau i
 
 - Di luar scope: Penyimpanan riwayat oleh gateway, penebakan sesi dari prompt, dan klaim semua client mendukung plugin yang sama.
 - Diblokir oleh: [EP-10-T01](#ep-10-t01)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
 
 <a id="ep-10-t03"></a>
 
 ## [TASK] EP-10-T03 Buktikan plugin pada percakapan multi-turn dan kegagalan sesi
 
-**Status:** draft · **Parent:** EP-10 · **Milestone:** P1 · **Prioritas:** P1
+**Status:** approved · **Parent:** EP-10 · **Milestone:** P1 · **Prioritas:** P1
 
 ### Konteks
 
@@ -162,4 +164,4 @@ Pemasangan header saja tidak membuktikan percakapan dan binding benar-benar kons
 
 - Di luar scope: Penyimpanan riwayat oleh gateway, penebakan sesi dari prompt, dan klaim semua client mendukung plugin yang sama.
 - Diblokir oleh: [EP-10-S02](#ep-10-s02), [EP-04-S03](2026-11-22-ep-04-affinity-dan-maintenance.md#ep-04-s03)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.

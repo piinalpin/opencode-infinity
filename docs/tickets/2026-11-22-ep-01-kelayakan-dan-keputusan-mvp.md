@@ -1,8 +1,10 @@
 ---
 title: "Gateway layak dibangun pada lingkungan target"
 date: 2026-11-22
-version: 1
-status: draft
+version: 2
+status: approved
+approved_by: pengguna
+approved_at: 2026-11-23
 planner: none
 project: ""
 hierarchy: epic
@@ -14,7 +16,7 @@ capabilities: ["C-1", "C-2", "C-4", "C-5", "C-8", "C-9", "C-10", "C-14"]
 
 # EP-01 Gateway layak dibangun pada lingkungan target
 
-**Milestone:** M0 · **Prioritas:** P0 sesuai pembagian docs · **Status:** draft · **Pemilik:** pengguna · **Tanggal:** TBD
+**Milestone:** M0 · **Prioritas:** P0 sesuai pembagian docs · **Status:** approved · **Pemilik:** pengguna · **Tanggal:** TBD
 
 ## Ringkasan
 
@@ -80,22 +82,22 @@ Gateway produksi lengkap, dashboard operasional lengkap, dan implementasi kemamp
 ## Keputusan dan kesiapan
 
 - Satu file untuk satu epic dengan banyak story/task adalah arahan pengguna.
-- Pembagian epic, ID lokal, urutan/dependensi, serta penjabaran AC adalah **(agent's call)** berdasarkan docs dan tetap draft.
+- Pembagian epic, ID lokal, urutan/dependensi, serta penjabaran AC berasal dari usulan agent dan telah disetujui pengguna pada 23 November 2026 ([D-015](../DECISIONS.md#d-015-persetujuan-seluruh-tiket-mvp-dan-p1)).
 - Nilai/kontrak yang belum ditetapkan menjadi hasil task pendahulu. Story yang bergantung padanya belum siap diimplementasikan sampai hasil task tersedia.
 - Kebutuhan P1 menunggu penerimaan MVP dan keputusan prioritas O-9; task bersama EP-07-T01 tidak mewajibkan Responses API dikerjakan lebih dahulu.
-- Persetujuan draft tidak diasumsikan. Tidak ada tiket yang dibuat pada planner eksternal.
+- Persetujuan mencakup epic dan seluruh child story/task pada file ini. Status `approved` menyatakan persetujuan tiket; implementasi, pemenuhan dependensi, dan kelulusan AC tetap memerlukan bukti. Tidak ada tiket yang dibuat pada planner eksternal.
 
 <a id="ep-01-t01"></a>
 
 ## [TASK] EP-01-T01 Tetapkan lingkungan dan kebutuhan integrasi awal
 
-**Status:** draft · **Parent:** EP-01 · **Milestone:** M0 · **Prioritas:** P0
+**Status:** approved · **Parent:** EP-01 · **Milestone:** M0 · **Prioritas:** P0
 
 ### Konteks
 
 O-1–O-3 perlu diubah menjadi input konkret agar spike menilai lingkungan yang benar.
 
-Input terkonfirmasi melalui [D-001–D-003](../DECISIONS.md): penggunaan pribadi, gateway/pool WARP siap container di lokal atau homelab, serta akses homelab melalui Tailscale yang disiapkan pengguna. [D-006](../DECISIONS.md) menetapkan host uji amd64, Docker Compose, dan Tailscale di host; [D-007](../DECISIONS.md) menetapkan client utama OpenCode Desktop dan upstream Chat Completions. Provider/model, versi Desktop, listener final, dan kebutuhan affinity dicatat saat M0. Task ini tetap draft dan belum dinyatakan selesai.
+Input terkonfirmasi melalui [D-001–D-003](../DECISIONS.md): penggunaan pribadi, gateway/pool WARP siap container di lokal atau homelab, serta akses homelab melalui Tailscale yang disiapkan pengguna. [D-006](../DECISIONS.md) menetapkan host uji amd64, Docker Compose, dan Tailscale di host; [D-007](../DECISIONS.md) menetapkan client utama OpenCode Desktop dan upstream Chat Completions. Provider/model, versi Desktop, listener final, dan kebutuhan affinity dicatat saat M0. Task ini telah disetujui melalui D-015 dan belum dinyatakan selesai.
 
 [D-004](../DECISIONS.md) menetapkan pengguna sendiri sebagai pemilik keputusan produk dan penentu target keberhasilan. [D-005](../DECISIONS.md) menetapkan baseline dua tahap (catatan manual lalu pengukuran M0) dan pelaksana pengukurannya; angka baseline serta format pencatatan masih perlu ditetapkan.
 
@@ -116,13 +118,13 @@ Input terkonfirmasi melalui [D-001–D-003](../DECISIONS.md): penggunaan pribadi
 
 - Di luar scope: Gateway produksi lengkap, dashboard operasional lengkap, dan implementasi kemampuan P1.
 - Diblokir oleh: Tidak ada; dapat dimulai sebagai task keputusan awal.
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
 
 <a id="ep-01-t02"></a>
 
 ## [TASK] EP-01-T02 Tetapkan stack dan versi yang kompatibel dengan arsitektur
 
-**Status:** draft · **Parent:** EP-01 · **Milestone:** M0 · **Prioritas:** P0
+**Status:** approved · **Parent:** EP-01 · **Milestone:** M0 · **Prioritas:** P0
 
 ### Konteks
 
@@ -143,13 +145,13 @@ Kandidat TECHSTACK belum menjadi pilihan final atau kumpulan versi yang terbukti
 
 - Di luar scope: Gateway produksi lengkap, dashboard operasional lengkap, dan implementasi kemampuan P1.
 - Diblokir oleh: [EP-01-T01](#ep-01-t01)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
 
 <a id="ep-01-t03"></a>
 
 ## [TASK] EP-01-T03 Sediakan fixture yang membuktikan jalur dan attempt request
 
-**Status:** draft · **Parent:** EP-01 · **Milestone:** M0 · **Prioritas:** P0
+**Status:** approved · **Parent:** EP-01 · **Milestone:** M0 · **Prioritas:** P0
 
 ### Konteks
 
@@ -173,13 +175,13 @@ Pengujian deterministik perlu membedakan koneksi proxy, request yang terkirim, d
 
 - Di luar scope: Gateway produksi lengkap, dashboard operasional lengkap, dan implementasi kemampuan P1.
 - Diblokir oleh: [EP-01-T02](#ep-01-t02)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
 
 <a id="ep-01-t04"></a>
 
 ## [TASK] EP-01-T04 Buktikan satu request melalui WARP pada host target
 
-**Status:** draft · **Parent:** EP-01 · **Milestone:** M0 · **Prioritas:** P0
+**Status:** approved · **Parent:** EP-01 · **Milestone:** M0 · **Prioritas:** P0
 
 ### Konteks
 
@@ -202,13 +204,13 @@ Lulus fixture saja tidak membuktikan WARP, izin jaringan, dan upstream nyata ber
 
 - Di luar scope: Gateway produksi lengkap, dashboard operasional lengkap, dan implementasi kemampuan P1.
 - Diblokir oleh: [EP-01-T01](#ep-01-t01), [EP-01-T02](#ep-01-t02), [EP-01-T03](#ep-01-t03)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
 
 <a id="ep-01-t05"></a>
 
 ## [TASK] EP-01-T05 Buktikan UI dapat dikemas bersama aplikasi gateway
 
-**Status:** draft · **Parent:** EP-01 · **Milestone:** M0 · **Prioritas:** P0
+**Status:** approved · **Parent:** EP-01 · **Milestone:** M0 · **Prioritas:** P0
 
 ### Konteks
 
@@ -229,13 +231,13 @@ A-1/A-6 memerlukan satu artefak aplikasi yang dapat menyajikan UI tanpa service 
 
 - Di luar scope: Gateway produksi lengkap, dashboard operasional lengkap, dan implementasi kemampuan P1.
 - Diblokir oleh: [EP-01-T02](#ep-01-t02)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
 
 <a id="ep-01-t06"></a>
 
 ## [TASK] EP-01-T06 Tetapkan gerbang M0 dan rencana pengukuran MVP
 
-**Status:** draft · **Parent:** EP-01 · **Milestone:** M0 · **Prioritas:** P0
+**Status:** approved · **Parent:** EP-01 · **Milestone:** M0 · **Prioritas:** P0
 
 ### Konteks
 
@@ -260,4 +262,4 @@ D-008 sudah menetapkan target Q-4/Q-5 provisional dan fixture benchmark 5 relay 
 
 - Di luar scope: Gateway produksi lengkap, dashboard operasional lengkap, dan implementasi kemampuan P1.
 - Diblokir oleh: [EP-01-T04](#ep-01-t04), [EP-01-T05](#ep-01-t05)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.

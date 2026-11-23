@@ -1,8 +1,10 @@
 ---
 title: "Client dikonfigurasi melalui export dan secret store OS"
 date: 2026-11-22
-version: 1
-status: draft
+version: 2
+status: approved
+approved_by: pengguna
+approved_at: 2026-11-23
 planner: none
 project: ""
 hierarchy: epic
@@ -14,7 +16,7 @@ capabilities: ["C-3", "C-8", "C-16"]
 
 # EP-11 Client dikonfigurasi melalui export dan secret store OS
 
-**Milestone:** P1 · **Prioritas:** P1 sesuai pembagian docs · **Status:** draft · **Pemilik:** pengguna · **Tanggal:** TBD
+**Milestone:** P1 · **Prioritas:** P1 sesuai pembagian docs · **Status:** approved · **Pemilik:** pengguna · **Tanggal:** TBD
 
 ## Ringkasan
 
@@ -76,16 +78,16 @@ Credential upstream pada agent, browser automation autentikasi, dan dukungan sel
 ## Keputusan dan kesiapan
 
 - Satu file untuk satu epic dengan banyak story/task adalah arahan pengguna.
-- Pembagian epic, ID lokal, urutan/dependensi, serta penjabaran AC adalah **(agent's call)** berdasarkan docs dan tetap draft.
+- Pembagian epic, ID lokal, urutan/dependensi, serta penjabaran AC berasal dari usulan agent dan telah disetujui pengguna pada 23 November 2026 ([D-015](../DECISIONS.md#d-015-persetujuan-seluruh-tiket-mvp-dan-p1)).
 - Nilai/kontrak yang belum ditetapkan menjadi hasil task pendahulu. Story yang bergantung padanya belum siap diimplementasikan sampai hasil task tersedia.
 - Kebutuhan P1 menunggu penerimaan MVP dan keputusan prioritas O-9; task bersama EP-07-T01 tidak mewajibkan Responses API dikerjakan lebih dahulu.
-- Persetujuan draft tidak diasumsikan. Tidak ada tiket yang dibuat pada planner eksternal.
+- Persetujuan mencakup epic dan seluruh child story/task pada file ini. Status `approved` menyatakan persetujuan tiket; implementasi, pemenuhan dependensi, dan kelulusan AC tetap memerlukan bukti. Tidak ada tiket yang dibuat pada planner eksternal.
 
 <a id="ep-11-t01"></a>
 
 ## [TASK] EP-11-T01 Tetapkan format export dan integrasi secret store target
 
-**Status:** draft · **Parent:** EP-11 · **Milestone:** P1 · **Prioritas:** P1
+**Status:** approved · **Parent:** EP-11 · **Milestone:** P1 · **Prioritas:** P1
 
 ### Konteks
 
@@ -106,13 +108,13 @@ C-16 perlu menetapkan client/OS dan kontrak penyimpanan sebelum menjanjikan inte
 
 - Di luar scope: Credential upstream pada agent, browser automation autentikasi, dan dukungan seluruh OS/client tanpa pengujian.
 - Diblokir oleh: [EP-07-T01](2026-11-22-ep-07-responses-api.md#ep-07-t01)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
 
 <a id="ep-11-s02"></a>
 
 ## [STORY] EP-11-S02 Export konfigurasi provider yang valid tanpa secret upstream
 
-**Status:** draft · **Parent:** EP-11 · **Milestone:** P1 · **Prioritas:** P1
+**Status:** approved · **Parent:** EP-11 · **Milestone:** P1 · **Prioritas:** P1
 
 **Sebagai** operator, **saya ingin** mengekspor konfigurasi client, **agar** pemasangan provider lebih sederhana dan secret upstream tetap terpusat.
 
@@ -135,13 +137,13 @@ Operator ingin membagikan konfigurasi endpoint/model tanpa mengubah batas kepemi
 
 - Di luar scope: Credential upstream pada agent, browser automation autentikasi, dan dukungan seluruh OS/client tanpa pengujian.
 - Diblokir oleh: [EP-11-T01](#ep-11-t01)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
 
 <a id="ep-11-s03"></a>
 
 ## [STORY] EP-11-S03 Pakai token gateway dari secret store OS yang didukung
 
-**Status:** draft · **Parent:** EP-11 · **Milestone:** P1 · **Prioritas:** P1
+**Status:** approved · **Parent:** EP-11 · **Milestone:** P1 · **Prioritas:** P1
 
 **Sebagai** developer, **saya ingin** memakai token gateway dari secret store OS, **agar** credential client dapat dikelola tanpa penyimpanan plaintext yang tidak disetujui.
 
@@ -164,4 +166,4 @@ Token client perlu diakses dengan kontrak OS yang jelas tanpa fallback penyimpan
 
 - Di luar scope: Credential upstream pada agent, browser automation autentikasi, dan dukungan seluruh OS/client tanpa pengujian.
 - Diblokir oleh: [EP-11-S02](#ep-11-s02)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.

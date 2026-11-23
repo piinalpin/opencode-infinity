@@ -1,8 +1,10 @@
 ---
 title: "Operator memantau relay pool dari dashboard privat"
 date: 2026-11-22
-version: 1
-status: draft
+version: 2
+status: approved
+approved_by: pengguna
+approved_at: 2026-11-23
 planner: none
 project: ""
 hierarchy: epic
@@ -14,7 +16,7 @@ capabilities: ["C-5", "C-8", "C-9", "C-10", "C-14"]
 
 # EP-05 Operator memantau relay pool dari dashboard privat
 
-**Milestone:** M2.3 · **Prioritas:** P0 sesuai pembagian docs · **Status:** draft · **Pemilik:** pengguna · **Tanggal:** TBD
+**Milestone:** M2.3 · **Prioritas:** P0 sesuai pembagian docs · **Status:** approved · **Pemilik:** pengguna · **Tanggal:** TBD
 
 ## Ringkasan
 
@@ -80,16 +82,16 @@ Kontrol container dari UI, editor konfigurasi, billing, retensi riwayat percakap
 ## Keputusan dan kesiapan
 
 - Satu file untuk satu epic dengan banyak story/task adalah arahan pengguna.
-- Pembagian epic, ID lokal, urutan/dependensi, serta penjabaran AC adalah **(agent's call)** berdasarkan docs dan tetap draft.
+- Pembagian epic, ID lokal, urutan/dependensi, serta penjabaran AC berasal dari usulan agent dan telah disetujui pengguna pada 23 November 2026 ([D-015](../DECISIONS.md#d-015-persetujuan-seluruh-tiket-mvp-dan-p1)).
 - Nilai/kontrak yang belum ditetapkan menjadi hasil task pendahulu. Story yang bergantung padanya belum siap diimplementasikan sampai hasil task tersedia.
 - Kebutuhan P1 menunggu penerimaan MVP dan keputusan prioritas O-9; task bersama EP-07-T01 tidak mewajibkan Responses API dikerjakan lebih dahulu.
-- Persetujuan draft tidak diasumsikan. Tidak ada tiket yang dibuat pada planner eksternal.
+- Persetujuan mencakup epic dan seluruh child story/task pada file ini. Status `approved` menyatakan persetujuan tiket; implementasi, pemenuhan dependensi, dan kelulusan AC tetap memerlukan bukti. Tidak ada tiket yang dibuat pada planner eksternal.
 
 <a id="ep-05-t01"></a>
 
 ## [TASK] EP-05-T01 Tetapkan kontrak monitoring dan akses dashboard
 
-**Status:** draft · **Parent:** EP-05 · **Milestone:** M2.3 · **Prioritas:** P0
+**Status:** approved · **Parent:** EP-05 · **Milestone:** M2.3 · **Prioritas:** P0
 
 ### Konteks
 
@@ -116,13 +118,13 @@ D-009 menetapkan polling 5 detik dengan stale >15 detik untuk MVP; push SSE/WebS
 
 - Di luar scope: Kontrol container dari UI, editor konfigurasi, billing, retensi riwayat percakapan, dan platform observabilitas wajib terpisah.
 - Diblokir oleh: [EP-03-S02](2026-11-22-ep-03-pool-routing-dan-kegagalan.md#ep-03-s02), [EP-01-T02](2026-11-22-ep-01-kelayakan-dan-keputusan-mvp.md#ep-01-t02)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
 
 <a id="ep-05-s02"></a>
 
 ## [STORY] EP-05-S02 Buka dashboard hanya dengan otorisasi admin
 
-**Status:** draft · **Parent:** EP-05 · **Milestone:** M2.3 · **Prioritas:** P0
+**Status:** approved · **Parent:** EP-05 · **Milestone:** M2.3 · **Prioritas:** P0
 
 **Sebagai** operator, **saya ingin** mengakses dashboard dengan hak admin, **agar** informasi operasional tidak terbuka untuk client generasi.
 
@@ -147,13 +149,13 @@ Akses jaringan privat tidak menggantikan otorisasi dan token generasi tidak memb
 
 - Di luar scope: Kontrol container dari UI, editor konfigurasi, billing, retensi riwayat percakapan, dan platform observabilitas wajib terpisah.
 - Diblokir oleh: [EP-05-T01](#ep-05-t01), [EP-02-S02](2026-11-22-ep-02-gateway-api-dasar.md#ep-02-s02)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
 
 <a id="ep-05-s03"></a>
 
 ## [STORY] EP-05-S03 Lihat ringkasan pool dan kondisi setiap relay
 
-**Status:** draft · **Parent:** EP-05 · **Milestone:** M2.3 · **Prioritas:** P0
+**Status:** approved · **Parent:** EP-05 · **Milestone:** M2.3 · **Prioritas:** P0
 
 **Sebagai** operator, **saya ingin** melihat seluruh pool dan detail relay, **agar** jalur yang bermasalah dapat dikenali dari browser.
 
@@ -178,13 +180,13 @@ Operator perlu memahami kondisi nyata pool dan keterbatasan IP dari satu tampila
 
 - Di luar scope: Kontrol container dari UI, editor konfigurasi, billing, retensi riwayat percakapan, dan platform observabilitas wajib terpisah.
 - Diblokir oleh: [EP-05-S02](#ep-05-s02), [EP-03-S05](2026-11-22-ep-03-pool-routing-dan-kegagalan.md#ep-03-s05)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
 
 <a id="ep-05-s04"></a>
 
 ## [STORY] EP-05-S04 Kenali perubahan state dan data dashboard yang sudah lama
 
-**Status:** draft · **Parent:** EP-05 · **Milestone:** M2.3 · **Prioritas:** P0
+**Status:** approved · **Parent:** EP-05 · **Milestone:** M2.3 · **Prioritas:** P0
 
 **Sebagai** operator, **saya ingin** mengenali kesegaran informasi pool, **agar** keputusan tidak dibuat dari data lama yang terlihat baru.
 
@@ -209,13 +211,13 @@ Data lama tidak boleh terlihat sebagai pemeriksaan terbaru saat koneksi monitori
 
 - Di luar scope: Kontrol container dari UI, editor konfigurasi, billing, retensi riwayat percakapan, dan platform observabilitas wajib terpisah.
 - Diblokir oleh: [EP-05-S03](#ep-05-s03)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
 
 <a id="ep-05-s05"></a>
 
 ## [STORY] EP-05-S05 Telusuri kegagalan lewat metadata dan metrik yang teredaksi
 
-**Status:** draft · **Parent:** EP-05 · **Milestone:** M2.3 · **Prioritas:** P0
+**Status:** approved · **Parent:** EP-05 · **Milestone:** M2.3 · **Prioritas:** P0
 
 **Sebagai** operator, **saya ingin** menelusuri kegagalan melalui metadata, **agar** penyebab gangguan dapat dipahami tanpa merekam percakapan.
 
@@ -240,13 +242,13 @@ Operator membutuhkan diagnosis tanpa menyimpan konten percakapan atau membuat la
 
 - Di luar scope: Kontrol container dari UI, editor konfigurasi, billing, retensi riwayat percakapan, dan platform observabilitas wajib terpisah.
 - Diblokir oleh: [EP-05-T01](#ep-05-t01), [EP-03-S05](2026-11-22-ep-03-pool-routing-dan-kegagalan.md#ep-03-s05)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
 
 <a id="ep-05-t06"></a>
 
 ## [TASK] EP-05-T06 Sajikan dashboard terintegrasi pada artefak gateway
 
-**Status:** draft · **Parent:** EP-05 · **Milestone:** M2.3 · **Prioritas:** P0
+**Status:** approved · **Parent:** EP-05 · **Milestone:** M2.3 · **Prioritas:** P0
 
 ### Konteks
 
@@ -269,4 +271,4 @@ Dashboard MVP harus dapat dipasang bersama aplikasi dan diuji terhadap state nya
 
 - Di luar scope: Kontrol container dari UI, editor konfigurasi, billing, retensi riwayat percakapan, dan platform observabilitas wajib terpisah.
 - Diblokir oleh: [EP-05-S04](#ep-05-s04), [EP-05-S05](#ep-05-s05), [EP-04-S04](2026-11-22-ep-04-affinity-dan-maintenance.md#ep-04-s04), [EP-01-T05](2026-11-22-ep-01-kelayakan-dan-keputusan-mvp.md#ep-01-t05)
-- Acuan keputusan dan penjabaran: **(agent's call)** mengikuti bagian Keputusan dan kesiapan pada epic ini.
+- Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
