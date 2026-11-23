@@ -14,7 +14,7 @@ capabilities: ["C-11", "C-12", "C-13", "C-15", "C-16"]
 
 # EP-07 Agent dapat memakai Responses API yang diuji
 
-**Milestone:** P1 · **Prioritas:** P1 sesuai pembagian docs · **Status:** draft · **Pemilik/tanggal:** TBD
+**Milestone:** P1 · **Prioritas:** P1 sesuai pembagian docs · **Status:** draft · **Pemilik:** pengguna · **Tanggal:** TBD
 
 ## Ringkasan
 

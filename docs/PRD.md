@@ -1,7 +1,7 @@
 # PRD — opencode-infinity
 
 Versi: 0.1.13  
-Tanggal: 22 November 2026  
+Tanggal: 23 November 2026  
 Status: Draft revisi; belum disetujui  
 Ukuran: Full PRD  
 Pemilik produk: pengguna sendiri — D-004  
@@ -184,7 +184,7 @@ Gerbang M3 menggabungkan cakupan penerimaan yang sudah ada; pemetaan eksplisit k
 | Host Linux tunggal dan Docker Compose sebagai asumsi awal (agent's call) | Dukungan host native multi-OS dan multi-host berada di luar MVP | Konfirmasi host dan arsitektur CPU pada O-2 |
 | Akses loopback atau privat sebagai default (agent's call) | Admin dan jalur transport internal tetap privat | Buktikan konfigurasi deployment sesuai batas akses |
 | Sumber status gateway untuk web UI dashboard | Dashboard mencerminkan data operasional yang sama dengan gateway, dengan otorisasi admin | Validasi kesesuaian data, pembaruan, dan akses dashboard pada M2 |
-| Sinyal sesi dari client untuk strict affinity per percakapan | Tanpa sinyal sesi, fixed routing bersama tidak memberi isolasi percakapan atau pengenalan sesi lama setelah restart | Putuskan kebutuhan model dan integrasi sesi pada O-3–O-4 |
+| Sinyal sesi dari client untuk strict affinity per percakapan | Tanpa sinyal sesi, fixed routing bersama tidak memberi isolasi percakapan atau pengenalan sesi lama setelah restart | D-013 menetapkan fixed routing MVP, lifecycle strict diuji lewat fixture, dan dukungan client menunggu C-15 |
 | Penggunaan image/source proyek referensi bersifat opsional | Lisensi dan perilaku proyek referensi tidak otomatis menjadi kontrak gateway | Pin versi/digest, periksa lisensi, dan catat hasil saat komponen diadopsi |
 
 Go, format konfigurasi YAML, dan contoh dua relay tetap merupakan usulan teknis awal **(agent's call)**, bukan syarat produk tambahan. Rincian dipertahankan pada catatan teknis. Client dapat berjalan di OS yang didukung versi agent terkait; dukungan deployment lokal melalui VM Docker perlu validasi terpisah.
@@ -262,16 +262,16 @@ Riwayat:
 - **0.1.1 — 22 November 2026:** struktur, ukuran keberhasilan, keterlacakan, asumsi, gerbang rilis, dan pertanyaan berpenanggung jawab diperjelas; ide dan cakupan dipertahankan; detail teknis beserta AC-01–AC-19 dipindahkan utuh ke dokumen pendamping.
 - **0.1.2 — 22 November 2026:** warp-relay-pool ditetapkan sebagai referensi utama sesuai arahan pengguna; dashboard pemantauan C-14 dimasukkan ke MVP; tujuan, kualitas, acceptance, milestone, risiko, dan deliverable diselaraskan tanpa mengubah ID yang sudah ada.
 - **0.1.3 — 22 November 2026:** D-001–D-003 dicatat; persona dan target deployment awal diselaraskan; O-2/O-8 tetap terbuka untuk bagian yang belum dijawab.
-- **0.1.4 — 22 November 2026:** D-005 dicatat; metode dan pelaksana pengukuran baseline G-1–G-7 ditetapkan, tanpa mengesahkan angka target; O-1 tetap terbuka untuk angka aktual.
-- **0.1.5 — 22 November 2026:** D-006 dicatat; host uji amd64, Docker Compose, dan Tailscale di host ditetapkan untuk O-2; asumsi Linux/Compose pada deployment diperbarui.
-- **0.1.6 — 22 November 2026:** D-007 dicatat; client utama Desktop dan upstream Chat Completions ditetapkan untuk O-3, tanpa mengesahkan provider/model atau angka target.
-- **0.1.7 — 22 November 2026:** D-008 dicatat; target Q-4/Q-5 dan fixture benchmark 5×5 disetujui sebagai target provisional.
-- **0.1.8 — 22 November 2026:** D-009 dicatat; dashboard MVP memakai polling 5 detik dengan stale >15 detik, push SSE/WebSocket dipindahkan ke P1.
-- **0.1.9 — 22 November 2026:** D-010 dicatat; rilis MVP bersifat event-driven, penanggung jawab pengguna, tanpa anggaran baru, tag `v0.1.0-mvp`.
-- **0.1.10 — 22 November 2026:** D-011 dicatat; tidak ada SLA formal, pemulihan best-effort, tanpa klaim uptime.
-- **0.1.11 — 22 November 2026:** D-012 dicatat; urutan P1 ditetapkan dengan C-11 lebih dulu dan hot reload tidak diprioritaskan.
-- **0.1.12 — 22 November 2026:** D-013 dicatat; MVP memakai fixed routing dan lifecycle strict dibuktikan lewat fixture sampai C-15 tersedia.
-- **0.1.13 — 22 November 2026:** D-014 dicatat; drain 60 detik dengan batas keras 30 menit dan catatan eksplisit menggantikan kebijakan shutdown yang tertunda.
+- **0.1.4 — 23 November 2026:** D-005 dicatat; metode dan pelaksana pengukuran baseline G-1–G-7 ditetapkan, tanpa mengesahkan angka target; O-1 tetap terbuka untuk angka aktual.
+- **0.1.5 — 23 November 2026:** D-006 dicatat; host uji amd64, Docker Compose, dan Tailscale di host ditetapkan untuk O-2; asumsi Linux/Compose pada deployment diperbarui.
+- **0.1.6 — 23 November 2026:** D-007 dicatat; client utama Desktop dan upstream Chat Completions ditetapkan untuk O-3, tanpa mengesahkan provider/model atau angka target.
+- **0.1.7 — 23 November 2026:** D-008 dicatat; target Q-4/Q-5 dan fixture benchmark 5×5 disetujui sebagai target provisional.
+- **0.1.8 — 23 November 2026:** D-009 dicatat; dashboard MVP memakai polling 5 detik dengan stale >15 detik, push SSE/WebSocket dipindahkan ke P1.
+- **0.1.9 — 23 November 2026:** D-010 dicatat; rilis MVP bersifat event-driven, penanggung jawab pengguna, tanpa anggaran baru, tag `v0.1.0-mvp`.
+- **0.1.10 — 23 November 2026:** D-011 dicatat; tidak ada SLA formal, pemulihan best-effort, tanpa klaim uptime.
+- **0.1.11 — 23 November 2026:** D-012 dicatat; urutan P1 ditetapkan dengan C-11 lebih dulu dan hot reload tidak diprioritaskan.
+- **0.1.12 — 23 November 2026:** D-013 dicatat; MVP memakai fixed routing dan lifecycle strict dibuktikan lewat fixture sampai C-15 tersedia.
+- **0.1.13 — 23 November 2026:** D-014 dicatat; drain 60 detik dengan batas keras 30 menit dan catatan eksplisit menggantikan kebijakan shutdown yang tertunda.
 
 ## 15. Referensi
 

@@ -14,7 +14,7 @@ capabilities: ["C-1", "C-2", "C-3", "C-4", "C-5", "C-6", "C-7", "C-8", "C-9", "C
 
 # EP-06 MVP dapat dipakai dan dioperasikan pada deployment yang teruji
 
-**Milestone:** M3 · **Prioritas:** P0 sesuai pembagian docs · **Status:** draft · **Pemilik/tanggal:** TBD
+**Milestone:** M3 · **Prioritas:** P0 sesuai pembagian docs · **Status:** draft · **Pemilik:** pengguna · **Tanggal:** TBD
 
 ## Ringkasan
 
@@ -164,8 +164,8 @@ Target resource perlu dibuktikan pada artefak dan kapasitas relay yang cukup, te
 
 ### Acceptance criteria
 
-- **AC1:** **Given** target O-6 disahkan dan fixture pembanding siap, **When** latensi gateway dibanding jalur SOCKS5 yang sama, **Then** p95 tambahan ≤50 ms sesuai Q-4 dan command/konfigurasi tersimpan.
-- **AC2:** **Given** host uji 2 vCPU/2 GiB dan kapasitas relay memadai, **When** 20 stream berjalan 30 menit dengan dashboard aktif, **Then** RSS gateway ≤256 MiB sesuai Q-5.
+- **AC1:** **Given** target provisional D-008 dan fixture pembanding siap, **When** latensi gateway dibanding jalur SOCKS5 yang sama, **Then** p95 tambahan ≤50 ms sesuai Q-4 dan command/konfigurasi tersimpan.
+- **AC2:** **Given** host uji 2 vCPU/2 GiB dan fixture 5 relay × 5 slot, **When** 20 stream berjalan 30 menit dengan dashboard aktif, **Then** RSS gateway ≤256 MiB sesuai Q-5.
 - **AC3:** **Given** benchmark selesai, **When** laporan disusun, **Then** ukuran aset/image, konsumsi WARP, dan total deployment dilaporkan terpisah dari RSS gateway.
 - **AC4 (negatif/edge):** **Given** kapasitas kurang, target terlampaui, atau fixture tidak sesuai, **When** hasil ditinjau, **Then** AC-19 tidak diberi status lulus dan hambatan dicatat.
 
@@ -226,7 +226,7 @@ Keputusan rilis harus menggabungkan bukti client, pool, dashboard, performa, dan
 - **AC1:** **Given** artefak rilis yang sama tersedia, **When** suite penerimaan ditinjau, **Then** AC-01–AC-22 mempunyai hasil dan bukti lulus yang dapat ditelusuri.
 - **AC2:** **Given** hasil integrasi dan benchmark tersedia, **When** G-1–G-7 serta Q-1–Q-11 dievaluasi, **Then** laporan mencatat hasil, versi, batas kompatibilitas, serta baseline aktual atau TBD tanpa angka rekaan.
 - **AC3:** **Given** model rilis sudah ditetapkan D-010 (event-driven, tanpa anggaran baru, tag `v0.1.0-mvp`), **When** kesiapan rilis ditinjau, **Then** isi catatan rilis, mekanisme distribusi image, dan bukti gerbang M3 dicatat sebelum tag dibuat.
-- **AC4:** **Given** SLA tidak diperlukan atau belum ditetapkan pada O-7, **When** klaim rilis disusun, **Then** tidak ada SLA numerik atau jaminan kompatibilitas/IP yang tidak memiliki bukti.
+- **AC4:** **Given** D-011 menetapkan tidak ada SLA formal, **When** klaim rilis disusun, **Then** tidak ada SLA numerik atau jaminan kompatibilitas/IP yang tidak memiliki bukti.
 - **AC5 (negatif/edge):** **Given** satu skenario wajib gagal atau blocker rilis belum selesai, **When** rilis dinilai, **Then** MVP tidak dinyatakan diterima dengan menghilangkan skenario atau menunda dashboard ke P1.
 
 ### Batas dan dependensi

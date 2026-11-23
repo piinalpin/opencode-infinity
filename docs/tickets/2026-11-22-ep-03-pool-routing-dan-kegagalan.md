@@ -14,7 +14,7 @@ capabilities: ["C-2", "C-4", "C-5", "C-9"]
 
 # EP-03 Request tetap terkendali ketika kondisi relay berubah
 
-**Milestone:** M2.1 · **Prioritas:** P0 sesuai pembagian docs · **Status:** draft · **Pemilik/tanggal:** TBD
+**Milestone:** M2.1 · **Prioritas:** P0 sesuai pembagian docs · **Status:** draft · **Pemilik:** pengguna · **Tanggal:** TBD
 
 ## Ringkasan
 

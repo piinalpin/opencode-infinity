@@ -106,20 +106,22 @@ Tautan berikut menunjukkan tiket pembuktian terkait. [EP-06-T05](tickets/2026-11
 | AC-21 | [EP-05-T01](tickets/2026-11-22-ep-05-dashboard-dan-observabilitas.md#ep-05-t01), [EP-05-S04](tickets/2026-11-22-ep-05-dashboard-dan-observabilitas.md#ep-05-s04), [EP-05-T06](tickets/2026-11-22-ep-05-dashboard-dan-observabilitas.md#ep-05-t06) |
 | AC-22 | [EP-05-T01](tickets/2026-11-22-ep-05-dashboard-dan-observabilitas.md#ep-05-t01), [EP-05-S02](tickets/2026-11-22-ep-05-dashboard-dan-observabilitas.md#ep-05-s02), [EP-05-S05](tickets/2026-11-22-ep-05-dashboard-dan-observabilitas.md#ep-05-s05), [EP-05-T06](tickets/2026-11-22-ep-05-dashboard-dan-observabilitas.md#ep-05-t06) |
 
-## Task keputusan terbuka
+## Peta keputusan dan status
 
-| Pertanyaan PRD | Penanggung jawab lokal |
-|---|---|
-| O-1 | [EP-01-T01](tickets/2026-11-22-ep-01-kelayakan-dan-keputusan-mvp.md#ep-01-t01) |
-| O-2 | [EP-01-T01](tickets/2026-11-22-ep-01-kelayakan-dan-keputusan-mvp.md#ep-01-t01) |
-| O-3 | [EP-01-T01](tickets/2026-11-22-ep-01-kelayakan-dan-keputusan-mvp.md#ep-01-t01) |
-| O-4 | [EP-04-T01](tickets/2026-11-22-ep-04-affinity-dan-maintenance.md#ep-04-t01) |
-| O-5 | [EP-04-T05](tickets/2026-11-22-ep-04-affinity-dan-maintenance.md#ep-04-t05) |
-| O-6 | [EP-01-T06](tickets/2026-11-22-ep-01-kelayakan-dan-keputusan-mvp.md#ep-01-t06), [EP-06-T03](tickets/2026-11-22-ep-06-integrasi-dan-rilis-mvp.md#ep-06-t03) |
-| O-7 | [EP-06-T05](tickets/2026-11-22-ep-06-integrasi-dan-rilis-mvp.md#ep-06-t05) |
-| O-8 | [EP-06-T05](tickets/2026-11-22-ep-06-integrasi-dan-rilis-mvp.md#ep-06-t05) |
-| O-9 | [EP-07-T01](tickets/2026-11-22-ep-07-responses-api.md#ep-07-t01) |
-| O-10 | [EP-05-T01](tickets/2026-11-22-ep-05-dashboard-dan-observabilitas.md#ep-05-t01) |
+Seluruh O-1–O-10 sudah memiliki jawaban pengguna; task lokal tetap menutup detail pelaksanaannya.
+
+| Pertanyaan PRD | Keputusan | Status | Task lokal |
+|---|---|---|---|
+| O-1 | D-005 | Metode ditetapkan; angka baseline TBD sampai M0 | [EP-01-T01](tickets/2026-11-22-ep-01-kelayakan-dan-keputusan-mvp.md#ep-01-t01) |
+| O-2 | D-006 | Host/topologi ditetapkan; listener dan tailnet TBD | [EP-01-T01](tickets/2026-11-22-ep-01-kelayakan-dan-keputusan-mvp.md#ep-01-t01) |
+| O-3 | D-007 | Kelas client/upstream ditetapkan; provider dan versi dicatat saat M0 | [EP-01-T01](tickets/2026-11-22-ep-01-kelayakan-dan-keputusan-mvp.md#ep-01-t01) |
+| O-4 | D-013 | Fixed routing MVP; fixture membuktikan lifecycle strict | [EP-04-T01](tickets/2026-11-22-ep-04-affinity-dan-maintenance.md#ep-04-t01) |
+| O-5 | D-014 | Drain 60 detik + batas keras 30 menit; nilai grace period TBD | [EP-04-T05](tickets/2026-11-22-ep-04-affinity-dan-maintenance.md#ep-04-t05) |
+| O-6 | D-008 | Target provisional dan fixture 5×5; default timeout/probe TBD | [EP-01-T06](tickets/2026-11-22-ep-01-kelayakan-dan-keputusan-mvp.md#ep-01-t06), [EP-06-T03](tickets/2026-11-22-ep-06-integrasi-dan-rilis-mvp.md#ep-06-t03) |
+| O-7 | D-011 | Tidak ada SLA formal; best-effort | [EP-06-T05](tickets/2026-11-22-ep-06-integrasi-dan-rilis-mvp.md#ep-06-t05) |
+| O-8 | D-010 | Rilis event-driven, tanpa anggaran baru | [EP-06-T05](tickets/2026-11-22-ep-06-integrasi-dan-rilis-mvp.md#ep-06-t05) |
+| O-9 | D-012 | Urutan P1 ditetapkan; hot reload tidak diprioritaskan | [EP-07-T01](tickets/2026-11-22-ep-07-responses-api.md#ep-07-t01) |
+| O-10 | D-009 | Polling 5 detik/stale 15 detik; target P1 push TBD | [EP-05-T01](tickets/2026-11-22-ep-05-dashboard-dan-observabilitas.md#ep-05-t01) |
 
 Pemilik keputusan produk dan target adalah pengguna sendiri sesuai D-004; D-005 menetapkan metode baseline dua tahap serta pelaksana pengukurannya, D-006 menetapkan host amd64 serta Tailscale di host, D-007 menetapkan client utama Desktop dengan upstream Chat Completions, D-008 menetapkan target performa provisional serta fixture benchmark 5×5, D-009 menetapkan polling dashboard MVP dengan push SSE di P1, D-010 menetapkan rilis event-driven dengan tag `v0.1.0-mvp`, D-011 menetapkan tidak ada SLA formal, D-012 menetapkan urutan P1 dengan hot reload tidak diprioritaskan, D-013 menetapkan fixed routing MVP dengan lifecycle strict diuji lewat fixture, dan D-014 menetapkan drain 60 detik dengan batas keras 30 menit. Angka baseline G-1–G-7, listener final, hostname tailnet, provider/model/versi persis, default timeout/probe, serta peran lain yang belum dipilih tetap TBD. O-1 tidak menahan pembuatan fixture, O-7 sudah dijawab tanpa SLA, dan O-9 tidak menahan penerimaan MVP.
 

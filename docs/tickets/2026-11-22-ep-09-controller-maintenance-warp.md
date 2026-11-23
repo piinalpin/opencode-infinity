@@ -14,7 +14,7 @@ capabilities: ["C-7", "C-9", "C-13"]
 
 # EP-09 Maintenance WARP berjalan otomatis tanpa melanggar binding
 
-**Milestone:** P1 · **Prioritas:** P1 sesuai pembagian docs · **Status:** draft · **Pemilik/tanggal:** TBD
+**Milestone:** P1 · **Prioritas:** P1 sesuai pembagian docs · **Status:** draft · **Pemilik:** pengguna · **Tanggal:** TBD
 
 ## Ringkasan
 

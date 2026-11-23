@@ -1,7 +1,7 @@
 # Keputusan opencode-infinity
 
 Versi: 0.1.11  
-Tanggal: 22 November 2026
+Tanggal: 23 November 2026
 
 Catatan ini memisahkan keputusan eksplisit pengguna dari usulan dan pertanyaan yang belum selesai. Keputusan terkonfirmasi diterapkan ke PRD/arsitektur terkait; status keseluruhan draft tidak otomatis menjadi approved.
 
@@ -124,7 +124,7 @@ Catatan ini memisahkan keputusan eksplisit pengguna dari usulan dan pertanyaan y
 - **Belum diputuskan:** nilai final `stop_grace_period`, format log ringkasan shutdown, dan exit code yang dipakai; dicatat pada EP-04-T05 dan EP-06-T03.
 - **Acuan:** O-5, C-7, Q-6, ARCHITECTURE §10, EP-04-T05, dan EP-06-T03.
 
-## Pertanyaan berikutnya
+## Status pertanyaan terbuka
 
 Seluruh pertanyaan keputusan yang dijadwalkan (O-1–O-10) sudah memiliki jawaban pengguna atau batas terbuka yang tercatat. Bagian yang masih `TBD` adalah angka baseline, provider/model/versi persis, listener/tailnet, default timeout/probe, dan detail pelaksanaan yang menunggu pengukuran M0. Tidak ada keputusan baru yang diusulkan tanpa kebutuhan nyata dari spike.
 

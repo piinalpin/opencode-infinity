@@ -1,7 +1,7 @@
 # ROADMAP opencode-infinity
 
 Versi: 0.1.1  
-Tanggal: 22 November 2026  
+Tanggal: 23 November 2026  
 Status: Draft rencana pengerjaan  
 Target rilis dan penanggung jawab: rilis event-driven saat M3 lulus, penanggung jawab pengguna, tag `v0.1.0-mvp` (D-010)
 
@@ -52,7 +52,7 @@ flowchart TD
 | M0 | Keputusan arsitektur tervalidasi, stack dipilih, satu jalur WARP terbukti | Pilihan host, upstream/model, dan versi client | Direncanakan |
 | M1 | Gateway satu relay melayani kontrak dasar dengan benar | M0 lulus | Direncanakan |
 | M2.1 | Pool, health, kapasitas, cooldown, dan lifecycle request bekerja | M1 lulus | Direncanakan |
-| M2.2 | Binding dan maintenance menjaga konsistensi jalur | State/reservasi atomik M2.1; keputusan O-4/O-5 terkait | Direncanakan |
+| M2.2 | Binding dan maintenance menjaga konsistensi jalur | State/reservasi atomik M2.1; keputusan D-013/D-014 | Direncanakan |
 | M2.3 | Operator memantau pool melalui dashboard yang terlindungi | State/snapshot M2.1; kontrak auth dan kesegaran data | Direncanakan |
 | M3 | Integrasi client, seluruh acceptance, paket deployment, dan bukti performa lengkap | Seluruh gerbang M2 lulus | Direncanakan |
 
@@ -65,8 +65,8 @@ M2.2 dan M2.3 dapat berjalan bersamaan setelah kontrak state/snapshot stabil. In
 ### Persiapan dan keputusan
 
 - [ ] Tinjau cakupan MVP dan A-1–A-8; catat keputusan serta konsekuensi yang perlu diperbarui pada dokumen.
-- [ ] Tetapkan host uji, arsitektur CPU, akses jaringan, dan kebutuhan image WARP; tutup O-2.
-- [ ] Pilih upstream/model uji serta versi OpenCode CLI, Desktop, dan runtime provider; tutup O-3.
+- [ ] Catat listener final, hostname tailnet, dan detail sertifikat pada matriks host (D-006); sisa O-2 tidak memblokir fixture.
+- [ ] Catat provider/model persis dan versi Desktop pada M0 (D-007); keputusan kelas upstream sudah ditetapkan.
 - [ ] Pastikan model awal sesuai Chat Completions MVP. Jika membutuhkan Responses API atau jaminan affinity yang belum dapat dipenuhi, selesaikan keputusan produk sebelum M0 ditutup.
 - [ ] Susun rencana pembuktian AC dan quality bars sebelum implementasi tiap area.
 
@@ -84,7 +84,7 @@ M2.2 dan M2.3 dapat berjalan bersamaan setelah kontrak state/snapshot stabil. In
 
 **Hasil:** catatan keputusan arsitektur/stack, matriks versi dan image, konfigurasi spike tanpa secret, rencana pengujian, serta bukti transport yang dapat direproduksi.
 
-**Gerbang lulus:** satu request nyata melewati WARP; fixture membuktikan jalur proxy dan tidak ada direct fallback; kontrak model/client awal sesuai cakupan; hambatan yang mengubah kelayakan sudah diputuskan. Hasil spike menjadi dasar estimasi M1–M3. O-4/O-5/O-6/O-10 yang belum selesai mempunyai pemilik dan batas keputusan yang jelas.
+**Gerbang lulus:** satu request nyata melewati WARP; fixture membuktikan jalur proxy dan tidak ada direct fallback; kontrak model/client awal sesuai cakupan; hambatan yang mengubah kelayakan sudah diputuskan. Hasil spike menjadi dasar estimasi M1–M3. Keputusan O-4/O-5/O-6/O-10 sudah ditetapkan (D-008/D-009/D-013/D-014); sisa `TBD` hanya angka baseline, provider/model/versi persis, listener/tailnet, dan default timeout/probe.
 
 ## 4. M1 Gateway dasar
 
@@ -125,13 +125,13 @@ M2 melengkapi C-4–C-7, C-9, dan C-14. Pemilik usulan: backend, web UI, operato
 
 ### M2.2 Affinity dan maintenance
 
-- [ ] Selesaikan lifecycle sesi baru/lanjutan, TTL, expiry, dan restart sesuai kemampuan client; tutup O-4 sebelum klaim strict affinity per percakapan.
+- [ ] Buktikan lifecycle sesi baru/lanjutan, TTL, expiry, dan penolakan sesi lama setelah restart pada fixture sesuai D-013; klaim strict affinity untuk client nyata menunggu C-15.
 - [ ] Implementasikan binding pada scope token/upstream/model/session dengan batas kapasitas dan relay/generasi yang tetap.
 - [ ] Tolak binding hilang/tidak valid secara eksplisit; uji bahwa binding aktif tidak digusur dan tidak dipindahkan diam-diam.
 - [ ] Uji perubahan identitas yang diketahui serta batas deteksi perubahan eksternal.
 - [ ] Lengkapi drain dengan pemeriksaan request aktif dan binding sebelum maintenance identitas.
 - [ ] Susun prosedur restart/rekey oleh operator, pembatalan binding eksplisit, pembaruan generasi, dan pemeriksaan health sebelum enable.
-- [ ] Selaraskan shutdown, deadline drain, serta grace period container; tutup O-5 sebelum gerbang rilis.
+- [ ] Terapkan D-014 pada shutdown: drain 60 detik, batas keras 30 menit, catatan stream/binding yang diputus, dan nilai `stop_grace_period` serta exit code yang final.
 - [ ] Dokumentasikan batas fixed routing untuk client tanpa sinyal sesi eksplisit; plugin session ID dinamis tetap P1.
 
 **Hasil:** binding teruji, prosedur maintenance/shutdown, dan batas kompatibilitas sesi yang jelas.
@@ -144,7 +144,7 @@ M2 melengkapi C-4–C-7, C-9, dan C-14. Pemilik usulan: backend, web UI, operato
 - [ ] Tampilkan ringkasan pool dan seluruh relay terkonfigurasi: state, generasi, inflight/kapasitas, observasi IP, cooldown, serta alasan gangguan.
 - [ ] Sediakan log metadata dan metrik operasional dengan label yang dibatasi; raw session/request ID tidak menjadi label metrik.
 - [ ] Tetapkan kontrak autentikasi browser, lifecycle sesi admin, dan perlindungan endpoint status/metrik.
-- [ ] Terapkan polling 5 detik dengan ambang stale 15 detik sesuai D-009 dan tutup O-10 untuk MVP; push SSE/WebSocket dicatat sebagai kandidat P1.
+- [ ] Terapkan polling 5 detik dengan ambang stale 15 detik sesuai D-009; push SSE/WebSocket dicatat sebagai kandidat P1.
 - [ ] Terapkan pembaruan otomatis, waktu data terakhir, dan penanda gagal/stale; bedakan waktu snapshot dari waktu probe relay.
 - [ ] Pastikan refresh UI atau banyak tab tidak memicu probe upstream baru dan tidak menahan dispatch generasi.
 - [ ] Integrasikan UI ke artefak aplikasi; uji pemantauan melalui browser terhadap fixture yang berubah.
@@ -164,7 +164,7 @@ M2 melengkapi C-4–C-7, C-9, dan C-14. Pemilik usulan: backend, web UI, operato
 - [ ] Verifikasi seluruh AC-01–AC-22 pada artefak rilis yang sama; hasil fixture tidak menggantikan pengujian client dan WARP nyata.
 - [ ] Ukur overhead p95 tambahan ≤50 ms terhadap jalur SOCKS5 pembanding yang sama.
 - [ ] Uji 20 stream selama 30 menit pada host 2 vCPU/2 GiB dengan RSS gateway ≤256 MiB, dashboard aktif, dan kapasitas relay mencukupi; fixture benchmark 5 relay × 5 slot sesuai D-008.
-- [ ] Ukur ukuran aset/image dan pemakaian WARP/total deployment secara terpisah; target tambahan yang belum disahkan diselesaikan melalui O-6.
+- [ ] Ukur ukuran aset/image dan pemakaian WARP/total deployment secara terpisah; target tambahan mengikuti D-008 sampai ada revisi keputusan.
 - [ ] Periksa kembali kompatibilitas, dukungan, dan keamanan versi yang dipilih; catat exact version, commit, digest, serta perubahan sejak M0.
 - [ ] Siapkan binary/image gateway beserta UI, Compose contoh minimal dua relay, dan konfigurasi/secret placeholder.
 - [ ] Uji pemasangan dari konfigurasi bersih, startup, status, akses dashboard, drain, maintenance, restart, serta shutdown sesuai prosedur.
@@ -215,7 +215,7 @@ Jika hasil spike bertentangan dengan kebutuhan, catat dampaknya dan perbarui kep
 
 ## 9. Pengembangan P1 setelah MVP
 
-Urutan berikut mengikuti ID kapabilitas, bukan komitmen prioritas pengerjaan. Penjadwalannya ditetapkan melalui O-9 setelah penerimaan MVP.
+Urutan berikut mengikuti ID kapabilitas, bukan komitmen prioritas pengerjaan. Penjadwalan P1 mengikuti D-012 setelah penerimaan MVP.
 
 | Kapabilitas | Hasil yang dituju | Dependensi dan gerbang |
 |---|---|---|

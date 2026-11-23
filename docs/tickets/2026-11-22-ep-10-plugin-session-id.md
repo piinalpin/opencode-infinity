@@ -14,7 +14,7 @@ capabilities: ["C-6", "C-15"]
 
 # EP-10 Client memasok identitas sesi dinamis untuk affinity
 
-**Milestone:** P1 · **Prioritas:** P1 sesuai pembagian docs · **Status:** draft · **Pemilik/tanggal:** TBD
+**Milestone:** P1 · **Prioritas:** P1 sesuai pembagian docs · **Status:** draft · **Pemilik:** pengguna · **Tanggal:** TBD
 
 ## Ringkasan
 

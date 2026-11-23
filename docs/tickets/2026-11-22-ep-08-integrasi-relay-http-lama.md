@@ -14,7 +14,7 @@ capabilities: ["C-12"]
 
 # EP-08 Operator mempertahankan stack relay HTTP yang sudah ada
 
-**Milestone:** P1 · **Prioritas:** P1 sesuai pembagian docs · **Status:** draft · **Pemilik/tanggal:** TBD
+**Milestone:** P1 · **Prioritas:** P1 sesuai pembagian docs · **Status:** draft · **Pemilik:** pengguna · **Tanggal:** TBD
 
 ## Ringkasan
 

@@ -1,7 +1,7 @@
 # ARCHITECTURE opencode-infinity
 
 Versi: 0.1.4  
-Tanggal: 22 November 2026  
+Tanggal: 23 November 2026  
 Status: Draft arsitektur MVP; belum disetujui  
 Acuan kebutuhan: [PRD 0.1.13](PRD.md)  
 Referensi utama: [warp-relay-pool](https://github.com/trefeon/warp-relay-pool)
@@ -148,7 +148,7 @@ Pemisahan dimensi di atas adalah penjabaran arsitektur **(agent's call)**. State
 
 Binding eksplisit mengikuti identitas token, upstream, model, dan session ID. Jika identitas yang dibutuhkan binding tidak dapat dipertahankan, request gagal secara eksplisit; router tidak membuat binding pengganti secara diam-diam. Jumlah binding dan TTL dibatasi, dan binding aktif tidak digusur untuk menerima sesi baru.
 
-Tanpa sinyal sesi eksplisit, fixed routing hanya memberi kestabilan jalur bersama pada scope mapping dan lifetime proses. Ia tidak memberikan isolasi percakapan atau deteksi sesi lama setelah restart. Kontrak awal pembentukan sesi pada catatan teknis harus divalidasi dengan client yang dipilih; O-4 tetap memblokir klaim strict affinity per percakapan sampai lifecycle sesi baru/lanjutan dan restart terbukti.
+Tanpa sinyal sesi eksplisit, fixed routing hanya memberi kestabilan jalur bersama pada scope mapping dan lifetime proses. Ia tidak memberikan isolasi percakapan atau deteksi sesi lama setelah restart. Kontrak awal pembentukan sesi pada catatan teknis harus divalidasi dengan client yang dipilih; D-013 menetapkan MVP tidak mengklaim strict affinity untuk client nyata, sedangkan lifecycle strict dibuktikan lewat fixture dan dukungan client menunggu C-15.
 
 Generasi identitas adalah state yang diketahui gateway, bukan bukti bahwa setiap perubahan IP atau restart eksternal dapat dideteksi. Maintenance terkontrol harus memberi gateway kesempatan menonaktifkan assignment, membatalkan binding bila disetujui operator, dan memperbarui generasi sebelum trafik dibuka. Model yang memerlukan identitas jaringan absolut dinyatakan tidak kompatibel bila persyaratannya tidak dapat dibuktikan.
 
@@ -260,11 +260,11 @@ Validasi arsitektur mengikuti gerbang M0–M3 pada PRD. Prioritas sebelum meneta
 
 | Keputusan tersisa | Acuan | Pemilik usulan | Batas keputusan |
 |---|---|---|---|
-| Host/arsitektur CPU dan batas deployment | O-2 | Operator, TBD | Sebelum M0 selesai |
-| Upstream/model serta client/protokol yang diuji | O-3 | Pemilik produk + tim implementasi, TBD | Sebelum M0 selesai |
-| Lifecycle sesi strict dan deteksi lanjutan setelah restart | O-4 | Tim implementasi, TBD | Sebelum klaim dukungan strict per percakapan |
+| Host/arsitektur CPU dan batas deployment | O-2 | Pengguna/operator; D-006 | Listener final dan tailnet sebelum M0 selesai |
+| Upstream/model serta client/protokol yang diuji | O-3 | Pengguna + agent; D-007 | Provider/model dan versi Desktop dicatat saat M0 |
+| Lifecycle sesi strict dan deteksi lanjutan setelah restart | O-4 | Pengguna + agent; D-013 | Skema/TTL fixture sebelum M2.2 ditutup |
 | Shutdown, deadline drain, dan termination container | O-5 | Pengguna; D-014 | Nilai grace period dan exit code pada EP-04-T05 |
-| Anggaran buffer/koneksi/state dan kapasitas benchmark | O-6 | Pemilik produk + tim implementasi, TBD | Sebelum target resource disahkan |
+| Anggaran buffer/koneksi/state dan kapasitas benchmark | O-6 | Pengguna + agent; D-008 | Default timeout/probe sebelum M3 |
 | Target kesegaran dashboard | O-10 | Pengguna; D-009 | Polling 5 detik/stale 15 detik ditetapkan; target P1 push belum |
 | Kontrak auth browser, TTL sesi, dan mekanisme pembaruan UI | Penjabaran A-2/A-5/A-7 | Tim implementasi, TBD | Sebelum uji AC-21–AC-22 |
 
@@ -437,4 +437,4 @@ Mengikuti [Compose referensi](https://github.com/trefeon/warp-relay-pool/blob/ma
 
 M0 menetapkan stack serta membuktikan packaging; M1 mengisi jalur config/catalog/access/httpapi/gateway/transport; M2 melengkapi pool, health, status, telemetry, dan dashboard; M3 melengkapi bukti integrasi serta paket deployment. Batas tersebut mengikuti [ROADMAP](ROADMAP.md) dan tidak mengharuskan semua folder dibuat pada awal pengerjaan.
 
-Saat P1 diprioritaskan, Responses API menambah kontrak/handler protokol dan pengujian yang relevan, sedangkan integrasi relay lama menambah adapter transport. Controller maintenance mendapat entrypoint dan package tersendiri dengan akses operasionalnya terpisah dari gateway. Plugin client mendapat project sendiri setelah client target dipilih. Struktur P1 dibuat ketika kebutuhan itu dikerjakan, sesuai C-11/C-12/C-13/C-15/C-16 dan keputusan O-9.
+Saat P1 diprioritaskan, Responses API menambah kontrak/handler protokol dan pengujian yang relevan, sedangkan integrasi relay lama menambah adapter transport. Controller maintenance mendapat entrypoint dan package tersendiri dengan akses operasionalnya terpisah dari gateway. Plugin client mendapat project sendiri setelah client target dipilih. Struktur P1 dibuat ketika kebutuhan itu dikerjakan, sesuai C-11/C-12/C-13/C-15/C-16 dan urutan D-012.

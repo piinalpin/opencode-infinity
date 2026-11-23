@@ -14,7 +14,7 @@ capabilities: ["C-5", "C-8", "C-9", "C-10", "C-14"]
 
 # EP-05 Operator memantau relay pool dari dashboard privat
 
-**Milestone:** M2.3 · **Prioritas:** P0 sesuai pembagian docs · **Status:** draft · **Pemilik/tanggal:** TBD
+**Milestone:** M2.3 · **Prioritas:** P0 sesuai pembagian docs · **Status:** draft · **Pemilik:** pengguna · **Tanggal:** TBD
 
 ## Ringkasan
 

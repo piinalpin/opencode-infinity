@@ -14,7 +14,7 @@ capabilities: ["C-1", "C-2", "C-4", "C-5", "C-8", "C-9", "C-10", "C-14"]
 
 # EP-01 Gateway layak dibangun pada lingkungan target
 
-**Milestone:** M0 · **Prioritas:** P0 sesuai pembagian docs · **Status:** draft · **Pemilik/tanggal:** TBD
+**Milestone:** M0 · **Prioritas:** P0 sesuai pembagian docs · **Status:** draft · **Pemilik:** pengguna · **Tanggal:** TBD
 
 ## Ringkasan
 

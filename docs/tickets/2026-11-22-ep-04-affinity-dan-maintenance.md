@@ -14,7 +14,7 @@ capabilities: ["C-6", "C-7", "C-10"]
 
 # EP-04 Percakapan mempertahankan jalur saat relay dipelihara
 
-**Milestone:** M2.2 · **Prioritas:** P0 sesuai pembagian docs · **Status:** draft · **Pemilik/tanggal:** TBD
+**Milestone:** M2.2 · **Prioritas:** P0 sesuai pembagian docs · **Status:** draft · **Pemilik:** pengguna · **Tanggal:** TBD
 
 ## Ringkasan
 
@@ -110,7 +110,7 @@ D-013 menetapkan MVP memakai fixed routing dan lifecycle strict dibuktikan lewat
 - **AC1:** **Given** kemampuan client target telah dicatat, **When** kontrak sesi ditetapkan, **Then** dokumen membedakan sesi baru/lanjutan, scope token/upstream/model, TTL, expiry, dan kapasitas.
 - **AC2:** **Given** gateway restart dan binding memory hilang, **When** sesi lanjutan dievaluasi menurut kontrak, **Then** dokumen menetapkan penolakan eksplisit alih-alih membuat binding baru diam-diam.
 - **AC3:** **Given** client tidak menyediakan sinyal sesi yang dibutuhkan, **When** kompatibilitas dievaluasi, **Then** fixed scope bersama dan batas lifetime proses dijelaskan tanpa klaim isolasi percakapan.
-- **AC4 (negatif/edge):** **Given** kebutuhan model tidak dapat dibuktikan dengan integrasi yang dipilih, **When** keputusan O-4 ditutup, **Then** kombinasi dinyatakan tidak kompatibel dan tidak dipromosikan sebagai strict per percakapan.
+- **AC4 (negatif/edge):** **Given** kebutuhan model tidak dapat dibuktikan dengan integrasi yang dipilih, **When** hasil fixture dibandingkan dengan D-013, **Then** kombinasi dinyatakan tidak kompatibel dan tidak dipromosikan sebagai strict per percakapan.
 
 ### Batas dan dependensi
 

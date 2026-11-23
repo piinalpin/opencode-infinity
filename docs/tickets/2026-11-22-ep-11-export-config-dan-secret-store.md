@@ -14,7 +14,7 @@ capabilities: ["C-3", "C-8", "C-16"]
 
 # EP-11 Client dikonfigurasi melalui export dan secret store OS
 
-**Milestone:** P1 · **Prioritas:** P1 sesuai pembagian docs · **Status:** draft · **Pemilik/tanggal:** TBD
+**Milestone:** P1 · **Prioritas:** P1 sesuai pembagian docs · **Status:** draft · **Pemilik:** pengguna · **Tanggal:** TBD
 
 ## Ringkasan
 

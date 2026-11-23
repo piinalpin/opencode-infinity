@@ -14,7 +14,7 @@ capabilities: ["C-1", "C-2", "C-3", "C-5", "C-8", "C-9", "C-10"]
 
 # EP-02 Agent memakai kontrak provider melalui satu gateway
 
-**Milestone:** M1 · **Prioritas:** P0 sesuai pembagian docs · **Status:** draft · **Pemilik/tanggal:** TBD
+**Milestone:** M1 · **Prioritas:** P0 sesuai pembagian docs · **Status:** draft · **Pemilik:** pengguna · **Tanggal:** TBD
 
 ## Ringkasan
 
