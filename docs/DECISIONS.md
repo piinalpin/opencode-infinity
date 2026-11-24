@@ -1,6 +1,6 @@
 # Keputusan opencode-infinity
 
-Versi: 0.1.16
+Versi: 0.1.17
 Tanggal: 24 November 2026
 
 Catatan ini memisahkan keputusan eksplisit pengguna dari usulan dan pertanyaan yang belum selesai. Keputusan terkonfirmasi diterapkan ke PRD/arsitektur terkait; status keseluruhan draft tidak otomatis menjadi approved.
@@ -172,6 +172,14 @@ Catatan ini memisahkan keputusan eksplisit pengguna dari usulan dan pertanyaan y
 - **Baseline:** melengkapi D-005 dengan protokol awal sedikitnya tiga episode manual terpisah yang tersedia dan tiga pengulangan per skenario fixture wajib yang relevan. Catat tahap, waktu/zona, versi/jalur, skenario, sampel rencana/aktual, pembilang/penyebut atau nilai+satuan, gagal/tidak tersedia, pemilik dan bukti teredaksi. Ini bukan izin generasi/probe/rotasi baru; batas D-018 dan otorisasi sesi tetap berlaku. Data kurang tetap TBD dan dibawa sebelum M1, tanpa waiver atas kewajiban baseline aktual.
 - **Belum diputuskan/dibuktikan:** default produk final untuk timeout/probe/binding/sesi/schema resource, accounting byte, ukuran image/aset produk, serta hasil RSS/performa. Daftar pemilik/task dan tenggat milestone tersedia pada laporan. Baseline aktual, SDK/akses/listener T01, bukti WARP T04 dan penerimaan penuh AC1 T06 masih terbuka. Tidak ada perubahan deployment, request provider, commit, push atau rilis yang diotorisasi keputusan ini.
 - **Acuan:** EP-01-T06, EP-06-T03, O-1/O-6, G-1–G-7, Q-4–Q-6/Q-10, dan D-005/D-008/D-009/D-013/D-014/D-018.
+
+### D-020 Konfigurasi dan registry offline EP-02-T01
+
+- **Status:** ditetapkan pengguna pada 24 November 2026 melalui persetujuan kebutuhan dan rencana EP-02-T01.
+- **Keputusan:** kerjakan modul konfigurasi/registry dan pengujian offline secara independen sementara EP-01-T06/M0 masih parsial. Penerimaan startup/listener/restart gateway terintegrasi tetap tertunda; dependensi dan gerbang tidak dihapus.
+- **Kontrak terbatas:** YAML `version: 1` strict dan bounded; alias unik per upstream; default upstream eksplisit jika lebih dari satu; tahap ini fixed/none dan menolak mode belum didukung. Secret environment/file eksklusif, role terpisah, nilai opaque serta error teredaksi. Rincian schema, caps parser/secret, URL, angka eksplisit, default nonnumerik dan contoh tersedia pada [konfigurasi](konfigurasi.md).
+- **Batas:** angka contoh/profil D-019 tidak menjadi default numerik produk final atau bukti enforcement/performa. Snapshot/load baru membuktikan konsistensi offline; startup/restart proses, transport, autentikasi endpoint dan kelulusan M0 belum dibuktikan. Tidak ada perubahan deployment, provider request, commit atau push.
+- **Acuan:** EP-02-T01, D-006/D-013/D-019, C-3/C-8/C-10, Q-7/Q-10.
 
 ## Status pertanyaan terbuka
 

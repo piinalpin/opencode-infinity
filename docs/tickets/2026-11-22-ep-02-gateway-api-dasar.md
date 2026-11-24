@@ -1,7 +1,7 @@
 ---
 title: "Agent memakai kontrak provider melalui satu gateway"
 date: 2026-11-22
-version: 2
+version: 3
 status: approved
 approved_by: pengguna
 approved_at: 2026-11-23
@@ -113,6 +113,16 @@ Registry yang tidak valid harus gagal sebelum menerima trafik atau memilih targe
 - Di luar scope: Routing pool dinamis, lifecycle binding per percakapan, dashboard operasional lengkap, dan Responses API.
 - Diblokir oleh: [EP-01-T06](2026-11-22-ep-01-kelayakan-dan-keputusan-mvp.md#ep-01-t06)
 - Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
+
+### Hasil pengerjaan 24 November 2026
+
+Persetujuan [D-020](../DECISIONS.md#d-020-konfigurasi-dan-registry-offline-ep-02-t01) mengizinkan konfigurasi/registry offline independen. [Kontrak dan bukti](../konfigurasi.md) serta [contoh YAML](../../examples/infinity.yaml) tersedia. Dependensi EP-01-T06 dan M0 tetap belum terpenuhi; status persetujuan tiket tidak berarti implementasi terintegrasi selesai.
+
+- **AC1 parsial:** pemuatan registry/default/batas/secret dan lookup alias terbukti pada modul; startup gateway belum dibuktikan.
+- **AC2 parsial:** schema, duplikasi/referensi/default/URL invalid ditolak tanpa hasil parsial; wiring sebelum listener/generasi menunggu aplikasi server.
+- **AC3 ✅ (validasi modul):** secret kosong/placeholder/tidak tersedia/oversize dan role overlap ditolak tanpa nilai pada error atau fmt/JSON/YAML.
+- **AC4 parsial:** snapshot/load baru immutable dan kegagalan tidak mengubah versi lama; restart/drain proses terintegrasi belum dibuktikan.
+- Tidak ada endpoint generasi/admin, probe/generasi provider, perubahan WARP/deployment, atau klaim M0/performa/enforcement runtime lulus.
 
 <a id="ep-02-s02"></a>
 

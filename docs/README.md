@@ -9,7 +9,7 @@ Aturan kontribusi dan guardrail agent tersedia di [AGENTS.md](../AGENTS.md).
 | Dokumen | Isi | Status acuan |
 |---|---|---|
 | [PRD](PRD.md) | Masalah, pengguna, cakupan, kapabilitas, target kualitas, dan keputusan terbuka | Draft 0.1.13 |
-| [DECISIONS](DECISIONS.md) | Keputusan eksplisit pengguna dan bagian pertanyaan yang masih terbuka | Catatan 0.1.16; D-001–D-019 terkonfirmasi; profil D-019 provisional |
+| [DECISIONS](DECISIONS.md) | Keputusan eksplisit pengguna dan bagian pertanyaan yang masih terbuka | Catatan 0.1.17; D-001–D-020 terkonfirmasi; profil D-019 provisional |
 | [ARCHITECTURE](ARCHITECTURE.md) | Komponen, alur, state, lifecycle, dan [struktur project](ARCHITECTURE.md#13-struktur-project-yang-disarankan), termasuk MicroWARP | Draft 0.1.4 |
 | [TECHSTACK](TECHSTACK.md) | Pilihan stack/pin untuk spike serta batas validasi lanjutan | Spike M0 0.1.3; pin dan fixture T02 tersedia |
 | [ROADMAP](ROADMAP.md) | Milestone M0–M3, dependensi, serta gerbang MVP/P1 | Draft 0.1.2 |
@@ -31,6 +31,10 @@ Urutan desain adalah PRD → ARCHITECTURE → TECHSTACK → implementasi. ROADMA
 Hasil pemeriksaan lingkungan tidak menyatakan integrasi client, transport WARP, atau gerbang M0 lulus. Status persetujuan tiket terpisah dari hasil pengerjaannya.
 
 ✅ pada AC berarti bukti telah tersedia sesuai lingkup hasil pengerjaan. T01 AC3/AC4 bersifat dokumentasi, T02 AC1–AC4 validasi stack independen, T03 AC1–AC5 fixture lokal, T05 AC1–AC4 packaging independen, dan T06 AC2–AC4 dokumentasi; T04 dan T06 AC1 belum mendapat ✅.
+
+## Konfigurasi produk awal
+
+[Kontrak konfigurasi dan registry](konfigurasi.md) serta [contoh YAML](../examples/infinity.yaml) tersedia melalui EP-02-T01/D-020. Loader/catalog dan pengujian offline dikerjakan independen; startup/restart gateway terintegrasi serta dependensi EP-01-T06/M0 tetap parsial. Angka contoh bukan default numerik produk final; parsing tidak membuktikan enforcement runtime atau ketersediaan relay/provider.
 
 ## Indeks epic MVP
 
