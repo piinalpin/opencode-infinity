@@ -9,7 +9,7 @@ Aturan kontribusi dan guardrail agent tersedia di [AGENTS.md](../AGENTS.md).
 | Dokumen | Isi | Status acuan |
 |---|---|---|
 | [PRD](PRD.md) | Masalah, pengguna, cakupan, kapabilitas, target kualitas, dan keputusan terbuka | Draft 0.1.13 |
-| [DECISIONS](DECISIONS.md) | Keputusan eksplisit pengguna dan bagian pertanyaan yang masih terbuka | Catatan 0.1.17; D-001–D-020 terkonfirmasi; profil D-019 provisional |
+| [DECISIONS](DECISIONS.md) | Keputusan eksplisit pengguna dan bagian pertanyaan yang masih terbuka | Catatan 0.1.18; D-001–D-021 terkonfirmasi; profil D-019 provisional |
 | [ARCHITECTURE](ARCHITECTURE.md) | Komponen, alur, state, lifecycle, dan [struktur project](ARCHITECTURE.md#13-struktur-project-yang-disarankan), termasuk MicroWARP | Draft 0.1.4 |
 | [TECHSTACK](TECHSTACK.md) | Pilihan stack/pin untuk spike serta batas validasi lanjutan | Spike M0 0.1.3; pin dan fixture T02 tersedia |
 | [ROADMAP](ROADMAP.md) | Milestone M0–M3, dependensi, serta gerbang MVP/P1 | Draft 0.1.2 |
@@ -35,6 +35,8 @@ Hasil pemeriksaan lingkungan tidak menyatakan integrasi client, transport WARP, 
 ## Konfigurasi produk awal
 
 [Kontrak konfigurasi dan registry](konfigurasi.md) serta [contoh YAML](../examples/infinity.yaml) tersedia melalui EP-02-T01/D-020. Loader/catalog dan pengujian offline dikerjakan independen; startup/restart gateway terintegrasi serta dependensi EP-01-T06/M0 tetap parsial. Angka contoh bukan default numerik produk final; parsing tidak membuktikan enforcement runtime atau ketersediaan relay/provider.
+
+[Kontrol token dan credential server](akses-dan-credential.md) tersedia melalui EP-02-S02/D-021: verifier role, guard HTTP dan persiapan request dibuktikan pada fixture lokal. Seluruh penerimaan endpoint/restart produk tetap terbuka; tidak ada generasi JSON/SSE, browser login atau deployment baru.
 
 ## Indeks epic MVP
 

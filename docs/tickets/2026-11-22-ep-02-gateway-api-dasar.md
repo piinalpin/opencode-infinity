@@ -1,7 +1,7 @@
 ---
 title: "Agent memakai kontrak provider melalui satu gateway"
 date: 2026-11-22
-version: 3
+version: 4
 status: approved
 approved_by: pengguna
 approved_at: 2026-11-23
@@ -155,6 +155,17 @@ Token client, admin, dan upstream harus mempunyai peran terpisah.
 - Di luar scope: Routing pool dinamis, lifecycle binding per percakapan, dashboard operasional lengkap, dan Responses API.
 - Diblokir oleh: [EP-02-T01](#ep-02-t01)
 - Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
+
+### Hasil pengerjaan 24 November 2026
+
+[D-021](../DECISIONS.md#d-021-kontrol-token-dan-credential-independen-ep-02-s02) mengizinkan kontrol akses/credential dan fixture independen. [Kontrak dan bukti](../akses-dan-credential.md) tersedia. Seluruh AC berikut masih memerlukan penerimaan gateway terintegrasi; blocker T01/T06/M0 tetap terbuka.
+
+- **AC1 parsial:** guard membuka empat path model pada harness; request outbound fixture memakai key server sesuai default/provider. Katalog/generasi produk belum tersedia.
+- **AC2 parsial:** token tidak valid/tidak ada, role salah, atau header ambigu menghasilkan 401; nol handler/dispatch/CONNECT/upstream terbukti pada komponen/fixture; wiring seluruh endpoint produk belum dibuktikan.
+- **AC3 parsial:** gateway token tidak membuka fixture status/metrics/operasi admin; listener/admin browser produk belum dibuktikan.
+- **AC4 parsial:** snapshot/instance baru memakai key baru dengan token dan request client tetap; bukan restart/drain proses.
+- **AC5 parsial:** credential outbound tepat, token client tidak diteruskan sebagai key, dan output/error/log milik modul teredaksi. Body upstream tidak di-rewrite; alur respons/error generasi produk belum tersedia.
+- Tidak ada server/transport runtime, model mapping JSON/SSE, perubahan deployment, provider/WARP nyata atau klaim M0/performa lulus.
 
 <a id="ep-02-s03"></a>
 

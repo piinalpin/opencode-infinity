@@ -1,6 +1,6 @@
 # Keputusan opencode-infinity
 
-Versi: 0.1.17
+Versi: 0.1.18
 Tanggal: 24 November 2026
 
 Catatan ini memisahkan keputusan eksplisit pengguna dari usulan dan pertanyaan yang belum selesai. Keputusan terkonfirmasi diterapkan ke PRD/arsitektur terkait; status keseluruhan draft tidak otomatis menjadi approved.
@@ -180,6 +180,15 @@ Catatan ini memisahkan keputusan eksplisit pengguna dari usulan dan pertanyaan y
 - **Kontrak terbatas:** YAML `version: 1` strict dan bounded; alias unik per upstream; default upstream eksplisit jika lebih dari satu; tahap ini fixed/none dan menolak mode belum didukung. Secret environment/file eksklusif, role terpisah, nilai opaque serta error teredaksi. Rincian schema, caps parser/secret, URL, angka eksplisit, default nonnumerik dan contoh tersedia pada [konfigurasi](konfigurasi.md).
 - **Batas:** angka contoh/profil D-019 tidak menjadi default numerik produk final atau bukti enforcement/performa. Snapshot/load baru membuktikan konsistensi offline; startup/restart proses, transport, autentikasi endpoint dan kelulusan M0 belum dibuktikan. Tidak ada perubahan deployment, provider request, commit atau push.
 - **Acuan:** EP-02-T01, D-006/D-013/D-019, C-3/C-8/C-10, Q-7/Q-10.
+
+### D-021 Kontrol token dan credential independen EP-02-S02
+
+- **Status:** ditetapkan pengguna pada 24 November 2026 melalui persetujuan kebutuhan dan rencana S02.
+- **Keputusan:** lanjutkan kontrol token/role, guard HTTP dan persiapan credential server dengan fixture lokal secara independen. Penerimaan endpoint/restart gateway tetap terbuka; T01/T06/M0 tidak diluluskan. Tidak membuat server, JSON/SSE S03/S04, drain atau browser session EP-05 untuk menutup AC secara semu.
+- **Kontrak terbatas:** token opaque printable mengikuti T01, satu field/value Authorization Bearer tanpa duplikat; model dan admin hanya menerima token role masing-masing. Penolakan 401 memakai challenge tetap dan envelope/request ID server. Persiapan outbound mengikat target/key pada satu snapshot, hanya meneruskan Content-Type/Accept terbatas, tanpa client auth/target/trailer/replay metadata atau jaringan default. Detail caps dan API terdapat pada [akses dan credential](akses-dan-credential.md).
+- **Privasi:** AC5 membuktikan output/error/log milik gateway tidak menyisipkan secret dan credential client tidak menjadi key upstream. Body upstream tidak di-rewrite; jaminan menghapus refleksi secret yang sengaja dibuat upstream memerlukan keputusan kontrak terpisah. Raw HTTP request outbound tetap objek istimewa yang tidak boleh di-dump.
+- **Batas:** pergantian snapshot bukan restart proses; transport/pool/performa, client/provider/WARP, seluruh endpoint dan admin browser belum dibuktikan. Tidak menambah dependency, mengubah schema T01, atau mengotorisasi deployment, provider request, commit/push.
+- **Acuan:** EP-02-S02, C-8/Q-7/Q-8, AC-10, D-006/D-013/D-020, EP-05-T01/S02.
 
 ## Status pertanyaan terbuka
 
