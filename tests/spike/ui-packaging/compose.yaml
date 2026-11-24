@@ -1,0 +1,37 @@
+# Fixture kemasan sementara; bukan deployment gateway produksi.
+services:
+  gateway:
+    image: ${T05_IMAGE:?}
+    platform: linux/amd64
+    user: "65532:65532"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    cpus: 1
+    mem_limit: 128m
+    pids_limit: 64
+    environment:
+      T05_LISTEN: "0.0.0.0:8788"
+      T05_ADMIN_SECRET_FILE: /run/secrets/admin
+    ports:
+      - "127.0.0.1::8788"
+    volumes:
+      - type: bind
+        source: ${T05_ADMIN_SECRET_FILE:?}
+        target: /run/secrets/admin
+        read_only: true
+    networks: [fixture]
+    restart: "no"
+    stop_signal: SIGTERM
+    stop_grace_period: 5s
+    logging:
+      driver: local
+      options:
+        max-size: 1m
+        max-file: "1"
+        compress: "false"
+networks:
+  fixture:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.host_binding_ipv4: "127.0.0.1"

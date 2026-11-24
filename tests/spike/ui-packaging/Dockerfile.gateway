@@ -1,0 +1,20 @@
+FROM docker.io/library/node:26.13.1-trixie-slim@sha256:a5a5adfee3013de54504e0e6aff49993acf7daed072e86be75b8818c0f6ac258 AS ui
+WORKDIR /build/web
+RUN npm install --global npm@12.2.2 --ignore-scripts --no-audit --no-fund
+COPY web/package.json web/package-lock.json ./
+RUN npm ci --ignore-scripts --strict-peer-deps --no-audit --no-fund
+COPY web/ ./
+RUN node --version && npm --version && npm run check && npm run build
+
+FROM docker.io/library/golang:1.27.4-trixie@sha256:2cd7e1ebf475c6208122d2b9cefc638d98fcc8dfd8554c8872c9dd0c21f4ac61 AS backend
+ENV GOTOOLCHAIN=local GOPROXY=off GOSUMDB=off GOENV=off
+WORKDIR /build/backend
+COPY backend/ ./
+COPY --from=ui /build/web/dist/ ./internal/webui/dist/
+RUN go version && go test -race -count=1 ./... && go vet ./...
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -buildvcs=false -trimpath -o /out/gateway ./cmd/gateway
+
+FROM gcr.io/distroless/static-debian13:nonroot@sha256:89e00a7e78df216bcbf495e7f43135f03ddbd3e98024a4104731872d6c8cf3c6
+COPY --from=backend /out/gateway /gateway
+USER 65532:65532
+ENTRYPOINT ["/gateway"]

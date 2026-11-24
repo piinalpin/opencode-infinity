@@ -1,0 +1,92 @@
+{
+  "task": "EP-01-T05",
+  "verified_on": "2026-11-24",
+  "scope": "fixture packaging independen, bukan image gateway produk atau penerimaan M0",
+  "source_head": "8b9f1bb3f99f53544e53ba0cd722f7bab37a690e",
+  "source_state": "working tree, belum commit",
+  "sources_sha256": {
+    "tests/spike/ui-packaging/Dockerfile.gateway": "9a4a3dd7e49b0672b2fcd4a2396c1b8761233f48d98193dcdf599ce21eba2bb2",
+    "tests/spike/ui-packaging/backend/cmd/gateway/listener.go": "6e3a02a4765e1c7931615f733716cdb88e5746128ba9eb489f2549449bba2a38",
+    "tests/spike/ui-packaging/backend/cmd/gateway/listener_test.go": "acae96ed1ee133ce9bfe466aa10488bab5a62d5d32b46157a06fb14e01ae9e0f",
+    "tests/spike/ui-packaging/backend/cmd/gateway/main.go": "2c28c40f67ad838ea3ca6cee76d3354c6e40e0be990004098815349af5ee6f5f",
+    "tests/spike/ui-packaging/backend/cmd/gateway/main_test.go": "dfbec601bebca640651935d7d06a768756d498fd3d28f4f1b25de6ac0fb10576",
+    "tests/spike/ui-packaging/backend/go.mod": "72a5da031e77a37da78ee13ba7798d0946847f1189611772614bcf6ac72120f0",
+    "tests/spike/ui-packaging/backend/internal/webui/assets.go": "6b48313c72e658158afefe1780ac946d7cfca5f792a5d86767fa9f30173c8405",
+    "tests/spike/ui-packaging/backend/internal/webui/handler.go": "e31675dbc558ad2b1a66da54b1bf552919eed069373a0b90468f48fc9e1bea01",
+    "tests/spike/ui-packaging/backend/internal/webui/handler_test.go": "13bad559b8075367ea101ab09ac5565276bc624add7cee075128a2ec12c7ecb7",
+    "tests/spike/ui-packaging/browser/packaging.spec.ts": "aec70c64feb8d19b9b170ac64a542fb6fd630e23d130636932a9dd17f319a190",
+    "tests/spike/ui-packaging/browser/playwright.config.ts": "3919db47f2605ef2f4e43b8a947e9592ac30da67f6bbbebd00426e38c5ab2278",
+    "tests/spike/ui-packaging/compose.yaml": "016584b1233eeaf527fa34918b7c3bf82e4dec9d182620917b5ed1e41f5d14e7",
+    "tests/spike/ui-packaging/run.py": "a7c6ed406413e0a7a0c934819942144ae7bd264905e1579d4303fa92b774d8d8",
+    "tests/spike/ui-packaging/run_test.py": "b2eae1142076d61feca57333042ea27d8d48a74be9be12aefedd7bcc34a671cc",
+    "tests/spike/ui-packaging/web/index.html": "4b67bfe44872aa60db83945ed77df74127fc675220fd4fd328a41e7ac7f96237",
+    "tests/spike/ui-packaging/web/src/App.svelte": "4642fcb1b13aed1956fcd08aa2f7fa799c67806d508b6e510f515e223ee1c985",
+    "tests/spike/ui-packaging/web/src/main.ts": "c22461c993ee1a0b3e862db9d51dd822b9e56f12635d8670ea2a801cda918ab1",
+    "tests/spike/ui-packaging/web/svelte.config.js": "ee2ff90d9325bcf985e11a19a0c2ad7167f559850a2ed3df9688c5d63d579b17",
+    "tests/spike/ui-packaging/web/tsconfig.json": "9d05f1cac2ff17f411d46a61cf099d3832aac4102f21f2271fb50a5412e239bb",
+    "tests/spike/ui-packaging/web/vite.config.ts": "19d524175be6aa0172e49517779d3429cdef86a82332452be2fac837e744e904"
+  },
+  "frontend_manifest_sha256": "e730d988456fd1859aedeed81d07a7290949669daec418a1dc08593050e054fa",
+  "frontend_lock_sha256": "d8bdd0db777d9bf110557b861e16903e711c702bdcf1c67bdc818425bf41a20d",
+  "images": {
+    "node-builder": "docker.io/library/node:26.13.1-trixie-slim@sha256:a5a5adfee3013de54504e0e6aff49993acf7daed072e86be75b8818c0f6ac258",
+    "go-builder": "docker.io/library/golang:1.27.4-trixie@sha256:2cd7e1ebf475c6208122d2b9cefc638d98fcc8dfd8554c8872c9dd0c21f4ac61",
+    "gateway-runtime": "gcr.io/distroless/static-debian13:nonroot@sha256:89e00a7e78df216bcbf495e7f43135f03ddbd3e98024a4104731872d6c8cf3c6"
+  },
+  "toolchains": {
+    "go_builder": "go1.27.4 linux/amd64",
+    "go_host": "go version go1.27.4-X:nodwarf5 linux/amd64",
+    "node": "26.13.1",
+    "npm": "12.2.2",
+    "svelte": "5.59.1",
+    "vite": "8.3.8",
+    "typescript": "6.0.3",
+    "playwright": "1.65.1",
+    "chromium": "159.0.8154.6",
+    "chromium_revision": "1255",
+    "docker": "29.9.3 linux/amd64",
+    "compose": "5.7.1"
+  },
+  "runtime": {
+    "image_id": "sha256:cf3c39da982c282be253fbc5d20a8903858ef22905fc5b7786f2516fc8dba2c1",
+    "registry_digest": null,
+    "published": false,
+    "architecture": "linux/amd64",
+    "binary_sha256": "f92a437db655c8a14191497295bf7c00fc682e7bd79e1bc0de09120ecf3f53b5",
+    "binary_format": "ELF64 x86-64 statically linked; file and go version -m verified; CGO_ENABLED=0",
+    "entrypoint": [
+      "/gateway"
+    ],
+    "user": "65532:65532",
+    "read_only": true,
+    "cap_drop": [
+      "ALL"
+    ],
+    "security_opt": [
+      "no-new-privileges:true"
+    ],
+    "nano_cpus": 1000000000,
+    "memory_bytes": 134217728,
+    "pids_limit": 64,
+    "processes": 1,
+    "filesystem_entries_inspected": 1405,
+    "mounted_content": [
+      "synthetic admin credential file, read-only; no source/dist mount"
+    ],
+    "host_publish": "http://127.0.0.1:32769",
+    "network": "dedicated fixture bridge; not an egress isolation proof",
+    "asset_sha256": {
+      "index.html": "fbcf23fe1be77ec2da1185fdea7e5241f69695a98be59f90a8a780e2c2f3dcb8",
+      "assets/index-sqyn5o_I.css": "046170d8a9c0919bb75138dfbbd267bbdf07c074d0b4af5af5ae5f45b050a39b",
+      "assets/index-BQ0eN-hQ.js": "4d70e57cb076f14e784f6c7eaa02988e629af91b6b9dc003a6b774af0949a2ff"
+    }
+  },
+  "limitations": [
+    "No dashboard AC-20–AC-22 acceptance",
+    "No production auth/session contract",
+    "T01/T02 formal dependencies remain",
+    "No client/WARP/provider integration or performance proof",
+    "No M0 acceptance",
+    "Docker build cache reused immutable stage results; no clean remote builder reproducibility claim"
+  ]
+}

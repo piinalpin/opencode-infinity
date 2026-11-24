@@ -1,0 +1,411 @@
+{
+  "task": "EP-01-T05",
+  "status": "passed",
+  "scope": "independent synthetic UI packaging; not dashboard AC-20–AC-22 or M0 acceptance",
+  "checks": [
+    {
+      "id": "node-version",
+      "command": [
+        "node",
+        "--version"
+      ],
+      "exit": 0,
+      "expected_exit": 0
+    },
+    {
+      "id": "npm-version",
+      "command": [
+        "npm",
+        "--version"
+      ],
+      "exit": 0,
+      "expected_exit": 0
+    },
+    {
+      "id": "go-version",
+      "command": [
+        "go",
+        "version"
+      ],
+      "exit": 0,
+      "expected_exit": 0
+    },
+    {
+      "id": "docker-version",
+      "command": [
+        "docker",
+        "version",
+        "--format",
+        "{{.Server.Version}} {{.Server.Os}}/{{.Server.Arch}}"
+      ],
+      "exit": 0,
+      "expected_exit": 0
+    },
+    {
+      "id": "compose-version",
+      "command": [
+        "docker",
+        "compose",
+        "version",
+        "--short"
+      ],
+      "exit": 0,
+      "expected_exit": 0
+    },
+    {
+      "id": "npm-ci",
+      "command": [
+        "npm",
+        "ci",
+        "--ignore-scripts",
+        "--strict-peer-deps",
+        "--no-audit",
+        "--no-fund"
+      ],
+      "exit": 0,
+      "expected_exit": 0
+    },
+    {
+      "id": "frontend-check",
+      "command": [
+        "npm",
+        "run",
+        "check"
+      ],
+      "exit": 0,
+      "expected_exit": 0
+    },
+    {
+      "id": "frontend-build",
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "exit": 0,
+      "expected_exit": 0
+    },
+    {
+      "id": "no-assets",
+      "command": [
+        "go",
+        "build",
+        "-buildvcs=false",
+        "./cmd/gateway"
+      ],
+      "exit": 1,
+      "expected_exit": null
+    },
+    {
+      "id": "no-index",
+      "command": [
+        "go",
+        "build",
+        "-buildvcs=false",
+        "./cmd/gateway"
+      ],
+      "exit": 1,
+      "expected_exit": null
+    },
+    {
+      "id": "no-js",
+      "command": [
+        "go",
+        "build",
+        "-buildvcs=false",
+        "./cmd/gateway"
+      ],
+      "exit": 1,
+      "expected_exit": null
+    },
+    {
+      "id": "no-css",
+      "command": [
+        "go",
+        "build",
+        "-buildvcs=false",
+        "./cmd/gateway"
+      ],
+      "exit": 1,
+      "expected_exit": null
+    },
+    {
+      "id": "backend-test",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "./..."
+      ],
+      "exit": 0,
+      "expected_exit": 0
+    },
+    {
+      "id": "backend-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "./..."
+      ],
+      "exit": 0,
+      "expected_exit": 0
+    },
+    {
+      "id": "backend-vet",
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "exit": 0,
+      "expected_exit": 0
+    },
+    {
+      "id": "backend-format",
+      "command": [
+        "gofmt",
+        "-l",
+        "cmd",
+        "internal"
+      ],
+      "exit": 0,
+      "expected_exit": 0
+    },
+    {
+      "id": "image-build",
+      "command": [
+        "docker",
+        "build",
+        "--platform",
+        "linux/amd64",
+        "--label",
+        "opencode-infinity.task=EP-01-T05",
+        "-t",
+        "opencode-infinity-t05-17996913f60b:fixture",
+        "-f",
+        "Dockerfile.gateway",
+        "."
+      ],
+      "exit": 0,
+      "expected_exit": 0
+    },
+    {
+      "id": "compose-config",
+      "command": [
+        "docker",
+        "compose",
+        "-p",
+        "opencode-infinity-t05-17996913f60b",
+        "-f",
+        "<repository>/tests/spike/ui-packaging/compose.yaml",
+        "config",
+        "--quiet"
+      ],
+      "exit": 0,
+      "expected_exit": 0
+    },
+    {
+      "id": "compose-up",
+      "command": [
+        "docker",
+        "compose",
+        "-p",
+        "opencode-infinity-t05-17996913f60b",
+        "-f",
+        "<repository>/tests/spike/ui-packaging/compose.yaml",
+        "up",
+        "-d",
+        "--no-build",
+        "--pull",
+        "never"
+      ],
+      "exit": 0,
+      "expected_exit": 0
+    },
+    {
+      "id": "container-id",
+      "command": [
+        "docker",
+        "compose",
+        "-p",
+        "opencode-infinity-t05-17996913f60b",
+        "-f",
+        "<repository>/tests/spike/ui-packaging/compose.yaml",
+        "ps",
+        "-q",
+        "gateway"
+      ],
+      "exit": 0,
+      "expected_exit": 0
+    },
+    {
+      "id": "runtime-inspect",
+      "command": [
+        "docker",
+        "inspect",
+        "b81235da1495899c2f9d6286a4f916c61be9715e0df0cf32d500ed3998fc59cc"
+      ],
+      "exit": 0,
+      "expected_exit": 0
+    },
+    {
+      "id": "image-inspect",
+      "command": [
+        "docker",
+        "image",
+        "inspect",
+        "opencode-infinity-t05-17996913f60b:fixture"
+      ],
+      "exit": 0,
+      "expected_exit": 0
+    },
+    {
+      "id": "browser-install",
+      "command": [
+        "node",
+        "<work-dir>/context/web/node_modules/playwright/cli.js",
+        "install",
+        "chromium"
+      ],
+      "exit": 0,
+      "expected_exit": 0
+    },
+    {
+      "id": "browser-test",
+      "command": [
+        "node",
+        "<work-dir>/context/web/node_modules/playwright/cli.js",
+        "test",
+        "--config",
+        "browser/playwright.config.ts"
+      ],
+      "exit": 0,
+      "expected_exit": 0
+    },
+    {
+      "id": "runtime-processes",
+      "command": [
+        "docker",
+        "top",
+        "b81235da1495899c2f9d6286a4f916c61be9715e0df0cf32d500ed3998fc59cc",
+        "-eo",
+        "pid,comm"
+      ],
+      "exit": 0,
+      "expected_exit": 0
+    },
+    {
+      "id": "runtime-export",
+      "command": [
+        "docker",
+        "export",
+        "-o",
+        "<work-dir>/runtime.tar",
+        "b81235da1495899c2f9d6286a4f916c61be9715e0df0cf32d500ed3998fc59cc"
+      ],
+      "exit": 0,
+      "expected_exit": 0
+    },
+    {
+      "id": "runtime-logs",
+      "command": [
+        "docker",
+        "logs",
+        "b81235da1495899c2f9d6286a4f916c61be9715e0df0cf32d500ed3998fc59cc"
+      ],
+      "exit": 0,
+      "expected_exit": 0
+    },
+    {
+      "id": "compose-cleanup",
+      "command": [
+        "docker",
+        "compose",
+        "-p",
+        "opencode-infinity-t05-17996913f60b",
+        "-f",
+        "<repository>/tests/spike/ui-packaging/compose.yaml",
+        "down",
+        "--timeout",
+        "5"
+      ],
+      "exit": 0,
+      "expected_exit": 0
+    }
+  ],
+  "go_host": "go version go1.27.4-X:nodwarf5 linux/amd64",
+  "docker": "29.9.3 linux/amd64",
+  "compose": "5.7.1",
+  "image_id": "sha256:cf3c39da982c282be253fbc5d20a8903858ef22905fc5b7786f2516fc8dba2c1",
+  "binary_sha256": "f92a437db655c8a14191497295bf7c00fc682e7bd79e1bc0de09120ecf3f53b5",
+  "runtime_files": 1405,
+  "runtime_processes": 1,
+  "origin": "http://127.0.0.1:32769",
+  "architecture": "linux/amd64",
+  "uid": 65532,
+  "assets": [
+    "/assets/index-BQ0eN-hQ.js",
+    "/assets/index-sqyn5o_I.css"
+  ],
+  "asset_sha256": {
+    "index.html": "fbcf23fe1be77ec2da1185fdea7e5241f69695a98be59f90a8a780e2c2f3dcb8",
+    "assets/index-sqyn5o_I.css": "046170d8a9c0919bb75138dfbbd267bbdf07c074d0b4af5af5ae5f45b050a39b",
+    "assets/index-BQ0eN-hQ.js": "4d70e57cb076f14e784f6c7eaa02988e629af91b6b9dc003a6b774af0949a2ff"
+  },
+  "loopback_only": true,
+  "toolchain_absent": true,
+  "auth_negative_passed": true,
+  "secret_absent": true,
+  "verified_on": "2026-11-24",
+  "test_summary": {
+    "nested_go_main_tests": 7,
+    "browser_tests": 2,
+    "runner_regression_tests": 1,
+    "root_go_main_tests": 27,
+    "root_native_opt_in_skipped": 1,
+    "existing_python_tests": 2,
+    "connection_release_race_repetitions": 20,
+    "connection_release_race_failures": 0,
+    "frontend_errors": 0,
+    "frontend_warnings": 0,
+    "root_race": "passed",
+    "nested_race": "passed",
+    "vet": "passed",
+    "format": "passed"
+  },
+  "prior_smoke_failures": [
+    {
+      "run": 1,
+      "stage": "compose-up",
+      "reason": "logging compression incompatible with max-file=1",
+      "resolution": "compress=false"
+    },
+    {
+      "run": 2,
+      "stage": "port inspection",
+      "reason": "internal network provided no host port binding",
+      "resolution": "dedicated fixture bridge approved by user"
+    },
+    {
+      "run": 3,
+      "stage": "process inspection",
+      "reason": "docker top requires PID column",
+      "resolution": "pid,comm format"
+    }
+  ],
+  "review": {
+    "depth": "strict",
+    "verdict": "APPROVE",
+    "medium_findings_fixed": 1,
+    "open_findings": 0,
+    "fix": "cleanup failure removes secret and records failed status; bounded image cleanup"
+  },
+  "cleanup": {
+    "container_network_removed": true,
+    "fixture_image_tags_removed": true,
+    "secret_file_removed": true,
+    "active_deployment_changed": false
+  }
+}
