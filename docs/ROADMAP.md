@@ -1,7 +1,9 @@
 # ROADMAP opencode-infinity
 
-Versi: 0.1.1  
-Tanggal: 23 November 2026  
+Versi: 0.1.2
+
+Tanggal: 24 November 2026
+
 Status: Draft rencana pengerjaan  
 Target rilis dan penanggung jawab: rilis event-driven saat M3 lulus, penanggung jawab pengguna, tag `v0.1.0-mvp` (D-010)
 
@@ -13,7 +15,7 @@ Target pertama adalah MVP gateway satu host yang menghubungkan coding agent ke u
 |---|---|---|
 | [PRD](PRD.md) | 0.1.13 | Cakupan, C-1–C-16, tujuan G-1–G-7, kualitas Q-1–Q-11, dan pertanyaan O-1–O-10 |
 | [ARCHITECTURE](ARCHITECTURE.md) | 0.1.4 | Keputusan A-1–A-8, pembagian modul, struktur project, sumber state, alur, serta batas kegagalan |
-| [TECHSTACK](TECHSTACK.md) | 0.1.2 | Kandidat teknologi; versi, kompatibilitas, dan digest harus divalidasi pada M0 |
+| [TECHSTACK](TECHSTACK.md) | 0.1.3 | Go/Svelte serta pin spike T02 tersedia; bukti integrasi dan digest image produk tetap memerlukan validasi |
 | [Catatan teknis](PRD-technical-notes.md) | 0.1.3 | Kontrak awal, AC-01–AC-19, dan tambahan dashboard AC-20–AC-22 |
 
 Milestone M0–M3 tetap mengikuti PRD. Pembagian M2 menjadi beberapa bagian, urutan pekerjaan rinci, dan pembagian peran merupakan usulan **(agent's call)**. Seluruh checkbox adalah pekerjaan yang direncanakan; item hanya ditandai selesai setelah buktinya tersedia.
@@ -84,7 +86,9 @@ M2.2 dan M2.3 dapat berjalan bersamaan setelah kontrak state/snapshot stabil. In
 
 **Hasil:** catatan keputusan arsitektur/stack, matriks versi dan image, konfigurasi spike tanpa secret, rencana pengujian, serta bukti transport yang dapat direproduksi.
 
-**Gerbang lulus:** satu request nyata melewati WARP; fixture membuktikan jalur proxy dan tidak ada direct fallback; kontrak model/client awal sesuai cakupan; hambatan yang mengubah kelayakan sudah diputuskan. Hasil spike menjadi dasar estimasi M1–M3. Keputusan O-4/O-5/O-6/O-10 sudah ditetapkan (D-008/D-009/D-013/D-014); sisa `TBD` hanya angka baseline, provider/model/versi persis, listener/tailnet, dan default timeout/probe.
+**Gerbang lulus:** satu request nyata melewati WARP; fixture membuktikan jalur proxy dan tidak ada direct fallback; kontrak model/client awal sesuai cakupan; hambatan yang mengubah kelayakan sudah diputuskan. Hasil spike menjadi dasar estimasi M1–M3. Keputusan O-4/O-5/O-6/O-10 sudah ditetapkan (D-008/D-009/D-013/D-014), dengan profil/metode provisional D-019. Provider/model dipilih D-016 dan Desktop/CLI bawaan 2.3.0 tercatat; sisa input meliputi baseline aktual, SDK aktif/akses/protokol yang belum terbukti, listener/tailnet, serta default produk final.
+
+**Penilaian 24 November 2026:** [hasil T06 dan matriks pengukuran](M0-gerbang-dan-pengukuran.md) menyatakan M0 **belum lulus**. T02/T03/T05 memiliki bukti independen; request WARP T04, input T01 dan baseline D-005 masih terbuka. Profil resource dan metode bukan hasil benchmark. AC1 T06 tetap parsial; AC2–AC4 terbukti pada lingkup dokumentasi. Seluruh dependensi dan kewajiban penerimaan produk tetap berlaku.
 
 ## 4. M1 Gateway dasar
 
@@ -201,10 +205,10 @@ Milestone berikut adalah tempat bukti pertama diwajibkan. M3 memverifikasi kesel
 |---|---|---|---|
 | O-1 | Pemilik produk/pengukuran, bukti masalah, dan baseline | Pengguna (operator/developer) + agent; D-005 | Angka baseline G-1–G-7 sebelum M1; klaim dampak/pengesahan target |
 | O-2 | Host, arsitektur CPU, dan asumsi deployment | Pengguna/operator; D-006 | Listener final dan detail tailnet sebelum M0 selesai |
-| O-3 | Upstream/model dan versi/protokol client | Pengguna + agent; D-007 | Provider/model, versi Desktop, dan kebutuhan strict affinity sebelum M0 selesai |
+| O-3 | Upstream/model dan versi/protokol client | Pengguna + agent; D-007/D-016 | Provider/model dan versi Desktop telah dicatat; SDK aktif, akses/protokol serta batas kebutuhan model sebelum M0 selesai; strict client tetap D-013 |
 | O-4 | Lifecycle sesi strict serta perilaku restart | Pengguna + agent; D-013 | Skema/TTL fixture sebelum M2.2 ditutup |
 | O-5 | Shutdown setelah deadline dan termination container | Pengguna + agent; D-014 | Nilai `stop_grace_period`/exit code sebelum M3 |
-| O-6 | Target performa/default, anggaran resource, dan konfigurasi benchmark | Pengguna + agent; D-008 | Default timeout/probe dan ukuran image sebelum M3 |
+| O-6 | Target performa/default, anggaran resource, dan konfigurasi benchmark | Pengguna + agent; D-008/D-019 | Profil/metode provisional T06 tersedia; default final pada task pemilik, pengukuran dan ukuran image sebelum M3 |
 | O-7 | Kebutuhan dan nilai SLA produksi | Pengguna; D-011 | Tidak ada klaim SLA; pemulihan best-effort |
 | O-8 | Pemilik rilis, pengguna awal, tanggal, dan anggaran | Pengguna; D-010 | Catatan rilis/distribusi sebelum tag `v0.1.0-mvp` |
 | O-9 | Urutan kemampuan P1 dan prioritas hot reload | Pengguna; D-012 | Tidak ada; urutan sudah ditetapkan. Dependensi dicatat saat EP-07-T01 |

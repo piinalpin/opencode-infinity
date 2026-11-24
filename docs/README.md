@@ -9,10 +9,10 @@ Aturan kontribusi dan guardrail agent tersedia di [AGENTS.md](../AGENTS.md).
 | Dokumen | Isi | Status acuan |
 |---|---|---|
 | [PRD](PRD.md) | Masalah, pengguna, cakupan, kapabilitas, target kualitas, dan keputusan terbuka | Draft 0.1.13 |
-| [DECISIONS](DECISIONS.md) | Keputusan eksplisit pengguna dan bagian pertanyaan yang masih terbuka | Catatan 0.1.15; D-001–D-018 terkonfirmasi |
+| [DECISIONS](DECISIONS.md) | Keputusan eksplisit pengguna dan bagian pertanyaan yang masih terbuka | Catatan 0.1.16; D-001–D-019 terkonfirmasi; profil D-019 provisional |
 | [ARCHITECTURE](ARCHITECTURE.md) | Komponen, alur, state, lifecycle, dan [struktur project](ARCHITECTURE.md#13-struktur-project-yang-disarankan), termasuk MicroWARP | Draft 0.1.4 |
 | [TECHSTACK](TECHSTACK.md) | Pilihan stack/pin untuk spike serta batas validasi lanjutan | Spike M0 0.1.3; pin dan fixture T02 tersedia |
-| [ROADMAP](ROADMAP.md) | Milestone M0–M3, dependensi, serta gerbang MVP/P1 | Draft 0.1.1 |
+| [ROADMAP](ROADMAP.md) | Milestone M0–M3, dependensi, serta gerbang MVP/P1 | Draft 0.1.2 |
 | [Catatan teknis](PRD-technical-notes.md) | Kontrak awal serta AC-01–AC-22 | Pendamping 0.1.3; bagian historis dipertahankan |
 
 Urutan desain adalah PRD → ARCHITECTURE → TECHSTACK → implementasi. ROADMAP mengatur urutan pengerjaan. Jika isi bertentangan, selesaikan kebutuhan di PRD dan batas desain di ARCHITECTURE sebelum mengubah kandidat stack atau tiket.
@@ -25,10 +25,12 @@ Urutan desain adalah PRD → ARCHITECTURE → TECHSTACK → implementasi. ROADMA
 | [Stack, versi, dan bukti kompatibilitas](M0-stack-dan-versi.md) | [EP-01-T02](tickets/2026-11-22-ep-01-kelayakan-dan-keputusan-mvp.md#ep-01-t02) | Go/Svelte dipilih untuk spike; pin source/base, lock/checksum dan pemeriksaan fixture tersedia; dependensi T01 serta bukti integrasi tetap terbuka |
 | [Fixture jalur dan attempt request](M0-fixture-transport.md) | [EP-01-T03](tickets/2026-11-22-ep-01-kelayakan-dan-keputusan-mvp.md#ep-01-t03) | AC1–AC5 fixture lokal terbukti; suite dan race 50 kali lulus; integrasi WARP/provider serta gerbang M0 tetap terbuka |
 | [Request melalui WARP pada host target](M0-warp-request.md) | [EP-01-T04](tickets/2026-11-22-ep-01-kelayakan-dan-keputusan-mvp.md#ep-01-t04) | Parsial: image fixture dibangun dan kontrol transport lokal diuji; native smoke ditolak karena tool masih terbawa; registrasi WARP dan generasi belum dilakukan |
+| [Kemasan UI bersama aplikasi gateway](M0-ui-packaging.md) | [EP-01-T05](tickets/2026-11-22-ep-01-kelayakan-dan-keputusan-mvp.md#ep-01-t05) | AC1–AC4 packaging independen terbukti: UI Svelte tertanam dalam binary Go, browser/image Distroless amd64 lulus, satu proses tanpa toolchain; dashboard AC-20–AC-22 dan gerbang M0 tetap terbuka |
+| [Gerbang dan rencana pengukuran MVP](M0-gerbang-dan-pengukuran.md) | [EP-01-T06](tickets/2026-11-22-ep-01-kelayakan-dan-keputusan-mvp.md#ep-01-t06) | Parsial: AC2–AC4 dokumentasi tersedia, profil/metode D-019 dikonfirmasi dan 22 AC dipetakan; AC1 menunggu T04/input T01; M0 belum lulus |
 
 Hasil pemeriksaan lingkungan tidak menyatakan integrasi client, transport WARP, atau gerbang M0 lulus. Status persetujuan tiket terpisah dari hasil pengerjaannya.
 
-✅ pada AC berarti bukti telah tersedia sesuai lingkup hasil pengerjaan. T01 AC3/AC4 bersifat dokumentasi, T02 AC1–AC4 validasi stack independen, dan T03 AC1–AC5 fixture lokal; T04 belum mendapat ✅.
+✅ pada AC berarti bukti telah tersedia sesuai lingkup hasil pengerjaan. T01 AC3/AC4 bersifat dokumentasi, T02 AC1–AC4 validasi stack independen, T03 AC1–AC5 fixture lokal, T05 AC1–AC4 packaging independen, dan T06 AC2–AC4 dokumentasi; T04 dan T06 AC1 belum mendapat ✅.
 
 ## Indeks epic MVP
 
@@ -130,13 +132,13 @@ Seluruh O-1–O-10 sudah memiliki jawaban pengguna; task lokal tetap menutup det
 | O-3 | D-007/D-016 | Desktop `2.3.0`, OpenCode Free/model `deepseek-v4.1-flash-free`; kelayakan gateway dan versi SDK aktif masih terbuka | [EP-01-T01](tickets/2026-11-22-ep-01-kelayakan-dan-keputusan-mvp.md#ep-01-t01) |
 | O-4 | D-013 | Fixed routing MVP; fixture membuktikan lifecycle strict | [EP-04-T01](tickets/2026-11-22-ep-04-affinity-dan-maintenance.md#ep-04-t01) |
 | O-5 | D-014 | Drain 60 detik + batas keras 30 menit; nilai grace period TBD | [EP-04-T05](tickets/2026-11-22-ep-04-affinity-dan-maintenance.md#ep-04-t05) |
-| O-6 | D-008 | Target provisional dan fixture 5×5; default timeout/probe TBD | [EP-01-T06](tickets/2026-11-22-ep-01-kelayakan-dan-keputusan-mvp.md#ep-01-t06), [EP-06-T03](tickets/2026-11-22-ep-06-integrasi-dan-rilis-mvp.md#ep-06-t03) |
+| O-6 | D-008/D-019 | Target dan profil/metode provisional tersedia; default produk final serta hasil benchmark belum tersedia | [EP-01-T06](tickets/2026-11-22-ep-01-kelayakan-dan-keputusan-mvp.md#ep-01-t06), [EP-06-T03](tickets/2026-11-22-ep-06-integrasi-dan-rilis-mvp.md#ep-06-t03) |
 | O-7 | D-011 | Tidak ada SLA formal; best-effort | [EP-06-T05](tickets/2026-11-22-ep-06-integrasi-dan-rilis-mvp.md#ep-06-t05) |
 | O-8 | D-010 | Rilis event-driven, tanpa anggaran baru | [EP-06-T05](tickets/2026-11-22-ep-06-integrasi-dan-rilis-mvp.md#ep-06-t05) |
 | O-9 | D-012 | Urutan P1 ditetapkan; hot reload tidak diprioritaskan | [EP-07-T01](tickets/2026-11-22-ep-07-responses-api.md#ep-07-t01) |
 | O-10 | D-009 | Polling 5 detik/stale 15 detik; target P1 push TBD | [EP-05-T01](tickets/2026-11-22-ep-05-dashboard-dan-observabilitas.md#ep-05-t01) |
 
-Pemilik keputusan produk dan target adalah pengguna sendiri sesuai D-004; D-005 menetapkan metode baseline dua tahap serta pelaksana pengukurannya, D-006 menetapkan host amd64 serta Tailscale di host, D-007 menetapkan client utama Desktop dengan upstream Chat Completions, D-008 menetapkan target performa provisional serta fixture benchmark 5×5, D-009 menetapkan polling dashboard MVP dengan push SSE di P1, D-010 menetapkan rilis event-driven dengan tag `v0.1.0-mvp`, D-011 menetapkan tidak ada SLA formal, D-012 menetapkan urutan P1 dengan hot reload tidak diprioritaskan, D-013 menetapkan fixed routing MVP dengan lifecycle strict diuji lewat fixture, dan D-014 menetapkan drain 60 detik dengan batas keras 30 menit. Angka baseline G-1–G-7, listener final, hostname tailnet, versi SDK provider aktif, kelayakan jalur Free, default timeout/probe, serta peran lain yang belum dipilih tetap TBD. O-1 tidak menahan pembuatan fixture, O-7 sudah dijawab tanpa SLA, dan O-9 tidak menahan penerimaan MVP.
+Pemilik keputusan produk dan target adalah pengguna sendiri sesuai D-004; D-005 menetapkan metode baseline dua tahap serta pelaksana pengukurannya, D-006 menetapkan host amd64 serta Tailscale di host, D-007 menetapkan client utama Desktop dengan upstream Chat Completions, D-008 menetapkan target performa provisional serta fixture benchmark 5×5, D-009 menetapkan polling dashboard MVP dengan push SSE di P1, D-010 menetapkan rilis event-driven dengan tag `v0.1.0-mvp`, D-011 menetapkan tidak ada SLA formal, D-012 menetapkan urutan P1 dengan hot reload tidak diprioritaskan, D-013 menetapkan fixed routing MVP dengan lifecycle strict diuji lewat fixture, dan D-014 menetapkan drain 60 detik dengan batas keras 30 menit. D-019 melengkapi profil resource/metode dan protokol baseline awal melalui hasil T06; hasil pengukuran dan default produk final belum tersedia. Angka baseline G-1–G-7, listener final, hostname tailnet, versi SDK provider aktif, kelayakan jalur Free, default timeout/probe, serta peran lain yang belum dipilih tetap TBD. O-1 tidak menahan pembuatan fixture, O-7 sudah dijawab tanpa SLA, dan O-9 tidak menahan penerimaan MVP.
 
 ## Ringkasan backlog
 

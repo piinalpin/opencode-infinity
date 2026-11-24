@@ -83,7 +83,7 @@ MVP menggunakan fixed routing dan tidak mengklaim strict affinity per percakapan
 
 ## 4. Sumber dan pencatatan baseline G-1–G-7
 
-D-005 menetapkan dua tahap: catatan manual penggunaan saat ini, lalu pengukuran terinstrumentasi pada fixture M0. Tabel ini memenuhi kebutuhan penetapan sumber serta pemilik pada AC3 EP-01-T01; angka baseline belum diukur. Pengguna merupakan pemilik pengukuran/operator, dan agent membantu instrumentasi serta perhitungan. Jumlah sampel minimum per metrik masih TBD dengan pemilik pengguna, untuk ditetapkan pada EP-01-T06 sebelum menerima hasil baseline.
+D-005 menetapkan dua tahap: catatan manual penggunaan saat ini, lalu pengukuran terinstrumentasi pada fixture M0. Tabel ini memenuhi kebutuhan penetapan sumber serta pemilik pada AC3 EP-01-T01; angka baseline belum diukur. Pengguna merupakan pemilik pengukuran/operator, dan agent membantu instrumentasi serta perhitungan. Pembaruan rujukan 24 November 2026: [hasil EP-01-T06](M0-gerbang-dan-pengukuran.md#5-baseline-g-1g-7) dan D-019 menetapkan protokol awal minimum tiga episode manual terpisah yang tersedia serta tiga pengulangan per skenario fixture wajib yang relevan. Angka aktual tetap TBD; kekurangan sampel/otorisasi dibawa sebelum M1 dan tidak memberi izin request nyata tambahan.
 
 | ID | Metrik PRD | Sumber awal/manual | Sumber pengukuran M0 yang direncanakan | Baseline aktual | Pemilik/tindak lanjut |
 |---|---|---|---|---|---|

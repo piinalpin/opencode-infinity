@@ -1,8 +1,8 @@
 ---
 title: "Gateway layak dibangun pada lingkungan target"
 date: 2026-11-22
-version: 5
-updated_at: 2026-11-23
+version: 6
+updated_at: 2026-11-24
 status: approved
 approved_by: pengguna
 approved_at: 2026-11-23
@@ -272,10 +272,21 @@ A-1/A-6 memerlukan satu artefak aplikasi yang dapat menyajikan UI tanpa service 
 
 ### Acceptance criteria
 
-- **AC1:** **Given** stack dan bentuk packaging dipilih, **When** aset UI contoh dibangun dan disajikan aplikasi, **Then** browser menerima halaman serta aset lokal dari listener admin.
-- **AC2:** **Given** artefak runtime dibentuk, **When** isi dan proses runtime diperiksa, **Then** toolchain build atau browser pengujian tidak diperlukan untuk menyajikan UI.
-- **AC3:** **Given** aplikasi dimulai pada host target, **When** smoke test kemasan dijalankan, **Then** hasil mencatat versi, arsitektur, konfigurasi akses, serta cara reproduksi.
-- **AC4 (negatif/edge):** **Given** aset contoh belum memantau state pool, **When** hasil spike dicatat, **Then** bukti tidak dilabeli sebagai kelulusan dashboard AC-20–AC-22.
+- ✅ **AC1:** **Given** stack dan bentuk packaging dipilih, **When** aset UI contoh dibangun dan disajikan aplikasi, **Then** browser menerima halaman serta aset lokal dari listener admin.
+- ✅ **AC2:** **Given** artefak runtime dibentuk, **When** isi dan proses runtime diperiksa, **Then** toolchain build atau browser pengujian tidak diperlukan untuk menyajikan UI.
+- ✅ **AC3:** **Given** aplikasi dimulai pada host target, **When** smoke test kemasan dijalankan, **Then** hasil mencatat versi, arsitektur, konfigurasi akses, serta cara reproduksi.
+- ✅ **AC4 (negatif/edge):** **Given** aset contoh belum memantau state pool, **When** hasil spike dicatat, **Then** bukti tidak dilabeli sebagai kelulusan dashboard AC-20–AC-22.
+
+### Hasil pengerjaan — 24 November 2026
+
+[Laporan packaging T05](../M0-ui-packaging.md), [checks](../m0/ep-01-t05/checks.json), dan [provenance](../m0/ep-01-t05/provenance.json) membuktikan AC1–AC4 secara independen menggunakan stack T02. Source fixture berada di [tests/spike/ui-packaging](../../tests/spike/ui-packaging/), dengan nested module Go terpisah dari tooling aplikasi produk.
+
+- UI Svelte hasil build ditanam dalam binary Go. Browser pada image final memverifikasi mount/interaksi lokal, CSS, dan aset same-origin melalui listener admin; seluruh halaman/aset memerlukan credential admin sintetis tersendiri.
+- Image Distroless `linux/amd64` diperiksa melalui ekspor filesystem dan daftar proses: satu proses Go statis, tanpa toolchain/browser/runtime frontend atau mount source/dist host. Versi, image ID, checksum, batas akses, dan reproduksi tersedia pada laporan.
+- Tujuh tes utama backend fixture, dua tes browser, empat build negatif aset, race/vet/format, dan regresi cleanup lulus. Pelepasan slot koneksi diuji 20 kali dengan race detector; review strict menyetujui setelah perbaikan satu temuan cleanup.
+- Revisi dari jaringan internal ke bridge khusus fixture disetujui pengguna setelah pemetaan port host tidak tersedia. Publish tetap loopback; resource fixture serta credential sementara sudah dibersihkan. Deployment aktif, Tailscale, WARP, dan provider tidak diubah.
+
+Status persetujuan tetap `approved`; wording AC/dependensi dipertahankan. Hasil ini tidak meluluskan dashboard AC-20–AC-22, kontrak sesi produksi, integrasi client/upstream/WARP, dependensi formal T01/T02, benchmark, atau seluruh gerbang M0.
 
 ### Batas dan dependensi
 
@@ -304,9 +315,22 @@ D-008 sudah menetapkan target Q-4/Q-5 provisional dan fixture benchmark 5 relay 
 ### Acceptance criteria
 
 - **AC1:** **Given** seluruh hasil spike tersedia, **When** gerbang M0 ditinjau, **Then** laporan menghubungkan host/client/model, versi, bukti WARP, dan kendala ke keputusan arsitektur.
-- **AC2:** **Given** target Q-4–Q-6 sebagian sudah ditetapkan D-008 sebagai provisional, **When** rencana penerimaan ditetapkan, **Then** target, anggaran buffer/state, serta kapasitas fixture benchmark 5×5 dikonfirmasi dan default yang belum diputuskan dicatat penanggung jawabnya.
-- **AC3:** **Given** AC-01–AC-22 perlu dibuktikan, **When** rencana pengujian dibakukan, **Then** setiap AC mempunyai metode, lingkungan, serta bukti yang harus disimpan pada milestone terkait.
-- **AC4 (negatif/edge):** **Given** spike gagal atau membutuhkan perubahan scope, **When** M0 dinilai, **Then** milestone tetap belum lulus sampai keputusan produk dan dokumen terkait diperbarui.
+- ✅ **AC2:** **Given** target Q-4–Q-6 sebagian sudah ditetapkan D-008 sebagai provisional, **When** rencana penerimaan ditetapkan, **Then** target, anggaran buffer/state, serta kapasitas fixture benchmark 5×5 dikonfirmasi dan default yang belum diputuskan dicatat penanggung jawabnya.
+- ✅ **AC3:** **Given** AC-01–AC-22 perlu dibuktikan, **When** rencana pengujian dibakukan, **Then** setiap AC mempunyai metode, lingkungan, serta bukti yang harus disimpan pada milestone terkait.
+- ✅ **AC4 (negatif/edge):** **Given** spike gagal atau membutuhkan perubahan scope, **When** M0 dinilai, **Then** milestone tetap belum lulus sampai keputusan produk dan dokumen terkait diperbarui.
+
+### Hasil pengerjaan — 24 November 2026
+
+[Gerbang dan rencana pengukuran MVP](../M0-gerbang-dan-pengukuran.md) merangkum T01–T05, target, anggaran resource, metode G/Q, 22 AC sumber beserta lingkungan/milestone/artefak, serta pemilik input yang belum final. Pengguna menyetujui dokumentasi independen dan profil/metode provisional melalui [D-019](../DECISIONS.md#d-019-profil-resource-dan-metode-pengukuran-provisional).
+
+| AC | Hasil saat ini | Batas |
+|---|---|---|
+| AC1 | Parsial | Rekap tersedia, tetapi hasil WARP T04 dan input T01 belum lengkap; tidak diberi ✅ |
+| ✅ AC2 | Terpenuhi pada tingkat rencana dokumentasi | Buffer 64/8/16/8 MiB, kapasitas 5×5/admission 20, metode dan daftar TBD dikonfirmasi; belum bukti RSS atau default produk final |
+| ✅ AC3 | Terpenuhi pada tingkat dokumentasi | Seluruh AC-01–AC-22 memiliki metode, lingkungan, milestone, artefak dan task pemilik; belum hasil acceptance produk |
+| ✅ AC4 | Terpenuhi pada tingkat dokumentasi | M0 tetap belum lulus; target, prasyarat dan batas otorisasi tidak dilonggarkan |
+
+Task T06 tetap parsial dan status persetujuan `approved` dipertahankan. Baseline aktual G-1–G-7, SDK/akses/listener T01, dan bukti WARP T04 tetap menghalangi penutupan M0/M1 sesuai sumbernya. Tidak ada benchmark, generasi, perubahan fixture/runtime, atau lifecycle deployment yang dijalankan. Laporan/indeks dan keputusan diperiksa sebagai dokumen; hasil T05 serta seluruh bukti sebelumnya dipertahankan. Setelah bukti task pemilik tersedia, AC1 dan gerbang M0 harus ditinjau ulang.
 
 ### Batas dan dependensi
 
