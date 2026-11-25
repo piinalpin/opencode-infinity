@@ -1,7 +1,7 @@
 # Keputusan opencode-infinity
 
-Versi: 0.1.18
-Tanggal: 24 November 2026
+Versi: 0.1.19
+Tanggal: 25 November 2026
 
 Catatan ini memisahkan keputusan eksplisit pengguna dari usulan dan pertanyaan yang belum selesai. Keputusan terkonfirmasi diterapkan ke PRD/arsitektur terkait; status keseluruhan draft tidak otomatis menjadi approved.
 
@@ -189,6 +189,16 @@ Catatan ini memisahkan keputusan eksplisit pengguna dari usulan dan pertanyaan y
 - **Privasi:** AC5 membuktikan output/error/log milik gateway tidak menyisipkan secret dan credential client tidak menjadi key upstream. Body upstream tidak di-rewrite; jaminan menghapus refleksi secret yang sengaja dibuat upstream memerlukan keputusan kontrak terpisah. Raw HTTP request outbound tetap objek istimewa yang tidak boleh di-dump.
 - **Batas:** pergantian snapshot bukan restart proses; transport/pool/performa, client/provider/WARP, seluruh endpoint dan admin browser belum dibuktikan. Tidak menambah dependency, mengubah schema T01, atau mengotorisasi deployment, provider request, commit/push.
 - **Acuan:** EP-02-S02, C-8/Q-7/Q-8, AC-10, D-006/D-013/D-020, EP-05-T01/S02.
+
+### D-022 Katalog alias dan JSON independen EP-02-S03
+
+- **Status:** ditetapkan pengguna pada 25 November 2026 melalui persetujuan kebutuhan/opsi 1 dan rencana implementasi S03.
+- **Keputusan:** lanjutkan komponen katalog, pemetaan alias dan generasi JSON non-stream dengan empat route model, admission statis dan fixture HTTPS/SOCKS5 lokal. Penerimaan gateway terintegrasi dan dependensi S02/T01/T06/M0 tetap terbuka.
+- **Kontrak terbatas:** default/provider memakai snapshot server dan guard gateway yang sama. Hanya nilai top-level `model` diganti; byte field lain dipertahankan. Kontrol `model`/`stream` ambigu ditolak, `stream:true` belum didukung. Alias tidak dikenal menghasilkan `404 model_not_found`, provider tidak dikenal `404 upstream_not_found`, tanpa fallback default atau dispatch. Status/content type/body/usage upstream diteruskan tanpa remap respons atau usage sintetis.
+- **Kapasitas:** reservasi statis request dan buffer dilakukan sebelum alokasi body; slot primary relay dan dispatch outbound diambil sebelum dispatch. Penolakan langsung saat kapasitas habis, tanpa antrean. Lease tetap dipegang sampai caller selesai meneruskan respons dan menutup body, termasuk setelah EOF/error/cancellation.
+- **Efek jaringan:** dispatcher server tepercaya wajib diinjeksi, tanpa default HTTP client. SOCKS5/DNS proxy, TLS hostname verification, no redirect/direct fallback/replay ambigu dan cancellation dibuktikan pada wiring adapter fixture; bukan implementasi transport runtime atau health eligibility. Anggaran konservatif dapat menolak request sebelum batas individual bila anggaran agregat tidak cukup.
+- **Batas:** tidak mengubah schema T01 atau dependency; tidak membuat listener/executable/deployment gateway, pool dinamis, SSE S04, kontrak error S05 lengkap, dashboard, Responses API atau lifecycle binding. Tidak mengotorisasi provider/WARP nyata, commit atau push. Rincian kontrak dan bukti tersedia pada [model alias dan JSON](model-alias-dan-json.md).
+- **Acuan:** EP-02-S03, AC-04, C-1/C-2/C-3, Q-1/Q-7/Q-8, D-020/D-021.
 
 ## Status pertanyaan terbuka
 

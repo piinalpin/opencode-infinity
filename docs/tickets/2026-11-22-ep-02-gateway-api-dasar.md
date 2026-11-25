@@ -1,7 +1,7 @@
 ---
 title: "Agent memakai kontrak provider melalui satu gateway"
 date: 2026-11-22
-version: 4
+version: 5
 status: approved
 approved_by: pengguna
 approved_at: 2026-11-23
@@ -197,6 +197,17 @@ Client harus memakai katalog lokal dan alias tanpa mengetahui detail relay/provi
 - Di luar scope: Routing pool dinamis, lifecycle binding per percakapan, dashboard operasional lengkap, dan Responses API.
 - Diblokir oleh: [EP-02-S02](#ep-02-s02)
 - Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
+
+### Hasil pengerjaan 25 November 2026
+
+[D-022](../DECISIONS.md#d-022-katalog-alias-dan-json-independen-ep-02-s03) mengizinkan komponen/handler dan fixture independen. [Kontrak dan bukti](../model-alias-dan-json.md) tersedia. Penerimaan gateway terintegrasi dan blocker S02/T01/T06/M0 tetap terbuka; hasil berikut adalah bukti komponen/fixture.
+
+- **AC1 parsial produk:** katalog default/provider menampilkan alias dalam scope, tanpa lookup provider/jaringan atau pengungkapan model nyata/key/relay. Empat route memasang guard S02; penolakan token terbukti sebelum body read dan CONNECT.
+- **AC2 parsial produk:** dua upstream HTTPS sintetis menerima model nyata, prefix, key dan relay yang benar. Status/content type/body/usage dipertahankan; usage absent tetap absent. Tidak ada request provider/WARP nyata.
+- **AC3 parsial produk:** hanya nilai top-level model dipetakan; nested field/tools, Unicode, null, angka besar/eksponen dan duplicate extension keys mempertahankan byte. Kontrol model/stream ambigu ditolak.
+- **AC4 parsial produk:** alias unknown menghasilkan `404 model_not_found` dan nol CONNECT/dispatch. Provider unknown menghasilkan `404 upstream_not_found` tanpa default fallback.
+- Admission statis membatasi request, buffer, slot relay dan dispatch outbound; EOF/error/cancel menutup jaringan, sementara lease tetap hidup sampai forwarding/caller selesai dan body ditutup. Ini bukan health eligibility, cooldown, binding atau routing dinamis.
+- Efek jaringan memakai dispatcher tepercaya yang diinjeksi. TLS/DNS proxy/no redirect/no direct fallback/no replay ambigu/cancellation terbukti pada wiring fixture, bukan transport runtime. SSE S04, kontrak error S05 lengkap, listener/deployment, restart, performa dan M0 belum diluluskan.
 
 <a id="ep-02-s04"></a>
 
