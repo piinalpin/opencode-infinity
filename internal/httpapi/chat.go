@@ -8,11 +8,16 @@ import (
 	"opencode-infinity/internal/gateway"
 	"strconv"
 	"strings"
+	"time"
 )
 
-type modelHandler struct{ coordinator *gateway.Coordinator }
+type modelHandler struct {
+	coordinator *gateway.Coordinator
+	idle, total time.Duration
+}
 
 func (h modelHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	started := time.Now()
 	id := newRequestID()
 	w.Header().Set("X-Request-ID", id)
 	w.Header().Set("Cache-Control", "no-store")
@@ -44,6 +49,18 @@ func (h modelHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer response.Body.Close()
+	var stream *streamForwarder
+	if gateway.IsEventStream(response) {
+		stream, err = h.prepareStream(w, r, started)
+		if err != nil {
+			if errors.Is(err, http.ErrNotSupported) {
+				writeModelError(w, id, &gateway.Failure{Code: "unsupported_api", Status: 501})
+				return
+			}
+			panic(http.ErrAbortHandler)
+		}
+		defer stream.close()
+	}
 	w.Header().Set("X-Infinity-Error-Source", "upstream")
 	if catalog {
 		w.Header().Del("X-Infinity-Error-Source")
@@ -62,6 +79,12 @@ func (h modelHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(response.StatusCode)
 	if r.Method == http.MethodHead {
+		return
+	}
+	if stream != nil {
+		if err := stream.copy(response.Body); err != nil {
+			panic(http.ErrAbortHandler)
+		}
 		return
 	}
 	buffer := make([]byte, 32*1024)

@@ -11,6 +11,7 @@ import (
 type chatJSON struct {
 	alias      string
 	start, end int
+	stream     bool
 }
 
 // Validasi sintaks stdlib mendahului pencarian offset. Tidak membuat tree/map JSON.
@@ -52,9 +53,8 @@ func parseChat(body []byte) (chatJSON, error) {
 			seenStream = true
 			value := bytes.TrimSpace(body[start:end])
 			if bytes.Equal(value, []byte("true")) {
-				return chatJSON{}, errors.New("unsupported_api")
-			}
-			if !bytes.Equal(value, []byte("false")) {
+				result.stream = true
+			} else if !bytes.Equal(value, []byte("false")) {
 				return chatJSON{}, invalid
 			}
 		}

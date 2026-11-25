@@ -92,7 +92,7 @@ func TestModelAPIRejectsBeforeDispatch(t *testing.T) {
 	}{
 		{"/v1/chat/completions", `{"model":"missing"}`, "application/json", "", "", "model_not_found", 404},
 		{"/providers/missing/v1/chat/completions", `{"model":"coding-default"}`, "application/json", "", "", "upstream_not_found", 404},
-		{"/v1/chat/completions", `{"model":"coding-default","stream":true}`, "application/json", "", "", "unsupported_api", 501},
+		{"/v1/chat/completions", `{"model":"coding-default","stream":true,"str\u0065am":false}`, "application/json", "", "", "invalid_json", 400},
 		{"/v1/chat/completions", `{"model":"coding-default","model":"other"}`, "application/json", "", "", "invalid_json", 400},
 		{"/v1/chat/completions", `{"model":"coding-default"}`, "text/plain", "", "", "unsupported_media_type", 415},
 		{"/v1/chat/completions", `{"model":"coding-default"}`, "", "", "", "unsupported_media_type", 415},

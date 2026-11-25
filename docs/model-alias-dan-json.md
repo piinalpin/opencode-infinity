@@ -6,6 +6,8 @@ Status: komponen dan wiring fixture lokal tersedia; penerimaan gateway terintegr
 
 [D-022](DECISIONS.md#d-022-katalog-alias-dan-json-independen-ep-02-s03) menyetujui pekerjaan independen ini. Input memakai [konfigurasi T01](konfigurasi.md), [guard dan request boundary S02](akses-dan-credential.md). Dependensi S02/T01/T06/M0 tidak dihapus. Tidak ada executable/listener gateway baru, transport jaringan runtime, perubahan deployment, provider request atau klaim integrasi OpenCode/WARP/performa.
 
+Dokumen ini menyimpan kontrak dan bukti tahap S03. Dukungan `stream:true` kemudian ditambahkan pada [EP-02-S04/D-023](streaming-sse.md); batas unsupported true di bawah adalah keadaan historis S03. Perilaku absent/false tetap mengikuti kontrak JSON ini.
+
 ## API komponen
 
 | Komponen | API | Tanggung jawab |
@@ -70,7 +72,7 @@ Dispatcher wajib menjalankan SOCKS5 terpilih, menyerahkan hostname tujuan melalu
 
 Status, Content-Type dan body respons upstream diteruskan, termasuk usage/field tambahan bila tersedia. Content-Encoding yang masih tersedia juga diteruskan agar body terkompresi tetap dapat dibaca client; adapter yang sudah mendekompresi body wajib menghapus header encoding yang tidak lagi berlaku. Model pada respons tidak dipetakan kembali. Usage absent tidak dibuat nol. Retry-After valid diteruskan; cookie, credential, Location dan header operasional upstream tidak disalin. Error gateway memakai request ID acak server dan `X-Infinity-Error-Source: gateway`; respons upstream memakai source `upstream`. Tidak ada error JSON/URL/network mentah atau potongan request dalam envelope gateway. Timeout sebelum respons dibedakan sebagai 504; transport failure sebagai 502.
 
-Penerusan memakai copy buffer tetap 32 KiB, bukan buffer seluruh respons JSON. Partial-body error menghentikan framing HTTP dengan `http.ErrAbortHandler`; tidak menambah envelope, generasi pengganti atau EOF sukses palsu. Streaming SSE belum didukung oleh kontrak ini.
+Penerusan memakai copy buffer tetap 32 KiB, bukan buffer seluruh respons JSON. Partial-body error menghentikan framing HTTP dengan `http.ErrAbortHandler`; tidak menambah envelope, generasi pengganti atau EOF sukses palsu. Bukti streaming SSE mempunyai [kontrak S04 tersendiri](streaming-sse.md).
 
 Request global, byte dan slot relay tetap dipegang sampai caller selesai meneruskan respons dan menutup body. EOF/error/cancellation menutup body jaringan tepat sekali, tetapi tidak membebaskan lease sebelum write client selesai. Caller `Models`/`Chat` wajib memanggil `response.Body.Close()` juga sesudah EOF; handler HTTP memasangnya sebagai defer. Close berulang tidak menggandakan release. Cancellation/timeout menutup jaringan aktif; batas waktu baca/tulis listener tetap tanggung jawab perakitan aplikasi.
 

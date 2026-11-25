@@ -25,6 +25,7 @@ type Coordinator struct {
 	maxBody, budget int64
 	catalogBudget   int64
 	timeout         time.Duration
+	idle            time.Duration
 }
 
 func (c *Coordinator) Models(id string) (*http.Response, error) {
@@ -82,7 +83,7 @@ func New(c *config.Config, d Dispatcher) (*Coordinator, error) {
 	maxBody := owned.Server().MaxBodyBytes
 	// Dua buffer wire/remap; 256 KiB untuk scanner JSON, header, key dan copy respons 32 KiB.
 	budget := 2*(maxBody+1) + 2*metadata + 256*1024
-	return &Coordinator{registry: registry, boundary: boundary, admission: admission, dispatch: d, maxBody: maxBody, budget: budget, catalogBudget: 2*metadata + 256*1024, timeout: time.Duration(owned.Timeouts().TotalRequestSeconds) * time.Second}, nil
+	return &Coordinator{registry: registry, boundary: boundary, admission: admission, dispatch: d, maxBody: maxBody, budget: budget, catalogBudget: 2*metadata + 256*1024, timeout: time.Duration(owned.Timeouts().TotalRequestSeconds) * time.Second, idle: time.Duration(owned.Timeouts().StreamIdleSeconds) * time.Second}, nil
 }
 
 func nilDispatcher(d Dispatcher) bool {
@@ -170,6 +171,10 @@ func (c *Coordinator) Chat(in *http.Request, id string) (*http.Response, error) 
 	if int64(len(body)-(parsed.end-parsed.start)+len(replacement)) > c.maxBody {
 		return nil, failure("request_too_large")
 	}
+	streamReserved := parsed.stream
+	if streamReserved && !reservation.ReserveStream(StreamCopyBytes) {
+		return nil, failure("gateway_capacity_exceeded")
+	}
 	if !reservation.Assign(model.PrimaryRelay) {
 		return nil, failure("no_eligible_relay")
 	}
@@ -194,7 +199,14 @@ func (c *Coordinator) Chat(in *http.Request, id string) (*http.Response, error) 
 		}
 		return nil, failure("upstream_transport_error")
 	}
+	if IsEventStream(response) && !streamReserved && !reservation.ReserveStream(StreamCopyBytes) {
+		response.Body.Close()
+		return nil, failure("gateway_capacity_exceeded")
+	}
 	managed := &responseBody{body: response.Body, release: reservation.Release, cancel: cancel}
+	if IsEventStream(response) {
+		managed.idle = c.idle
+	}
 	response.Body = managed
 	// Timeout/disconnect juga menutup respons yang belum dibaca caller, tanpa menunggu cleanup fixture.
 	context.AfterFunc(ctx, managed.abort)
@@ -209,10 +221,20 @@ type responseBody struct {
 	err         error
 	release     func()
 	cancel      context.CancelFunc
+	idle        time.Duration
 }
 
 func (b *responseBody) Read(p []byte) (int, error) {
-	n, err := b.body.Read(p)
+	if len(p) == 0 {
+		return 0, nil
+	}
+	var n int
+	var err error
+	if b.idle > 0 {
+		n, err = b.readIdle(p)
+	} else {
+		n, err = b.body.Read(p)
+	}
 	if err != nil {
 		b.abort()
 	}

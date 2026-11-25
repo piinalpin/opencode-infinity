@@ -1,7 +1,7 @@
 ---
 title: "Agent memakai kontrak provider melalui satu gateway"
 date: 2026-11-22
-version: 5
+version: 6
 status: approved
 approved_by: pengguna
 approved_at: 2026-11-23
@@ -239,6 +239,17 @@ Agent membutuhkan token dan tool-call deltas bertahap, termasuk ketika jaringan 
 - Di luar scope: Routing pool dinamis, lifecycle binding per percakapan, dashboard operasional lengkap, dan Responses API.
 - Diblokir oleh: [EP-02-S03](#ep-02-s03), [EP-01-T03](2026-11-22-ep-01-kelayakan-dan-keputusan-mvp.md#ep-01-t03)
 - Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
+
+### Hasil pengerjaan 25 November 2026
+
+[D-023](../DECISIONS.md#d-023-streaming-sse-independen-ep-02-s04) menyetujui perluasan komponen/fixture lokal. [Kontrak dan bukti SSE](../streaming-sse.md) tersedia. Dependensi penerimaan terintegrasi S03/M0 tetap terbuka; hasil berikut bukan kelulusan runtime/provider/WARP/OpenCode.
+
+- **AC1 parsial produk:** client HTTP gateway menerima event pertama pada endpoint default/provider sebelum barrier event berikutnya/EOF dibuka, termasuk gzip opaque yang upstream-nya di-flush.
+- **AC2 parsial produk:** fragmentasi byte/UTF-8, content dan tool-call deltas mempertahankan urutan dan byte. Event lebih dari 64 KiB diteruskan melalui buffer copy tetap tanpa cap event produk baru.
+- **AC3 parsial produk:** usage, extension, angka besar, komentar/line ending dan Content-Encoding yang masih berlaku dipertahankan; usage atau terminal yang tidak ada tidak disintesis.
+- **AC4 parsial produk:** drop setelah event pertama atau pada fragmen memutus framing HTTP; tidak ada DONE/envelope/generasi pengganti atau dispatch ulang. EOF normal tetap diteruskan sesuai upstream.
+- Budget stream/slot/lease, backpressure, idle Read, deadline Write/Flush, cancellation Context/body-close dan timeout header/idle/total dibuktikan pada komponen/fixture. Header timeout tetap milik adapter; bukan transport runtime atau bukti performa/RSS.
+- Regresi katalog/JSON/HEAD/gzip, auth/alias/target/batas body tetap diperiksa. Tidak ada dependency/schema/deployment baru, provider request, commit atau push dari pengerjaan S04.
 
 <a id="ep-02-s05"></a>
 

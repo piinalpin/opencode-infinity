@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"opencode-infinity/internal/config"
 	"opencode-infinity/internal/httpapi"
@@ -36,6 +37,7 @@ type modelHarness struct {
 	primary, secondary *testutil.Upstream
 	a, b               *testutil.SOCKS5
 	logs               []*dialLog
+	clients            map[string]*http.Client
 }
 
 func modelConfiguration(t *testing.T, edits ...string) *config.Config {
@@ -81,11 +83,17 @@ func newModelHarness(t *testing.T, primary, secondary http.HandlerFunc, edits ..
 	if err != nil {
 		t.Fatal("konfigurasi dua upstream ditolak", err)
 	}
-	h, err := httpapi.NewAPI(c, &modelFixtureDispatcher{clients: map[string]*http.Client{"warp-1": ca, "warp-2": cb}})
+	// Timeout header berasal dari snapshot; total dikendalikan context coordinator, bukan cap client tersembunyi.
+	for _, client := range []*http.Client{ca, cb} {
+		client.Timeout = 0
+		client.Transport.(*http.Transport).ResponseHeaderTimeout = time.Duration(c.Timeouts().ResponseHeadersSeconds) * time.Second
+	}
+	clients := map[string]*http.Client{"warp-1": ca, "warp-2": cb}
+	h, err := httpapi.NewAPI(c, &modelFixtureDispatcher{clients: clients})
 	if err != nil {
 		t.Fatal(err)
 	}
-	return &modelHarness{handler: h, primary: p, secondary: s, a: a, b: b, logs: []*dialLog{da, db}}
+	return &modelHarness{handler: h, primary: p, secondary: s, a: a, b: b, logs: []*dialLog{da, db}, clients: clients}
 }
 
 func (h *modelHarness) verifyPath(t *testing.T) {

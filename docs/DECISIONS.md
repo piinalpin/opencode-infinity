@@ -1,6 +1,6 @@
 # Keputusan opencode-infinity
 
-Versi: 0.1.19
+Versi: 0.1.20
 Tanggal: 25 November 2026
 
 Catatan ini memisahkan keputusan eksplisit pengguna dari usulan dan pertanyaan yang belum selesai. Keputusan terkonfirmasi diterapkan ke PRD/arsitektur terkait; status keseluruhan draft tidak otomatis menjadi approved.
@@ -199,6 +199,16 @@ Catatan ini memisahkan keputusan eksplisit pengguna dari usulan dan pertanyaan y
 - **Efek jaringan:** dispatcher server tepercaya wajib diinjeksi, tanpa default HTTP client. SOCKS5/DNS proxy, TLS hostname verification, no redirect/direct fallback/replay ambigu dan cancellation dibuktikan pada wiring adapter fixture; bukan implementasi transport runtime atau health eligibility. Anggaran konservatif dapat menolak request sebelum batas individual bila anggaran agregat tidak cukup.
 - **Batas:** tidak mengubah schema T01 atau dependency; tidak membuat listener/executable/deployment gateway, pool dinamis, SSE S04, kontrak error S05 lengkap, dashboard, Responses API atau lifecycle binding. Tidak mengotorisasi provider/WARP nyata, commit atau push. Rincian kontrak dan bukti tersedia pada [model alias dan JSON](model-alias-dan-json.md).
 - **Acuan:** EP-02-S03, AC-04, C-1/C-2/C-3, Q-1/Q-7/Q-8, D-020/D-021.
+
+### D-023 Streaming SSE independen EP-02-S04
+
+- **Status:** ditetapkan pengguna pada 25 November 2026 melalui persetujuan kebutuhan/opsi 1 dan rencana implementasi S04.
+- **Keputusan:** perluas komponen S03 untuk `stream:true` pada endpoint default/provider, dibuktikan dengan gateway HTTP dan adapter HTTPS/SOCKS5 fixture lokal. Penerimaan gateway terintegrasi, provider/WARP/OpenCode dan M0 tetap terbuka.
+- **Transparansi:** teruskan byte SSE bertahap dengan Flush; content/tool-call deltas, usage, field tambahan, komentar, line ending dan Content-Encoding yang masih berlaku dipertahankan. Tidak membangun ulang event, menampung seluruh stream, menambah DONE/envelope/generasi pengganti, atau mengulang POST ambigu. Absent/false dan kontrak non-stream S03 tetap berlaku; pengecualian true pada tahap S03 digantikan dukungan S04 ini.
+- **Kapasitas:** reservasi stream copy 32 KiB memakai `stream_buffer_bytes` pada pemilik lease yang sama sebelum alokasi; ukuran copy bukan batas event. True mengambil reservasi sebelum dispatch. SSE tak terduga pada absent/false juga mengambil reservasi setelah header dan sebelum forwarding; bila penuh, tutup respons dan kembalikan 429 tanpa retry. Satu dispatch dapat sudah terjadi pada kasus tersebut.
+- **Lifecycle:** header timeout milik adapter mengikuti snapshot pada fixture; idle upstream berlaku hanya selama Read pending, total context tetap berlaku sepanjang request. Write/Flush downstream mempunyai deadline dari idle dan batas total/client yang lebih awal. Callback cancellation/deadline disinkronkan sebelum handler kembali. Lease dilepas tepat sekali sesudah forwarding/caller Close, bukan ketika jaringan baru dibatalkan.
+- **Batas:** writer tanpa capability Flush/deadline ditolak eksplisit; kegagalan setelah commit memutus framing HTTP tanpa sukses palsu. Gzip upstream perlu flush compressor dan HTTP untuk membuktikan event pertama. Tidak membuat transport/runtime listener/deployment, health/pool dinamis, binding, dashboard, Responses API, atau kontrak S05 lengkap. Tidak menambah dependency/schema/config key, menjalankan provider/WARP nyata, commit atau push.
+- **Acuan:** EP-02-S04, AC-03, C-1/C-2, Q-1/Q-6, D-022; [kontrak dan bukti SSE](streaming-sse.md).
 
 ## Status pertanyaan terbuka
 

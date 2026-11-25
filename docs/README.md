@@ -9,7 +9,7 @@ Aturan kontribusi dan guardrail agent tersedia di [AGENTS.md](../AGENTS.md).
 | Dokumen | Isi | Status acuan |
 |---|---|---|
 | [PRD](PRD.md) | Masalah, pengguna, cakupan, kapabilitas, target kualitas, dan keputusan terbuka | Draft 0.1.13 |
-| [DECISIONS](DECISIONS.md) | Keputusan eksplisit pengguna dan bagian pertanyaan yang masih terbuka | Catatan 0.1.19; D-001–D-022 terkonfirmasi; profil D-019 provisional |
+| [DECISIONS](DECISIONS.md) | Keputusan eksplisit pengguna dan bagian pertanyaan yang masih terbuka | Catatan 0.1.20; D-001–D-023 terkonfirmasi; profil D-019 provisional |
 | [ARCHITECTURE](ARCHITECTURE.md) | Komponen, alur, state, lifecycle, dan [struktur project](ARCHITECTURE.md#13-struktur-project-yang-disarankan), termasuk MicroWARP | Draft 0.1.4 |
 | [TECHSTACK](TECHSTACK.md) | Pilihan stack/pin untuk spike serta batas validasi lanjutan | Spike M0 0.1.3; pin dan fixture T02 tersedia |
 | [ROADMAP](ROADMAP.md) | Milestone M0–M3, dependensi, serta gerbang MVP/P1 | Draft 0.1.2 |
@@ -38,7 +38,9 @@ Hasil pemeriksaan lingkungan tidak menyatakan integrasi client, transport WARP, 
 
 [Kontrol token dan credential server](akses-dan-credential.md) tersedia melalui EP-02-S02/D-021: verifier role, guard HTTP dan persiapan request dibuktikan pada fixture lokal. Cakupan S02 tidak meliputi generasi JSON/SSE, browser login atau deployment baru; penerimaan endpoint/restart produk tetap terbuka.
 
-[Katalog model alias dan generasi JSON](model-alias-dan-json.md) tersedia melalui EP-02-S03/D-022: empat route bertoken, pemetaan nilai model tanpa mengubah byte field lain, penerusan JSON/usage dan penolakan alias unknown dibuktikan dengan fixture HTTPS/SOCKS5. Admission statis membatasi request/buffer/slot dispatch; transport jaringan memakai adapter fixture tepercaya yang diinjeksi, tanpa default client. Gateway runtime, SSE, health eligibility, provider/WARP, performa dan kelulusan M0 tetap belum dibuktikan.
+[Katalog model alias dan generasi JSON](model-alias-dan-json.md) tersedia melalui EP-02-S03/D-022: empat route bertoken, pemetaan nilai model tanpa mengubah byte field lain, penerusan JSON/usage dan penolakan alias unknown dibuktikan dengan fixture HTTPS/SOCKS5. Admission statis membatasi request/buffer/slot dispatch; transport jaringan memakai adapter fixture tepercaya yang diinjeksi, tanpa default client. Bukti awal S03 tidak mencakup SSE; gateway runtime, health eligibility, provider/WARP, performa dan kelulusan M0 tetap belum dibuktikan.
+
+[Streaming SSE content dan tool calls](streaming-sse.md) tersedia melalui EP-02-S04/D-023: event pertama melewati barrier tanpa menunggu event berikutnya, fragmentasi/usage/extension tetap utuh, serta stream putus tidak diberi terminal/generasi pengganti. Buffer stream dan lease dibatasi; idle Read, deadline Write/Flush, cancellation dan timeout terpisah diuji pada komponen/wiring fixture lokal. Dukungan ini tidak meluluskan transport runtime, client/provider/WARP, performa atau gerbang M0.
 
 ## Indeks epic MVP
 

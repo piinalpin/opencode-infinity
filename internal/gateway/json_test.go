@@ -20,6 +20,20 @@ func TestModelJSONPreservesBytes(t *testing.T) {
 	}
 }
 
+func TestGatewayStreamControl(t *testing.T) {
+	for _, body := range []string{`{"model":"coding-default","stream":true,"extra":9007199254740993}`, `{"str\u0065am":true,"model":"coding-default","tools":[{"model":"nested"}]}`} {
+		input := []byte(body)
+		parsed, err := parseChat(input)
+		if err != nil {
+			t.Fatal("stream true valid ditolak")
+		}
+		want := bytes.Replace(input, []byte(`"coding-default"`), []byte(`"real-model"`), 1)
+		if !bytes.Equal(parsed.remap(input, []byte(`"real-model"`)), want) {
+			t.Fatal("field stream/tools berubah setelah mapping")
+		}
+	}
+}
+
 func FuzzModelJSON(f *testing.F) {
 	for _, seed := range []string{`{"model":"coding-default"}`, `{"m\u006fdel":"x","array":[{},[],1e1000,"\\\""]}`, `{"model":"x","model":"y"}`, `{"model":"x","stream":true}`, `{}`, `null`, ""} {
 		f.Add(seed)
@@ -48,7 +62,7 @@ func TestModelJSONRejectsAmbiguousControls(t *testing.T) {
 	for _, input := range []string{
 		`{"model":"one","model":"two"}`, `{"model":"one","m\u006fdel":"two"}`,
 		`{"model":"one","stream":false,"str\u0065am":false}`,
-		`{"model":"one","stream":true}`, `{"model":"one","stream":null}`,
+		`{"model":"one","stream":true,"str\u0065am":false}`, `{"model":"one","stream":null}`,
 		`{"model":"one","stream":"false"}`, `{"model":"one","stream":0}`,
 		`null`, `[]`, `{}`, `{"model":null}`, `{"model":4}`, `{"model":""}`,
 		`{"model":"one"} {}`, `{"model":"one",}`, `{"model":"one"`,

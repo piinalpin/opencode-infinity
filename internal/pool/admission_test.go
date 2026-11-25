@@ -143,3 +143,63 @@ func TestModelAdmissionGlobalBudget(t *testing.T) {
 		t.Fatal("resource bocor")
 	}
 }
+
+func TestGatewayStreamBudget(t *testing.T) {
+	a, err := NewAdmission(admissionConfig(t, "max_active_requests: 2", "max_active_requests: 3", "stream_buffer_bytes: 8388608", "stream_buffer_bytes: 65536"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	one, _ := a.Begin(100)
+	two, _ := a.Begin(100)
+	three, _ := a.Begin(100)
+	if !one.ReserveStream(32768) || !two.ReserveStream(32768) {
+		t.Fatal("budget stream tepat ditolak")
+	}
+	if three.ReserveStream(1) || one.ReserveStream(1) {
+		t.Fatal("budget stream terlampaui/reservasi ganda")
+	}
+	one.Release()
+	if one.ReserveStream(1) || !three.ReserveStream(32768) {
+		t.Fatal("release/reservasi stream salah")
+	}
+	var wg sync.WaitGroup
+	for range 20 {
+		wg.Go(two.Release)
+		wg.Go(three.Release)
+	}
+	wg.Wait()
+	for range 20 {
+		wg.Go(func() {
+			for range 100 {
+				r, ok := a.Begin(100)
+				if !ok {
+					continue
+				}
+				r.ReserveStream(32768)
+				r.Release()
+				r.Release()
+			}
+		})
+	}
+	wg.Wait()
+	for _, n := range []int64{0, -1, 65537} {
+		r, _ := a.Begin(100)
+		if r.ReserveStream(n) {
+			t.Fatal("ukuran stream invalid diterima")
+		}
+		r.Release()
+	}
+	var zero Reservation
+	var nilLease *Reservation
+	if zero.ReserveStream(1) || nilLease.ReserveStream(1) {
+		t.Fatal("lease zero menerima stream")
+	}
+	if a.active != 0 || a.bytes != 0 {
+		t.Fatal("resource stream bocor")
+	}
+	final, ok := a.Begin(4096)
+	if !ok || !final.ReserveStream(65536) {
+		t.Fatal("budget stream tidak kembali penuh")
+	}
+	final.Release()
+}

@@ -92,7 +92,7 @@ func TestModelCoordinatorRejectsAndReleases(t *testing.T) {
 	}
 	for _, tc := range []struct{ body, id, code string }{
 		{`{"model":"missing"}`, "", "model_not_found"}, {`{"model":"coding-default"}`, "missing", "upstream_not_found"},
-		{`{"model":"coding-default","stream":true}`, "", "unsupported_api"}, {`{`, "", "invalid_json"},
+		{`{"model":"coding-default","stream":true,"str\u0065am":false}`, "", "invalid_json"}, {`{`, "", "invalid_json"},
 		{`{"model":"coding-default","x":"` + strings.Repeat("x", 4096) + `"}`, "", "request_too_large"},
 		{`{"model":"coding-default"}`, "", "upstream_transport_error"},
 	} {
@@ -197,5 +197,68 @@ func TestModelCoordinatorDispatch(t *testing.T) {
 	b, err := io.ReadAll(response.Body)
 	if err != nil || response.StatusCode != 201 || string(b) != `{"usage":{"total_tokens":3},"extra":true}` || calls != 1 {
 		t.Fatal("payload/usage/status berubah")
+	}
+}
+
+func TestGatewayStreamAdmission(t *testing.T) {
+	for _, requested := range []bool{true, false} {
+		calls := 0
+		body := &countedBody{Reader: strings.NewReader("data: [DONE]\n\n")}
+		c, err := New(modelConfig(t, "stream_buffer_bytes: 8388608", "stream_buffer_bytes: 16384"), dispatchFunc(func(*http.Request, config.Relay) (*http.Response, error) {
+			calls++
+			return &http.Response{StatusCode: 200, Header: http.Header{"Content-Type": {"text/event-stream; charset=utf-8"}}, Body: body}, nil
+		}))
+		if err != nil {
+			t.Fatal(err)
+		}
+		input := `{"model":"coding-default"}`
+		if requested {
+			input = `{"model":"coding-default","stream":true}`
+		}
+		response, err := c.Chat(chatRequest(input), "")
+		if response != nil {
+			response.Body.Close()
+			t.Fatal("stream tanpa budget diteruskan")
+		}
+		assertFailure(t, err, "gateway_capacity_exceeded")
+		want := 1
+		if requested {
+			want = 0
+		}
+		if calls != want || body.closes.Load() != int32(want) {
+			t.Fatal("fase penolakan/cleanup stream salah")
+		}
+	}
+	calls := 0
+	c, err := New(modelConfig(t, "stream_buffer_bytes: 8388608", "stream_buffer_bytes: 32768"), dispatchFunc(func(r *http.Request, _ config.Relay) (*http.Response, error) {
+		calls++
+		data, _ := io.ReadAll(r.Body)
+		if string(data) != `{"model":"provider-model-id","stream":true}` {
+			t.Fatal("mode stream tidak dipertahankan")
+		}
+		return &http.Response{StatusCode: 200, Header: http.Header{"Content-Type": {"text/event-stream"}}, Body: io.NopCloser(strings.NewReader("data: [DONE]\n\n"))}, nil
+	}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	first, err := c.Chat(chatRequest(`{"model":"coding-default","stream":true}`), "")
+	if err != nil {
+		t.Fatal("stream budget tepat ditolak")
+	}
+	io.Copy(io.Discard, first.Body)
+	second, err := c.Chat(chatRequest(`{"model":"coding-default","stream":true}`), "")
+	if second != nil {
+		second.Body.Close()
+		t.Fatal("stream budget dilepas sebelum caller selesai")
+	}
+	assertFailure(t, err, "gateway_capacity_exceeded")
+	first.Body.Close()
+	last, err := c.Chat(chatRequest(`{"model":"coding-default","stream":true}`), "")
+	if err != nil {
+		t.Fatal("stream budget tidak dilepas")
+	}
+	last.Body.Close()
+	if calls != 2 {
+		t.Fatal("stream ditolak melakukan dispatch")
 	}
 }
