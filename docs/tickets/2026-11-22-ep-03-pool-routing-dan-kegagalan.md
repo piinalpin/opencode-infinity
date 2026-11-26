@@ -118,6 +118,16 @@ Admission harus mengikat pemilihan relay dengan reservasi agar request serentak 
 - Diblokir oleh: [EP-02-S05](2026-11-22-ep-02-gateway-api-dasar.md#ep-02-s05), [EP-01-T06](2026-11-22-ep-01-kelayakan-dan-keputusan-mvp.md#ep-01-t06)
 - Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
 
+### Hasil pengerjaan 26 November 2026
+
+[D-026](../DECISIONS.md#d-026-admission-fixed-independen-ep-03-s01) menyetujui komponen dan fixture lokal independen. [Kontrak dan bukti admission](../admission-fixed.md) memisahkan persiapan bounded dari commit kapasitas atomik. Status `approved` tetap persetujuan tiket; penerimaan produk serta dependensi S05/T06/M0 tetap terbuka.
+
+- **AC1 parsial produk:** primary fixed fixture yang tersedia di-admit bersama slot gateway/relay/outbound dan stream deklaratif dalam satu transaksi. Tidak ada klaim configured relay sudah sehat; eligibility health/mode/cooldown terpadu belum dibuktikan.
+- **AC2 parsial produk:** batas global, relay dan outbound menghasilkan `429 gateway_capacity_exceeded`; fixture dua HTTPS/SOCKS5 membuktikan nol tambahan koneksi/CONNECT/POST pada request ditolak. Relay lain tetap dapat dipakai jika batas global tersedia, tanpa fallback tersembunyi.
+- **AC3 parsial produk:** pending dan byte direservasi sebelum alokasi/read; budget body/stream agregat, exact cap, known/unknown body dan pemulihan kapasitas dibuktikan. `pending + active` dibatasi bersama; tidak ada antrean generasi baru atau klaim RSS/performa.
+- **AC4 parsial produk:** release pending/admitted idempotent; JSON/SSE EOF/error dan Close/cancel konkuren tidak membebaskan tail sebelum forwarding/caller selesai. Kapasitas pulih dan jaringan ditutup tepat sekali; target cancellation/performa S06 tetap terpisah.
+- Tidak menambah dependency/schema/default numerik, owner health, transport/listener/deployment, provider/WARP nyata, least-inflight/fallback/cooldown, binding atau dashboard. SSE tak terduga tetap dapat ditolak sesudah satu dispatch menurut D-023.
+
 <a id="ep-03-s02"></a>
 
 ## [STORY] EP-03-S02 Tentukan eligibility dari health dan mode operasi yang terpisah

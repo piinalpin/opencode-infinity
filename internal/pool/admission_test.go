@@ -1,6 +1,7 @@
 package pool
 
 import (
+	"errors"
 	"opencode-infinity/internal/config"
 	"os"
 	"strings"
@@ -34,14 +35,14 @@ func TestModelAdmissionRelayAndRelease(t *testing.T) {
 	}
 	one, _ := a.Begin(100)
 	two, _ := a.Begin(100)
-	if !one.Assign("warp-1") {
+	if one.AdmitFixed("warp-1", 0) != nil {
 		t.Fatal("relay valid ditolak")
 	}
-	if one.Assign("warp-1") || two.Assign("missing") || two.Assign("warp-1") || two.Assign("warp-2") {
+	if one.AdmitFixed("warp-1", 0) == nil || two.AdmitFixed("missing", 0) == nil || two.AdmitFixed("warp-1", 0) == nil || two.AdmitFixed("warp-2", 0) == nil {
 		t.Fatal("slot relay/outbound terlampaui")
 	}
 	one.Release()
-	if one.Assign("warp-2") || !two.Assign("warp-2") {
+	if one.AdmitFixed("warp-2", 0) == nil || two.AdmitFixed("warp-2", 0) != nil {
 		t.Fatal("release/reservasi relay salah")
 	}
 	var wg sync.WaitGroup
@@ -50,7 +51,7 @@ func TestModelAdmissionRelayAndRelease(t *testing.T) {
 	}
 	wg.Wait()
 	three, ok := a.Begin(4096)
-	if !ok || !three.Assign("warp-1") {
+	if !ok || three.AdmitFixed("warp-1", 0) != nil {
 		t.Fatal("resource tidak kembali penuh")
 	}
 	three.Release()
@@ -72,7 +73,7 @@ func TestModelAdmissionConcurrent(t *testing.T) {
 				if !ok {
 					continue
 				}
-				r.Assign("warp-1")
+				r.AdmitFixed("warp-1", 0)
 				a.mu.Lock()
 				if a.active > 2 || a.bytes > 4096 || a.outbound > 1 {
 					t.Error("kapasitas konkuren terlampaui")
@@ -102,7 +103,7 @@ func TestModelAdmissionConcurrent(t *testing.T) {
 	}
 	var nilReservation *Reservation
 	nilReservation.Release()
-	if nilReservation.Assign("warp-1") {
+	if nilReservation.AdmitFixed("warp-1", 0) == nil {
 		t.Fatal("nil reservation menerima relay")
 	}
 }
@@ -144,14 +145,200 @@ func TestModelAdmissionGlobalBudget(t *testing.T) {
 	}
 }
 
+func TestFixedAdmissionAtomicPromotion(t *testing.T) {
+	a, err := NewAdmission(admissionConfig(t))
+	if err != nil {
+		t.Fatal(err)
+	}
+	r, ok := a.Begin(100)
+	if !ok {
+		t.Fatal("persiapan valid ditolak")
+	}
+	defer r.Release()
+	if a.pending != 1 || a.active != 0 || a.outbound != 0 || a.used["warp-1"] != 0 || a.bytes != 100 {
+		t.Fatal("persiapan body sudah menjadi admission generasi parsial")
+	}
+	if r.AdmitFixed("warp-1", 2048) != nil || a.pending != 0 || a.active != 1 || a.outbound != 1 || a.used["warp-1"] != 1 || a.streamBytes != 2048 {
+		t.Fatal("admission tidak mengambil gateway/relay/outbound bersama")
+	}
+	r.Release()
+	if a.pending != 0 || a.active != 0 || a.outbound != 0 || a.used["warp-1"] != 0 || a.bytes != 0 || a.streamBytes != 0 {
+		t.Fatal("reservasi admitted tidak pulih")
+	}
+}
+
+func TestFixedAdmissionRejectedPromotion(t *testing.T) {
+	for _, tc := range []struct {
+		name, relay  string
+		stream, held int64
+		edits        []string
+		want         error
+	}{
+		{name: "unknown", relay: "missing", want: ErrNoEligibleRelay},
+		{name: "relay", relay: "warp-1", stream: 1024, want: ErrCapacityExceeded},
+		{name: "outbound", relay: "warp-2", stream: 1024, edits: []string{"outbound_connections: 2", "outbound_connections: 1", "parallel_probes: 2", "parallel_probes: 1"}, want: ErrCapacityExceeded},
+		{name: "stream", relay: "warp-2", held: 32768, stream: 1, want: ErrCapacityExceeded},
+		{name: "negative-stream", relay: "warp-2", stream: -1, want: ErrInvalidReservation},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			edits := append([]string{"stream_buffer_bytes: 8388608", "stream_buffer_bytes: 32768", "upstreams:", "  - id: warp-2\n    proxy_url: socks5h://warp-2:1080\n    max_inflight: 1\nupstreams:"}, tc.edits...)
+			a, err := NewAdmission(admissionConfig(t, edits...))
+			if err != nil {
+				t.Fatal(err)
+			}
+			held, _ := a.Begin(100)
+			defer held.Release()
+			if err := held.AdmitFixed("warp-1", tc.held); err != nil {
+				t.Fatal(err)
+			}
+			r, _ := a.Begin(100)
+			defer r.Release()
+			if err := r.AdmitFixed(tc.relay, tc.stream); !errors.Is(err, tc.want) {
+				t.Fatalf("kategori penolakan %v, ingin %v", err, tc.want)
+			}
+			if a.pending != 1 || a.active != 1 || a.bytes != 200 || a.outbound != 1 || a.used["warp-1"] != 1 || a.used["warp-2"] != 0 || a.streamBytes != tc.held || r.admitted || r.relay != "" || r.streamBytes != 0 {
+				t.Fatal("promosi gagal menyisakan reservasi parsial atau mengganti primary")
+			}
+			r.Release()
+			held.Release()
+			next, ok := a.Begin(4096)
+			if !ok || next.AdmitFixed("warp-2", 32768) != nil {
+				t.Fatal("seluruh kapasitas gagal pulih setelah penolakan")
+			}
+			next.Release()
+			assertFixedLedger(t, a, true)
+		})
+	}
+}
+
+func TestFixedAdmissionLocalActivation(t *testing.T) {
+	a, err := NewAdmission(admissionConfig(t))
+	if err != nil {
+		t.Fatal(err)
+	}
+	local, _ := a.Begin(100)
+	defer local.Release()
+	if local.AdmitLocal() != nil || a.pending != 0 || a.active != 1 || a.outbound != 0 || a.streamBytes != 0 {
+		t.Fatal("katalog tidak diaktifkan lokal atau mengambil slot jaringan")
+	}
+	if local.AdmitLocal() != ErrInvalidReservation || local.AdmitFixed("warp-1", 0) != ErrInvalidReservation || local.ReserveStream(1) {
+		t.Fatal("lease katalog dipromosikan dua kali atau mengambil stream")
+	}
+	pending, _ := a.Begin(3996)
+	defer pending.Release()
+	if _, ok := a.Begin(1); ok {
+		t.Fatal("pending bersama katalog melewati batas global/buffer")
+	}
+	if pending.AdmitFixed("warp-1", 0) != nil || a.pending != 0 || a.active != 2 {
+		t.Fatal("generasi tidak berbagi kapasitas dengan katalog")
+	}
+	local.Release()
+	pending.Release()
+	if local.AdmitLocal() != ErrInvalidReservation {
+		t.Fatal("lease released diaktifkan ulang")
+	}
+	var zero Reservation
+	var nilLease *Reservation
+	if zero.AdmitLocal() != ErrInvalidReservation || nilLease.AdmitLocal() != ErrInvalidReservation {
+		t.Fatal("lease invalid diterima")
+	}
+	assertFixedLedger(t, a, true)
+}
+
+func assertFixedLedger(t *testing.T, a *Admission, empty bool) {
+	t.Helper()
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	var total int64
+	for relay, used := range a.used {
+		if used < 0 || used > a.relays[relay] {
+			t.Errorf("kapasitas relay terlampaui: %s", relay)
+		}
+		total += used
+	}
+	if a.pending < 0 || a.active < 0 || a.pending+a.active > a.maxActive || total != a.outbound || total > a.active || a.outbound < 0 || a.outbound > a.maxOutbound || a.bytes < 0 || a.bytes > a.maxBytes || a.streamBytes < 0 || a.streamBytes > a.maxStreamBytes {
+		t.Error("ledger global/relay/outbound/buffer tidak konsisten")
+	}
+	if empty && (a.pending != 0 || a.active != 0 || a.bytes != 0 || a.outbound != 0 || a.streamBytes != 0) {
+		t.Error("ledger tidak kosong setelah semua lease selesai")
+	}
+}
+
+func TestFixedAdmissionConcurrent(t *testing.T) {
+	a, err := NewAdmission(admissionConfig(t, "max_active_requests: 2", "max_active_requests: 4", "stream_buffer_bytes: 8388608", "stream_buffer_bytes: 32768", "upstreams:", "  - id: warp-2\n    proxy_url: socks5h://warp-2:1080\n    max_inflight: 1\nupstreams:"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	start := make(chan struct{})
+	var workers sync.WaitGroup
+	for i := range 20 {
+		workers.Go(func() {
+			<-start
+			for range 100 {
+				r, ok := a.Begin(100)
+				if !ok {
+					continue
+				}
+				assertFixedLedger(t, a, false)
+				if i%3 == 0 {
+					r.AdmitLocal()
+				} else {
+					r.AdmitFixed([]string{"warp-1", "warp-2"}[i%2], 16384)
+				}
+				assertFixedLedger(t, a, false)
+				r.Release()
+				r.Release()
+			}
+		})
+	}
+	close(start)
+	workers.Wait()
+	assertFixedLedger(t, a, true)
+	for range 100 {
+		r, ok := a.Begin(4096)
+		if !ok {
+			t.Fatal("buffer penuh tidak pulih")
+		}
+		start := make(chan struct{})
+		var race sync.WaitGroup
+		for _, action := range []func(){func() { r.AdmitFixed("warp-1", 32768) }, func() { r.AdmitLocal() }, func() { r.ReserveStream(32768) }, r.Release, r.Release} {
+			race.Go(func() { <-start; action() })
+		}
+		close(start)
+		race.Wait()
+		r.Release()
+		assertFixedLedger(t, a, true)
+	}
+}
+
+func TestFixedAdmissionPendingCannotReserveStream(t *testing.T) {
+	a, err := NewAdmission(admissionConfig(t))
+	if err != nil {
+		t.Fatal(err)
+	}
+	r, ok := a.Begin(100)
+	if !ok {
+		t.Fatal("persiapan valid ditolak")
+	}
+	defer r.Release()
+	if r.ReserveStream(32768) {
+		t.Fatal("pending mengambil buffer stream sebelum admission gateway/relay")
+	}
+}
+
 func TestGatewayStreamBudget(t *testing.T) {
-	a, err := NewAdmission(admissionConfig(t, "max_active_requests: 2", "max_active_requests: 3", "stream_buffer_bytes: 8388608", "stream_buffer_bytes: 65536"))
+	a, err := NewAdmission(admissionConfig(t, "max_active_requests: 2", "max_active_requests: 3", "stream_buffer_bytes: 8388608", "stream_buffer_bytes: 65536", "outbound_connections: 2", "outbound_connections: 3", "max_inflight: 1", "max_inflight: 3"))
 	if err != nil {
 		t.Fatal(err)
 	}
 	one, _ := a.Begin(100)
 	two, _ := a.Begin(100)
 	three, _ := a.Begin(100)
+	for _, r := range []*Reservation{one, two, three} {
+		if err := r.AdmitFixed("warp-1", 0); err != nil {
+			t.Fatal(err)
+		}
+	}
 	if !one.ReserveStream(32768) || !two.ReserveStream(32768) {
 		t.Fatal("budget stream tepat ditolak")
 	}
@@ -175,6 +362,7 @@ func TestGatewayStreamBudget(t *testing.T) {
 				if !ok {
 					continue
 				}
+				r.AdmitFixed("warp-1", 0)
 				r.ReserveStream(32768)
 				r.Release()
 				r.Release()
@@ -184,6 +372,9 @@ func TestGatewayStreamBudget(t *testing.T) {
 	wg.Wait()
 	for _, n := range []int64{0, -1, 65537} {
 		r, _ := a.Begin(100)
+		if err := r.AdmitFixed("warp-1", 0); err != nil {
+			t.Fatal(err)
+		}
 		if r.ReserveStream(n) {
 			t.Fatal("ukuran stream invalid diterima")
 		}
@@ -198,7 +389,7 @@ func TestGatewayStreamBudget(t *testing.T) {
 		t.Fatal("resource stream bocor")
 	}
 	final, ok := a.Begin(4096)
-	if !ok || !final.ReserveStream(65536) {
+	if !ok || final.AdmitFixed("warp-1", 0) != nil || !final.ReserveStream(65536) {
 		t.Fatal("budget stream tidak kembali penuh")
 	}
 	final.Release()

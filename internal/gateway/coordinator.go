@@ -44,6 +44,10 @@ func (c *Coordinator) Models(id string) (*http.Response, error) {
 		lease.Release()
 		return nil, failure("upstream_not_found")
 	}
+	if err := lease.AdmitLocal(); err != nil {
+		lease.Release()
+		return nil, failure("gateway_capacity_exceeded")
+	}
 	type model struct {
 		ID     string `json:"id"`
 		Object string `json:"object"`
@@ -172,10 +176,14 @@ func (c *Coordinator) Chat(in *http.Request, id string) (*http.Response, error) 
 		return nil, failure("request_too_large")
 	}
 	streamReserved := parsed.stream
-	if streamReserved && !reservation.ReserveStream(StreamCopyBytes) {
-		return nil, failure("gateway_capacity_exceeded")
+	var streamBytes int64
+	if streamReserved {
+		streamBytes = StreamCopyBytes
 	}
-	if !reservation.Assign(model.PrimaryRelay) {
+	if err := reservation.AdmitFixed(model.PrimaryRelay, streamBytes); err != nil {
+		if errors.Is(err, pool.ErrCapacityExceeded) {
+			return nil, failure("gateway_capacity_exceeded")
+		}
 		return nil, failure("no_eligible_relay")
 	}
 	relay, _ := c.registry.Relay(model.PrimaryRelay)

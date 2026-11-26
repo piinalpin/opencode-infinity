@@ -25,8 +25,8 @@ Status: komponen dan fixture lokal tersedia; penerimaan gateway terintegrasi tet
 | Header target/prefix client | `400 forbidden_target_override` | Sebelum pembacaan body/dispatch |
 | Alias/provider tidak dikenal | `404 model_not_found` / `404 upstream_not_found` | Tanpa default fallback |
 | Body input atau hasil remap oversize | `413 request_too_large` | Sebelum dispatch |
-| Kapasitas global/buffer habis | `429 gateway_capacity_exceeded` | Tanpa antrean |
-| Slot relay tidak tersedia | `503 no_eligible_relay` | Bukan bukti health runtime |
+| Kapasitas global/buffer/relay/outbound habis | `429 gateway_capacity_exceeded` | Tanpa antrean; kategori relay/outbound diperjelas S01 |
+| Relay tidak dikenal/tidak eligible | `503 no_eligible_relay` | Bukan saturasi kapasitas; eligibility health runtime tetap S02 |
 | Koneksi proxy/upstream gagal | `502 upstream_transport_error` | Tanpa direct fallback/replay |
 | Timeout sebelum respons dimulai | `504 upstream_timeout` | Header/total mengikuti S03/S04 |
 | Respons generasi 300–399 | `502 upstream_redirect_rejected` | Body ditutup; tanpa follow/replay |
@@ -39,7 +39,7 @@ Setiap error buatan handler gateway sebelum commit memakai envelope dengan `erro
 
 Encoding request hanya absent atau `identity`, sesuai boundary S02 dan persetujuan S05. `gzip`, `br`, `deflate`, encoding bertumpuk atau duplikat ditolak 415 sebelum dispatch. Tidak ada decompressor request, sehingga tidak ada jalur kompresi yang melewati batas sesudah decoding. Dukungan decoding baru memerlukan kontrak dan pengujian terpisah.
 
-`max_body_bytes` tetap input konfigurasi eksplisit T01, bukan default baru S05. Pemeriksaan meliputi Content-Length bila diketahui, jumlah byte aktual termasuk input chunked/unknown length, serta ukuran JSON sesudah alias diganti dengan model nyata. Pembacaan dibatasi max+1; reservasi request/buffer terjadi sebelum alokasi/read dan slot relay sebelum dispatch. Anggaran konservatif S03 tetap berlaku. Tepat batas hasil mapping diterima bila kapasitas cukup; input yang masih muat tetapi hasil mapping melewati cap ditolak 413. Jumlah dispatch pada penolakan tersebut nol.
+`max_body_bytes` tetap input konfigurasi eksplisit T01, bukan default baru S05. Pemeriksaan meliputi Content-Length bila diketahui, jumlah byte aktual termasuk input chunked/unknown length, serta ukuran JSON sesudah alias diganti dengan model nyata. Pembacaan dibatasi max+1; persiapan pending/buffer terjadi sebelum alokasi/read, kemudian admission gateway/primary/outbound dan stream deklaratif dilakukan secara atomik sebelum dispatch menurut [EP-03-S01/D-026](admission-fixed.md). Anggaran konservatif S03 tetap berlaku. Tepat batas hasil mapping diterima bila kapasitas cukup; input yang masih muat tetapi hasil mapping melewati cap ditolak 413. Jumlah dispatch pada penolakan tersebut nol.
 
 ## Target, redirect dan error upstream
 

@@ -22,7 +22,7 @@ Content-Type, Content-Encoding yang masih berlaku dan Retry-After valid mengikut
 
 ## Admission, backpressure dan kepemilikan
 
-`internal/pool.Reservation.ReserveStream(bytes)` menggunakan mutex dan lease yang sama dengan request/body/relay/outbound. Budget berasal dari `limits.stream_buffer_bytes`. Reservasi copy 32 KiB harus tersedia sebelum buffer forwarding dialokasikan; ukuran copy bukan ukuran event. Budget body S03 tetap konservatif dan tidak dioptimalkan/dilepas sebagian selama stream. Menolak ketika penuh, tanpa antrean atau read-ahead tanpa batas.
+Menurut pembaruan [EP-03-S01/D-026](admission-fixed.md), `internal/pool.Reservation.AdmitFixed(primary, streamBytes)` mengambil gateway/relay/outbound serta stream deklaratif secara atomik setelah persiapan pending yang bounded. `ReserveStream(bytes)` hanya mengambil budget SSE yang baru diketahui sesudah header pada generasi yang sudah di-admit. Keduanya memakai mutex dan lease yang sama. Budget berasal dari `limits.stream_buffer_bytes`. Reservasi copy 32 KiB harus tersedia sebelum buffer forwarding dialokasikan; ukuran copy bukan ukuran event. Budget body S03 tetap konservatif dan tidak dioptimalkan/dilepas sebagian selama stream. Menolak ketika penuh, tanpa antrean atau read-ahead tanpa batas.
 
 - Request true mengambil reservasi stream sebelum dispatch. Kapasitas habis menghasilkan `429 gateway_capacity_exceeded` tanpa dispatch generasi.
 - SSE tak terduga pada request absent/false juga wajib mengambil reservasi sesudah header upstream, sebelum forwarding. Bila penuh, body ditutup dan 429 dikembalikan tanpa retry; satu dispatch sudah dapat terjadi.

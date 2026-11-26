@@ -46,6 +46,8 @@ Hasil pemeriksaan lingkungan tidak menyatakan integrasi client, transport WARP, 
 
 [Liveness dan readiness dasar](health-dasar.md) tersedia melalui EP-02-T06/D-025: handler admin terpisah membedakan proses hidup dari observasi transport primary default, dengan versi/revisi/waktu teredaksi. Read tidak memicu probe/generasi; unknown/expired tidak ready. Budget, snapshot konkuren, HEAD dan isolasi lease dibuktikan pada komponen/fixture; eligibility dispatch EP-03, observasi/runtime produksi, private binding dan gerbang M0 tetap terbuka.
 
+[Admission kapasitas primary fixed](admission-fixed.md) tersedia melalui EP-03-S01/D-026: persiapan body tetap dibatasi sebelum parsing, lalu kapasitas gateway/relay/outbound dan stream deklaratif diambil secara atomik. Saturasi memberi `429 gateway_capacity_exceeded`; finalisasi mempertahankan lease sampai forwarding selesai dan melepas tepat sekali. Bukti lokal tidak menggantikan eligibility health/mode/cooldown terpadu S02/S05, accounting koneksi runtime, penerimaan produk atau M0.
+
 ## Indeks epic MVP
 
 Satu file memuat satu epic beserta seluruh child story/task. Seluruh 11 epic MVP/P1, 27 story, dan 24 task berstatus `approved`, sesuai persetujuan eksplisit pengguna pada 23 November 2026 ([D-015](DECISIONS.md#d-015-persetujuan-seluruh-tiket-mvp-dan-p1)). Persetujuan mencakup tiket beserta AC-nya; implementasi dan kelulusan AC belum dinyatakan selesai. Dependensi, gerbang milestone, dan input TBD tetap berlaku.

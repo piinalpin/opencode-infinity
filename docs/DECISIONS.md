@@ -229,6 +229,16 @@ Catatan ini memisahkan keputusan eksplisit pengguna dari usulan dan pertanyaan y
 - **Batas pembuktian:** observasi fixture dikumpulkan eksplisit dan tidak dipicu endpoint. T06 tidak mengubah admission generasi, menjalankan drain, membuat dashboard/status lengkap, deployment atau transport/probe runtime. Guard admin tidak membuktikan binding listener privat. Integrasi OpenCode/provider/WARP, RSS/performa, dependensi S05/T01/EP-01-T06 dan gerbang M0 tetap terbuka. Tidak mengotorisasi commit, push atau request provider nyata.
 - **Acuan:** EP-02-T06, C-9/C-10, Q-9/Q-10, D-021/D-024; [kontrak dan bukti health dasar](health-dasar.md).
 
+### D-026 Admission fixed independen EP-03-S01
+
+- **Status:** ditetapkan pengguna pada 26 November 2026 melalui pilihan cakupan lokal independen dan persetujuan rencana implementasi S01.
+- **Keputusan:** lanjutkan komponen admission dan fixture HTTPS/SOCKS5 lokal sementara EP-02-S05, EP-01-T06/M0 serta penerimaan produk terintegrasi tetap terbuka. Primary fixture yang tersedia menjadi prasyarat bukti lokal; relay terkonfigurasi tidak dinyatakan sehat hanya karena tercantum dalam registry.
+- **Reservasi:** persiapan body mengambil pending lease dan byte konservatif sebelum alokasi/read. `pending + active` dibatasi bersama oleh `max_active_requests`, tanpa queue atau default baru. Setelah mapping server diketahui, satu operasi pool memeriksa dan mengambil gateway/primary/outbound serta buffer stream deklaratif secara atomik. Promosi gagal tidak mengambil sebagian slot admitted. Katalog tetap lokal, bounded dan berbagi batas global tanpa slot relay/outbound.
+- **Kapasitas dan error:** saturasi global, body, relay, outbound dan stream deklaratif menghasilkan `429 gateway_capacity_exceeded` sebelum dispatch; kapasitas relay penuh tidak lagi disatukan dengan `503 no_eligible_relay`. SSE tak terduga pada absent/false tetap mengambil stream budget setelah header dan dapat menolak setelah satu dispatch, sesuai D-023. Error upstream tetap opaque; tidak ada fallback, retry atau cooldown baru.
+- **Finalisasi:** pending maupun admitted dilepas tepat sekali. Lease respons tetap hidup sampai forwarding selesai/caller Close, termasuk setelah EOF/error/cancellation; cleanup jaringan tidak membebaskan buffer yang masih dipakai caller.
+- **Batas:** tidak menghubungkan observasi readiness sebagai precheck eligibility, membuat health/mode/circuit S02, least-inflight, fallback, cooldown, strict binding atau runtime/deployment baru. Accounting byte konservatif bukan bukti RSS; slot outbound bukan seluruh socket idle/probe. Default final, provider/WARP, performa dan gerbang M0 tetap terbuka. Tidak mengotorisasi commit atau push.
+- **Acuan:** EP-03-S01, AC-18, C-4/Q-3/Q-5, D-019/D-022/D-023/D-024/D-025; [kontrak dan bukti admission](admission-fixed.md).
+
 ## Status pertanyaan terbuka
 
 Seluruh pertanyaan keputusan yang dijadwalkan (O-1–O-10) sudah memiliki jawaban pengguna atau batas terbuka yang tercatat. Provider/model sudah dipilih D-016 dan versi Desktop/CLI bawaan sudah dicatat pada matriks lingkungan. D-019 menetapkan profil resource/metode serta protokol baseline awal; angka baseline aktual, versi SDK/runtime provider terpisah, listener/tailnet, default produk final dan bukti kelayakan integrasi M0 tetap terbuka. Profil bukan hasil pengukuran atau kelulusan M0.

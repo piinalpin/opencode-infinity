@@ -10,6 +10,8 @@ Dokumen ini menyimpan kontrak dan bukti tahap S03. Dukungan `stream:true` kemudi
 
 [EP-02-S05/D-024](error-dan-batas-request.md) melengkapi error path/method/protokol serta penolakan redirect. Passthrough 3xx historis S03 digantikan `502 upstream_redirect_rejected` untuk semua respons generasi 300–399; status/body 4xx/5xx tetap utuh. Hanya satu nilai `Retry-After` valid diteruskan. Encoding request tetap absent/`identity`.
 
+[EP-03-S01/D-026](admission-fixed.md) memperbarui API admission: persiapan pending tetap bounded sebelum parsing; gateway/primary/outbound dan stream deklaratif kemudian diambil dalam satu commit. Saturasi relay/outbound memakai 429, sementara eligibility health terpadu dan penerimaan produk tetap terbuka.
+
 ## API komponen
 
 | Komponen | API | Tanggung jawab |
@@ -17,7 +19,7 @@ Dokumen ini menyimpan kontrak dan bukti tahap S03. Dukungan `stream:true` kemudi
 | `internal/httpapi` | `NewAPI(snapshot, dispatcher)` | Merakit empat route, guard gateway, validasi media type, envelope error dan penerusan respons |
 | `internal/gateway` | `New(snapshot, dispatcher)`, `Models(provider)`, `Chat(request, provider)` | Memiliki snapshot, katalog/remap, koordinasi admission dan satu dispatch |
 | `internal/gateway` | `Dispatcher.Dispatch(request, relay)` | Kontrak efek jaringan server tepercaya; implementasi S03 berada pada fixture pengujian |
-| `internal/pool` | `NewAdmission(snapshot)`, `Begin(bytes)`, `Reservation.Assign(relay)`, `Reservation.Release()` | Kapasitas statis request/buffer dan slot relay/dispatch outbound dengan satu mutex |
+| `internal/pool` | `NewAdmission(snapshot)`, `Begin(bytes)`, `Reservation.AdmitFixed(primary, streamBytes)`, `Reservation.AdmitLocal()`, `Reservation.Release()` | Persiapan bounded serta admission kapasitas atomik dengan satu mutex; API diperbarui S01 |
 
 Constructor menolak snapshot belum valid dan dispatcher nil, termasuk typed nil. Tidak ada default client atau transport direct implisit. Snapshot disalin sebagai satu versi sebelum komponen dirakit; mengganti object konfigurasi caller setelah constructor tidak mencampur key/target/model. Caller tidak boleh menulis object tersebut secara serentak ketika constructor membacanya. Tidak ada hot reload.
 
@@ -52,7 +54,7 @@ Perilaku duplicate names dan presisi angka perlu ditangani eksplisit karena deco
 
 ## Admission dan buffer
 
-Reservasi request global dan byte dilakukan sebelum membaca/mengalokasikan body. Jumlah request aktif, anggaran body buffer, slot primary relay dan slot dispatch outbound berasal dari konfigurasi tervalidasi. Semua check/update kapasitas berada di satu pemilik admission. Penolakan langsung, tanpa antrean. Slot relay baru diambil setelah alias tervalidasi dan sebelum dispatch.
+Persiapan pending dan byte direservasi sebelum membaca/mengalokasikan body. `pending + active` berbagi batas `max_active_requests`; anggaran body buffer, slot primary relay dan slot dispatch outbound berasal dari konfigurasi tervalidasi. Setelah alias diketahui, `AdmitFixed` memindahkan pending ke active serta mengambil slot primary/outbound dan stream deklaratif dalam satu commit. Katalog memakai `AdmitLocal` tanpa slot jaringan. Semua check/update berada di satu pemilik admission; penolakan langsung, tanpa antrean. Rincian transisi dan error terbaru mengikuti [S01](admission-fixed.md).
 
 Anggaran per generasi bersifat konservatif:
 
@@ -64,7 +66,7 @@ Dua buffer mencakup body wire dan hasil remap. Metadata terbesar menghitung pali
 
 Anggaran adalah batas konservatif komponen, bukan pengukuran RSS Go/GC/TLS/socket atau bukti Q-5. Budget agregat yang kecil dapat menolak request dengan 429 meskipun body di bawah batas individual; tidak ada pelonggaran diam-diam. Batas individual ditegakkan pada byte aktual yang dibaca dan ukuran setelah remap, bukan hanya Content-Length. Representasi melewati batas menghasilkan 413 sebelum dispatch.
 
-Admission ini hanya kapasitas statis. `Assign` membatasi request yang sedang memakai slot relay/dispatch outbound; tidak menghitung socket idle milik adapter. Batas TCP/socket, listener inbound, header/read/write timeout, serta health eligibility/cooldown/binding menunggu transport dan perakitan runtime. Tidak ada klaim bahwa relay terkonfigurasi sudah sehat. Jumlah koneksi fixture dibatasi oleh adapter/fixture dan diperiksa lewat observasi peer.
+Admission ini hanya kapasitas statis. `AdmitFixed` membatasi request yang sedang memakai slot relay/dispatch outbound; tidak menghitung socket idle milik adapter. Batas TCP/socket, listener inbound, header/read/write timeout, serta health eligibility/cooldown/binding menunggu transport dan perakitan runtime. Tidak ada klaim bahwa relay terkonfigurasi sudah sehat. Jumlah koneksi fixture dibatasi oleh adapter/fixture dan diperiksa lewat observasi peer.
 
 ## Dispatch dan respons
 
