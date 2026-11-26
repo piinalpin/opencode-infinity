@@ -1,7 +1,7 @@
 ---
 title: "Agent memakai kontrak provider melalui satu gateway"
 date: 2026-11-22
-version: 6
+version: 7
 status: approved
 approved_by: pengguna
 approved_at: 2026-11-23
@@ -281,6 +281,16 @@ Gateway perlu menjaga target, ukuran request, dan perbedaan error tanpa menerusk
 - Di luar scope: Routing pool dinamis, lifecycle binding per percakapan, dashboard operasional lengkap, dan Responses API.
 - Diblokir oleh: [EP-02-S03](#ep-02-s03)
 - Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
+
+### Hasil pengerjaan 26 November 2026
+
+[D-024](../DECISIONS.md#d-024-error-dan-batas-request-independen-ep-02-s05) menyetujui komponen/handler dan fixture lokal, dengan request encoding tetap absent/`identity`. [Kontrak dan bukti](../error-dan-batas-request.md) tersedia. Penerimaan gateway terintegrasi serta blocker S03/T01/T06/M0 tetap terbuka; status persetujuan tiket tidak diubah menjadi kelulusan produk.
+
+- **AC1 parsial produk:** fixture dua upstream/relay membuktikan relay sesuai mapping, hostname melalui SOCKS5, verifikasi TLS dan nol direct fallback; tidak ada provider/WARP nyata.
+- **AC2 parsial produk:** header target/prefix ditolak sebelum CONNECT; query tidak memilih target server. Respons generasi 300–399 menghasilkan `502 upstream_redirect_rejected`, tanpa follow, dispatch ulang atau credential ke origin lain. Body ditutup sekali dan kapasitas pulih.
+- **AC3 parsial produk:** JSON invalid/UTF-8/kontrol ambigu, encoding unsupported/duplikat, serta body known/chunked dan hasil remap oversize ditolak terstruktur sebelum CONNECT/dispatch. Tepat batas diterima. Tidak ada decoder kompresi; batas setelah decoding tidak menyiratkan dukungan gzip.
+- **AC4 parsial produk:** error boundary API termasuk 404/405/501 dan path noncanonical mempunyai ID/source server; HEAD tanpa body diuji pada wire. Error upstream 4xx/5xx mempertahankan status/body opaque dan metadata encoding yang berlaku; `Retry-After` valid diteruskan, nilai ambigu dibuang. Tidak ada envelope/generasi pengganti setelah commit.
+- Tidak menambah dependency/schema, listener/deployment, health T06, pool dinamis/cooldown, binding atau dashboard. Parser HTTP/TLS/server sebelum handler, transport runtime, performa/RSS dan kelulusan M0 tetap belum dibuktikan.
 
 <a id="ep-02-t06"></a>
 

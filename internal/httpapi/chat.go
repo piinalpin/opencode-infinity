@@ -74,8 +74,8 @@ func (h modelHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	for _, value := range response.Header.Values("Content-Encoding") {
 		w.Header().Add("Content-Encoding", value)
 	}
-	if v := response.Header.Get("Retry-After"); validRetryAfter(v) {
-		w.Header().Set("Retry-After", v)
+	if values := response.Header.Values("Retry-After"); len(values) == 1 && validRetryAfter(values[0]) {
+		w.Header().Set("Retry-After", values[0])
 	}
 	w.WriteHeader(response.StatusCode)
 	if r.Method == http.MethodHead {

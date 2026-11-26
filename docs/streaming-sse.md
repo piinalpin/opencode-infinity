@@ -6,6 +6,8 @@ Status: komponen dan wiring fixture lokal; penerimaan gateway terintegrasi tetap
 
 [D-023](DECISIONS.md#d-023-streaming-sse-independen-ep-02-s04) menyetujui perluasan independen atas [S03](model-alias-dan-json.md). Pengujian melewati client HTTP, handler gateway, adapter tepercaya dan upstream HTTPS melalui SOCKS5 fixture. Hasil ini tidak meluluskan transport runtime, executable/listener/deployment produk, OpenCode/provider/WARP, performa/RSS atau gerbang M0.
 
+[S05/D-024](error-dan-batas-request.md) melengkapi error sebelum stream: path/method/protokol memakai envelope gateway, respons generasi 3xx ditolak sebelum commit, dan `Retry-After` duplikat tidak diteruskan. Kontrak fragmentasi, Flush, timeout dan kegagalan setelah commit di bawah tetap berlaku.
+
 ## Kontrak request dan respons
 
 Endpoint generasi tetap `POST /v1/chat/completions` dan `POST /providers/{provider}/v1/chat/completions`. Token gateway, media type JSON, batas body, alias, target/key server dan fixed primary relay mengikuti S03. `stream:true` kini diterima dan dipertahankan pada JSON outbound; absent/false mempertahankan perilaku non-stream. Tipe stream selain boolean dan kontrol model/stream duplikat, termasuk nama escaped, tetap ditolak sebelum dispatch. Pemetaan hanya mengganti nilai top-level model.

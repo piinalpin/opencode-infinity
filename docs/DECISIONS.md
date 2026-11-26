@@ -1,7 +1,7 @@
 # Keputusan opencode-infinity
 
-Versi: 0.1.20
-Tanggal: 25 November 2026
+Versi: 0.1.21
+Tanggal: 26 November 2026
 
 Catatan ini memisahkan keputusan eksplisit pengguna dari usulan dan pertanyaan yang belum selesai. Keputusan terkonfirmasi diterapkan ke PRD/arsitektur terkait; status keseluruhan draft tidak otomatis menjadi approved.
 
@@ -209,6 +209,15 @@ Catatan ini memisahkan keputusan eksplisit pengguna dari usulan dan pertanyaan y
 - **Lifecycle:** header timeout milik adapter mengikuti snapshot pada fixture; idle upstream berlaku hanya selama Read pending, total context tetap berlaku sepanjang request. Write/Flush downstream mempunyai deadline dari idle dan batas total/client yang lebih awal. Callback cancellation/deadline disinkronkan sebelum handler kembali. Lease dilepas tepat sekali sesudah forwarding/caller Close, bukan ketika jaringan baru dibatalkan.
 - **Batas:** writer tanpa capability Flush/deadline ditolak eksplisit; kegagalan setelah commit memutus framing HTTP tanpa sukses palsu. Gzip upstream perlu flush compressor dan HTTP untuk membuktikan event pertama. Tidak membuat transport/runtime listener/deployment, health/pool dinamis, binding, dashboard, Responses API, atau kontrak S05 lengkap. Tidak menambah dependency/schema/config key, menjalankan provider/WARP nyata, commit atau push.
 - **Acuan:** EP-02-S04, AC-03, C-1/C-2, Q-1/Q-6, D-022; [kontrak dan bukti SSE](streaming-sse.md).
+
+### D-024 Error dan batas request independen EP-02-S05
+
+- **Status:** ditetapkan pengguna pada 26 November 2026 melalui persetujuan kebutuhan dan rencana implementasi S05.
+- **Keputusan:** lanjutkan komponen/handler dan fixture HTTPS/SOCKS5 lokal sementara penerimaan gateway terintegrasi serta S03/T01/T06/M0 tetap terbuka. Encoding request tetap absent/`identity`; encoding kompresi ditolak sebelum dispatch, tanpa decoder atau default numerik baru.
+- **Boundary API:** guard gateway tetap paling luar. Path tak dikenal menghasilkan `404 endpoint_not_found`; method salah pada katalog/generasi menghasilkan `405 method_not_allowed` dengan `Allow`; path noncanonical ditolak `400 invalid_request` tanpa redirect; endpoint Responses default/provider menghasilkan `501 unsupported_api` tanpa implementasi Responses. Error memakai envelope, request ID acak server dan error source, tanpa refleksi path/query/body/error mentah. Escape per segmen dan HEAD tetap mengikuti kontrak HTTP.
+- **Target dan upstream:** target/key/relay tetap dari snapshot server; header `X-Relay-Target`/`X-Relay-Path` ditolak dan query client tidak menjadi selector target. Semua respons generasi 300–399, termasuk 304 tanpa conditional request, ditolak sebagai `502 upstream_redirect_rejected`; body ditutup dan lease dilepas tanpa replay. Ini menggantikan passthrough 3xx historis S03. Status/body error 4xx/5xx tetap opaque, dengan ID/source milik gateway dan hanya satu `Retry-After` valid diteruskan; duplikat ambigu dibuang.
+- **Batas:** adapter tepercaya tetap wajib menegakkan SOCKS5/DNS proxy/TLS/no-follow/no-direct/no-retry; fixture bukan transport runtime. Tidak membuat listener/deployment, pool dinamis/cooldown, health T06, binding atau dashboard; tidak mengotorisasi provider/WARP nyata, commit atau push. Error yang dibuat parser HTTP/TLS/server sebelum handler berada di luar pembuktian komponen.
+- **Acuan:** EP-02-S05, AC-05/AC-06/AC-11, C-5/C-8, Q-2/Q-7/Q-9, D-021–D-023; [kontrak dan bukti error/batas](error-dan-batas-request.md).
 
 ## Status pertanyaan terbuka
 

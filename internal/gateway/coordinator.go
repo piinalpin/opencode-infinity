@@ -113,7 +113,7 @@ func failure(code string) *Failure {
 		status = 501
 	case "unsupported_content_encoding":
 		status = 415
-	case "upstream_transport_error":
+	case "upstream_transport_error", "upstream_redirect_rejected":
 		status = 502
 	case "upstream_timeout":
 		status = 504
@@ -198,6 +198,12 @@ func (c *Coordinator) Chat(in *http.Request, id string) (*http.Response, error) 
 			return nil, failure("upstream_timeout")
 		}
 		return nil, failure("upstream_transport_error")
+	}
+	// Endpoint generasi tidak menerima respons 3xx, termasuk 304 tanpa request conditional.
+	// Tolak sebelum forwarding dan tanpa membaca body atau mengulang POST.
+	if response.StatusCode >= 300 && response.StatusCode < 400 {
+		response.Body.Close()
+		return nil, failure("upstream_redirect_rejected")
 	}
 	if IsEventStream(response) && !streamReserved && !reservation.ReserveStream(StreamCopyBytes) {
 		response.Body.Close()

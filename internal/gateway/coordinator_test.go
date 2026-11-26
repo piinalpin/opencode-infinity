@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"opencode-infinity/internal/config"
 	"os"
+	"strconv"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -36,6 +37,42 @@ func TestModelCoordinatorTimeoutCategory(t *testing.T) {
 	}
 	_, err = c.Chat(chatRequest(`{"model":"coding-default"}`), "")
 	assertFailure(t, err, "upstream_timeout")
+}
+
+func TestModelCoordinatorRejectRedirect(t *testing.T) {
+	for _, status := range []int{300, 301, 302, 303, 304, 305, 306, 307, 308, 399} {
+		t.Run(strconv.Itoa(status), func(t *testing.T) {
+			body := &countedBody{Reader: strings.NewReader("synthetic-private-redirect")}
+			calls := 0
+			c, err := New(modelConfig(t, "max_active_requests: 20", "max_active_requests: 1"), dispatchFunc(func(*http.Request, config.Relay) (*http.Response, error) {
+				calls++
+				if calls == 1 {
+					return &http.Response{StatusCode: status, Header: http.Header{"Content-Type": {"text/event-stream"}, "Location": {"https://other.invalid/private"}}, Body: body}, nil
+				}
+				return &http.Response{StatusCode: 200, Body: io.NopCloser(strings.NewReader(`{}`))}, nil
+			}))
+			if err != nil {
+				t.Fatal(err)
+			}
+			response, err := c.Chat(chatRequest(`{"model":"coding-default","stream":true}`), "")
+			if response != nil {
+				response.Body.Close()
+				t.Fatal("redirect upstream diteruskan sebagai respons")
+			}
+			assertFailure(t, err, "upstream_redirect_rejected")
+			if err.(*Failure).Status != 502 || calls != 1 || body.closes.Load() != 1 {
+				t.Fatal("redirect salah status, diulang, atau body tidak ditutup tepat sekali")
+			}
+			next, err := c.Chat(chatRequest(`{"model":"coding-default","stream":true}`), "")
+			if err != nil {
+				t.Fatal("redirect tidak melepas kapasitas")
+			}
+			next.Body.Close()
+			if calls != 2 || body.closes.Load() != 1 {
+				t.Fatal("cleanup redirect mengganggu request berikutnya")
+			}
+		})
+	}
 }
 
 func (b *countedBody) Close() error { b.closes.Add(1); return nil }

@@ -8,6 +8,8 @@ Status: komponen dan wiring fixture lokal tersedia; penerimaan gateway terintegr
 
 Dokumen ini menyimpan kontrak dan bukti tahap S03. Dukungan `stream:true` kemudian ditambahkan pada [EP-02-S04/D-023](streaming-sse.md); batas unsupported true di bawah adalah keadaan historis S03. Perilaku absent/false tetap mengikuti kontrak JSON ini.
 
+[EP-02-S05/D-024](error-dan-batas-request.md) melengkapi error path/method/protokol serta penolakan redirect. Passthrough 3xx historis S03 digantikan `502 upstream_redirect_rejected` untuk semua respons generasi 300–399; status/body 4xx/5xx tetap utuh. Hanya satu nilai `Retry-After` valid diteruskan. Encoding request tetap absent/`identity`.
+
 ## API komponen
 
 | Komponen | API | Tanggung jawab |

@@ -222,8 +222,8 @@ func TestModelNetworkBoundaries(t *testing.T) {
 		}, func(http.ResponseWriter, *http.Request) { t.Error("redirect mencapai upstream lain") })
 		target = "https://" + h.secondary.Authority + "/v2/chat/completions"
 		w := modelCall(t, h.handler, "POST", "/v1/chat/completions", `{"model":"coding-default"}`)
-		if w.Code != 307 || w.Body.String() != `{"redirect":true}` || h.primary.Snapshot().Total != 1 || h.secondary.Snapshot().Total != 0 {
-			t.Fatal("redirect diikuti atau body/status berubah")
+		if w.Code != 502 || !strings.Contains(w.Body.String(), `"code":"upstream_redirect_rejected"`) || w.Header().Get("X-Infinity-Error-Source") != "gateway" || w.Header().Get("X-Request-ID") == "" || w.Header().Get("Location") != "" || h.primary.Snapshot().Total != 1 || h.secondary.Snapshot().Total != 0 || h.b.Snapshot().Accepted != 0 {
+			t.Fatal("redirect tidak ditolak terstruktur atau mencapai origin lain")
 		}
 		h.verifyPath(t)
 	})
