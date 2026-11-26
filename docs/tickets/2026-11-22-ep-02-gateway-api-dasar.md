@@ -1,7 +1,7 @@
 ---
 title: "Agent memakai kontrak provider melalui satu gateway"
 date: 2026-11-22
-version: 7
+version: 8
 status: approved
 approved_by: pengguna
 approved_at: 2026-11-23
@@ -298,6 +298,8 @@ Gateway perlu menjaga target, ukuran request, dan perbedaan error tanpa menerusk
 
 **Status:** approved · **Parent:** EP-02 · **Milestone:** M1 · **Prioritas:** P0
 
+**Status pengerjaan:** selesai pada komponen/fixture lokal (26 November 2026); penerimaan produk terintegrasi dan dependensi tetap terbuka.
+
 ### Konteks
 
 Operator membutuhkan health dasar yang tidak menghabiskan kuota atau menyamakan proses hidup dengan relay siap.
@@ -318,3 +320,13 @@ Operator membutuhkan health dasar yang tidak menghabiskan kuota atau menyamakan 
 - Di luar scope: Routing pool dinamis, lifecycle binding per percakapan, dashboard operasional lengkap, dan Responses API.
 - Diblokir oleh: [EP-02-S05](#ep-02-s05)
 - Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
+
+### Hasil pengerjaan 26 November 2026
+
+[D-025](../DECISIONS.md#d-025-liveness-dan-readiness-dasar-independen-ep-02-t06) menyetujui owner observasi, snapshot teredaksi dan handler admin privat, tanpa probe/scheduler produksi atau penggantian eligibility EP-03. [Kontrak dan bukti](../health-dasar.md) tersedia. Penerimaan produk terintegrasi dan dependensi S05/T01/EP-01-T06/M0 tetap parsial; status persetujuan tiket tidak berubah.
+
+- **AC1 parsial produk:** liveness GET/HEAD memberi 200 saat komponen berfungsi; constructor/read berulang tidak membuat koneksi SOCKS5, probe HTTPS atau generasi. Observasi fixture dikumpulkan eksplisit di luar endpoint.
+- **AC2 parsial produk:** scope `default_primary_transport` memakai actual primary mapping default, kondisi accepting serta dua observasi fresh/healthy independen (SOCKS5 dan HTTPS keluar). Fallback/nondefault tidak dihitung; minimal satu mapping cukup. Provider/model dan eligibility admission terpadu tidak diklaim tersedia.
+- **AC3 parsial produk:** relay fixture ditutup dan kegagalannya diterapkan melalui owner; readiness menjadi 503 sementara liveness tetap 200. Unknown, tepat expiry, satu lapisan saja dan accepting=false juga tidak ready; read tidak memperbarui observasi/revisi.
+- **AC4 parsial produk:** versi build/revisi state, waktu perubahan/observasi/expiry/snapshot terlacak dalam UTC tanpa key, token, origin/proxy atau raw error. Snapshot konkuren konsisten, budget/parallel status dibatasi dan slow writer tidak menahan update owner. HEAD, role admin serta error boundary seragam diuji pada wire.
+- Tidak menambah dependency/schema/default numerik, memodifikasi admission/JSON/SSE atau membuat listener/deployment, scheduler, dashboard, drain atau request provider/WARP nyata. Default freshness produksi, integrasi lifecycle/eligibility EP-03/EP-04, private binding, performa/RSS dan M0 tetap terbuka.

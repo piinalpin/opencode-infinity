@@ -1,6 +1,6 @@
 # Keputusan opencode-infinity
 
-Versi: 0.1.21
+Versi: 0.1.22
 Tanggal: 26 November 2026
 
 Catatan ini memisahkan keputusan eksplisit pengguna dari usulan dan pertanyaan yang belum selesai. Keputusan terkonfirmasi diterapkan ke PRD/arsitektur terkait; status keseluruhan draft tidak otomatis menjadi approved.
@@ -218,6 +218,16 @@ Catatan ini memisahkan keputusan eksplisit pengguna dari usulan dan pertanyaan y
 - **Target dan upstream:** target/key/relay tetap dari snapshot server; header `X-Relay-Target`/`X-Relay-Path` ditolak dan query client tidak menjadi selector target. Semua respons generasi 300–399, termasuk 304 tanpa conditional request, ditolak sebagai `502 upstream_redirect_rejected`; body ditutup dan lease dilepas tanpa replay. Ini menggantikan passthrough 3xx historis S03. Status/body error 4xx/5xx tetap opaque, dengan ID/source milik gateway dan hanya satu `Retry-After` valid diteruskan; duplikat ambigu dibuang.
 - **Batas:** adapter tepercaya tetap wajib menegakkan SOCKS5/DNS proxy/TLS/no-follow/no-direct/no-retry; fixture bukan transport runtime. Tidak membuat listener/deployment, pool dinamis/cooldown, health T06, binding atau dashboard; tidak mengotorisasi provider/WARP nyata, commit atau push. Error yang dibuat parser HTTP/TLS/server sebelum handler berada di luar pembuktian komponen.
 - **Acuan:** EP-02-S05, AC-05/AC-06/AC-11, C-5/C-8, Q-2/Q-7/Q-9, D-021–D-023; [kontrak dan bukti error/batas](error-dan-batas-request.md).
+
+### D-025 Liveness dan readiness dasar independen EP-02-T06
+
+- **Status:** ditetapkan pengguna pada 26 November 2026 melalui persetujuan kebutuhan dan rencana implementasi T06.
+- **Keputusan:** lanjutkan owner observasi, snapshot dan handler privat dengan fixture lokal; tanpa scheduler/probe produksi, listener atau klaim gateway terintegrasi. Kedua endpoint `GET /health/live` dan `GET /health/ready` memerlukan token admin; token gateway/upstream tidak memberi akses. Model API tetap terpisah.
+- **Scope readiness:** `default_primary_transport` memerlukan konfigurasi valid, kondisi proses accepting dan sedikitnya satu primary mapping model default dengan observasi SOCKS5 serta HTTPS keluar yang independen, sehat dan belum kedaluwarsa. Fallback atau relay upstream lain tidak menggantikannya. Provider/model tetap unknown; saturasi kapasitas dan eligibility/dispatch terpadu tetap EP-03-S01/S02, bukan janji admission berikutnya berhasil.
+- **Observasi dan waktu:** sumber server tepercaya memperbarui state hanya melalui owner di package pool. `observed_at`/`valid_until` eksplisit, tanpa default freshness produksi baru; unknown/expired tidak ready. Update invalid/future/lebih tua/konflik ditolak; duplikat identik yang masih valid tidak menaikkan revisi. Revisi dan `state_changed_at` mengikuti update tersimpan, sedangkan `snapshot_at` mengikuti pembacaan. Expiry dihitung tanpa probe atau mutasi saat read. Metadata versi build/revisi berasal dari server dan bounded; nilai absent tetap unknown, waktu wire UTC.
+- **Batas kerja dan HTTP:** state/copy/serialisasi dibatasi budget yang sudah ada. Constructor menolak budget komponen yang tidak cukup; `parallel_status` membatasi pembacaan sampai write selesai, dengan 429 tanpa antrean saat penuh. State disalin sebelum encoding/write agar client lambat tidak menahan owner. Liveness 200 saat handler berfungsi; readiness 200 atau `503 gateway_not_ready` dengan envelope serta snapshot. Error path/method/canonical memakai kontrak S05; HEAD tanpa body.
+- **Batas pembuktian:** observasi fixture dikumpulkan eksplisit dan tidak dipicu endpoint. T06 tidak mengubah admission generasi, menjalankan drain, membuat dashboard/status lengkap, deployment atau transport/probe runtime. Guard admin tidak membuktikan binding listener privat. Integrasi OpenCode/provider/WARP, RSS/performa, dependensi S05/T01/EP-01-T06 dan gerbang M0 tetap terbuka. Tidak mengotorisasi commit, push atau request provider nyata.
+- **Acuan:** EP-02-T06, C-9/C-10, Q-9/Q-10, D-021/D-024; [kontrak dan bukti health dasar](health-dasar.md).
 
 ## Status pertanyaan terbuka
 

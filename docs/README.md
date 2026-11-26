@@ -9,7 +9,7 @@ Aturan kontribusi dan guardrail agent tersedia di [AGENTS.md](../AGENTS.md).
 | Dokumen | Isi | Status acuan |
 |---|---|---|
 | [PRD](PRD.md) | Masalah, pengguna, cakupan, kapabilitas, target kualitas, dan keputusan terbuka | Draft 0.1.13 |
-| [DECISIONS](DECISIONS.md) | Keputusan eksplisit pengguna dan bagian pertanyaan yang masih terbuka | Catatan 0.1.21; D-001–D-024 terkonfirmasi; profil D-019 provisional |
+| [DECISIONS](DECISIONS.md) | Keputusan eksplisit pengguna dan bagian pertanyaan yang masih terbuka | Catatan 0.1.22; D-001–D-025 terkonfirmasi; profil D-019 provisional |
 | [ARCHITECTURE](ARCHITECTURE.md) | Komponen, alur, state, lifecycle, dan [struktur project](ARCHITECTURE.md#13-struktur-project-yang-disarankan), termasuk MicroWARP | Draft 0.1.4 |
 | [TECHSTACK](TECHSTACK.md) | Pilihan stack/pin untuk spike serta batas validasi lanjutan | Spike M0 0.1.3; pin dan fixture T02 tersedia |
 | [ROADMAP](ROADMAP.md) | Milestone M0–M3, dependensi, serta gerbang MVP/P1 | Draft 0.1.2 |
@@ -43,6 +43,8 @@ Hasil pemeriksaan lingkungan tidak menyatakan integrasi client, transport WARP, 
 [Streaming SSE content dan tool calls](streaming-sse.md) tersedia melalui EP-02-S04/D-023: event pertama melewati barrier tanpa menunggu event berikutnya, fragmentasi/usage/extension tetap utuh, serta stream putus tidak diberi terminal/generasi pengganti. Buffer stream dan lease dibatasi; idle Read, deadline Write/Flush, cancellation dan timeout terpisah diuji pada komponen/wiring fixture lokal. Dukungan ini tidak meluluskan transport runtime, client/provider/WARP, performa atau gerbang M0.
 
 [Error dan batas request](error-dan-batas-request.md) tersedia melalui EP-02-S05/D-024: boundary API memberi error terstruktur untuk path/method/protokol/input, menolak respons generasi 3xx dan mempertahankan error upstream 4xx/5xx. Request tetap absent/identity; penolakan input dibuktikan sebelum CONNECT/dispatch dengan fixture HTTP/HTTPS/SOCKS5. Penerimaan runtime, provider/WARP dan gerbang M0 tetap terbuka.
+
+[Liveness dan readiness dasar](health-dasar.md) tersedia melalui EP-02-T06/D-025: handler admin terpisah membedakan proses hidup dari observasi transport primary default, dengan versi/revisi/waktu teredaksi. Read tidak memicu probe/generasi; unknown/expired tidak ready. Budget, snapshot konkuren, HEAD dan isolasi lease dibuktikan pada komponen/fixture; eligibility dispatch EP-03, observasi/runtime produksi, private binding dan gerbang M0 tetap terbuka.
 
 ## Indeks epic MVP
 
