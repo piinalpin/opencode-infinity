@@ -319,3 +319,11 @@ Stream panjang dan client lambat tidak boleh menahan slot atau menumbuhkan buffe
 - Di luar scope: Rebinding strict otomatis, pergantian upstream/key, rotasi WARP otomatis, serta controller P1.
 - Diblokir oleh: [EP-03-S01](#ep-03-s01), [EP-03-S04](#ep-03-s04)
 - Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
+
+### Hasil pengerjaan 27 November 2026
+
+- **AC1 parsial fixture:** `TestGatewayStreamCancellationProfile` menjalankan 30 pembatalan saat menunggu header dan 30 saat SSE aktif. Tes mengukur deteksi disconnect → pembatalan context upstream (≤2 detik) terpisah dari finalisasi handler; setelah finalisasi, slot berkapasitas satu dapat dipakai ulang.
+- **AC2 parsial fixture:** tes timeout header/idle/total yang sudah ada tetap menguji batas secara terpisah. Disconnect setelah stream dikomit tetap menghasilkan truncation tanpa envelope/event sintetis sesuai [kontrak streaming](../streaming-sse.md).
+- **AC3 parsial fixture:** tes backpressure dan budget stream 8 MiB tercatat pada [kontrak streaming](../streaming-sse.md); hasil ini tidak mengukur RSS atau batas kernel/adapter runtime.
+- **AC4 parsial fixture:** 20 stream pada dua relay dibatalkan serentak; fixture mengamati cancellation upstream dan handler selesai, lalu 20 admission berurutan berhasil. Tes kapasitas/Close/cancel dan pelepasan idempotent S01 menjadi bukti komplementer; drain controller dan D-014 tidak diubah.
+- Verifikasi: `go test -count=1 -timeout=180s ./...`, race test integrasi terfokus untuk dua tes cancellation, `go vet ./...`, dan `git diff --check` lulus. Pengujian hanya memakai fixture loopback; transport runtime, provider/WARP, RSS/performa, dan gerbang produk/M0 belum dibuktikan.

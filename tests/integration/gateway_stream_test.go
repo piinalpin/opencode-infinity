@@ -5,10 +5,12 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -252,6 +254,257 @@ func TestGatewayStreamCancellation(t *testing.T) {
 			h.verifyPath(t)
 		})
 	}
+}
+
+type cancellationAttempt struct {
+	phase           string
+	entered         chan struct{}
+	detected        chan time.Time
+	cancelled       chan time.Time
+	handlerReturned chan time.Time
+}
+
+func TestGatewayStreamCancellationProfile(t *testing.T) {
+	var current atomic.Pointer[cancellationAttempt]
+	upstream := func(w http.ResponseWriter, r *http.Request) {
+		attempt := current.Load()
+		if attempt == nil {
+			_, _ = io.WriteString(w, `{}`)
+			return
+		}
+		close(attempt.entered)
+		if attempt.phase == "stream" {
+			w.Header().Set("Content-Type", "text/event-stream")
+			if testutil.WriteFragments(r.Context(), w, []byte("data: ready\n\n"), []int{1, 3}) != nil {
+				return
+			}
+		}
+		<-r.Context().Done()
+		attempt.cancelled <- time.Now()
+	}
+	h := newModelHarness(t, upstream, func(http.ResponseWriter, *http.Request) { t.Error("cancel mengganti upstream") }, "max_active_requests: 20", "max_active_requests: 1")
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		attempt := current.Load()
+		if attempt == nil {
+			h.handler.ServeHTTP(w, r)
+			return
+		}
+		ctx, cancel := context.WithCancel(r.Context())
+		callbackDone := make(chan struct{})
+		stop := context.AfterFunc(r.Context(), func() {
+			defer close(callbackDone)
+			attempt.detected <- time.Now()
+			cancel()
+		})
+		defer func() {
+			if !stop() {
+				<-callbackDone
+			}
+			cancel()
+			attempt.handlerReturned <- time.Now()
+		}()
+		h.handler.ServeHTTP(w, r.WithContext(ctx))
+	}))
+	defer server.Close()
+	client := server.Client()
+
+	for _, phase := range []string{"header", "stream"} {
+		for run := 0; run < 30; run++ {
+			attempt := &cancellationAttempt{
+				phase: phase, entered: make(chan struct{}), detected: make(chan time.Time, 1),
+				cancelled: make(chan time.Time, 1), handlerReturned: make(chan time.Time, 1),
+			}
+			current.Store(attempt)
+			ctx, cancel := context.WithCancel(t.Context())
+			result := make(chan struct {
+				response *http.Response
+				err      error
+			}, 1)
+			request := gatewayStreamRequest(t, server, "/v1/chat/completions", `{"model":"coding-default","stream":true}`).WithContext(ctx)
+			go func() {
+				response, err := client.Do(request)
+				result <- struct {
+					response *http.Response
+					err      error
+				}{response, err}
+			}()
+			await(t, attempt.entered)
+			if phase == "stream" {
+				outcome := await(t, result)
+				if outcome.err != nil || outcome.response == nil {
+					cancel()
+					t.Fatalf("stream cancellation run %d gagal sebelum header: %v", run, outcome.err)
+				}
+				if event, err := readEvent(bufio.NewReader(outcome.response.Body)); err != nil || event != "ready" {
+					cancel()
+					outcome.response.Body.Close()
+					t.Fatalf("event awal hilang pada run %d", run)
+				}
+				cancel()
+				outcome.response.Body.Close()
+			} else {
+				at := time.Now()
+				cancel()
+				outcome := await(t, result)
+				if outcome.err == nil {
+					if outcome.response != nil {
+						outcome.response.Body.Close()
+					}
+					t.Fatalf("header wait tidak terputus pada run %d, setelah %s", run, time.Since(at))
+				}
+			}
+			detected := await(t, attempt.detected)
+			cancelled := await(t, attempt.cancelled)
+			if elapsed := cancelled.Sub(detected); elapsed < 0 || elapsed > 2*time.Second {
+				t.Fatalf("%s run %d: gateway detection → upstream cancel = %s", phase, run, elapsed)
+			}
+			finalized := await(t, attempt.handlerReturned)
+			current.Store(nil)
+			reuseStarted := time.Now()
+			if response := modelCall(t, h.handler, "POST", "/v1/chat/completions", `{"model":"coding-default"}`); response.Code != 200 {
+				t.Fatalf("%s run %d: lease belum tersedia sesudah finalisasi body", phase, run)
+			}
+			if releasedIn := time.Since(finalized); releasedIn > 2*time.Second || reuseStarted.Before(finalized) {
+				t.Fatalf("%s run %d: body finalization → slot reuse = %s", phase, run, releasedIn)
+			}
+		}
+	}
+	h.verifyPath(t)
+}
+
+func TestGatewayStreamConcurrentDisconnects(t *testing.T) {
+	type attempt struct {
+		cancelled, returned chan time.Time
+		entered             chan struct{}
+		cancel              context.CancelFunc
+		response            *http.Response
+	}
+	var attempts sync.Map
+	upstream := func(w http.ResponseWriter, r *http.Request) {
+		data, err := io.ReadAll(r.Body)
+		if err != nil {
+			t.Errorf("request body fixture gagal dibaca: %v", err)
+			return
+		}
+		parts := strings.SplitN(string(data), `"extra":"`, 2)
+		if len(parts) != 2 {
+			_, _ = io.WriteString(w, `{}`)
+			return
+		}
+		id := strings.SplitN(parts[1], `"`, 2)[0]
+		value, ok := attempts.Load(id)
+		if !ok {
+			t.Errorf("penanda attempt tidak dikenal: %s", id)
+			return
+		}
+		current := value.(*attempt)
+		close(current.entered)
+		w.Header().Set("Content-Type", "text/event-stream")
+		if testutil.WriteFragments(r.Context(), w, []byte("data: ready\n\n"), []int{1, 3}) != nil {
+			return
+		}
+		<-r.Context().Done()
+		current.cancelled <- time.Now()
+	}
+	h := newModelHarness(t, upstream, upstream, "max_inflight: 5", "max_inflight: 20")
+	probes := make([]*attempt, 20)
+	ids := make([]string, len(probes))
+	for i := range probes {
+		ids[i] = fmt.Sprintf("q6-%02d", i)
+		probes[i] = &attempt{cancelled: make(chan time.Time, 1), returned: make(chan time.Time, 1), entered: make(chan struct{})}
+		attempts.Store(ids[i], probes[i])
+	}
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		value, ok := attempts.Load(r.Header.Get("X-Q6-ID"))
+		if !ok {
+			h.handler.ServeHTTP(w, r)
+			return
+		}
+		current := value.(*attempt)
+		defer func() {
+			current.returned <- time.Now()
+		}()
+		h.handler.ServeHTTP(w, r)
+	}))
+	defer server.Close()
+	client := server.Client()
+	results := make(chan struct {
+		index int
+		value any
+	}, len(probes))
+	var wg sync.WaitGroup
+	for i, current := range probes {
+		ctx, cancel := context.WithCancel(t.Context())
+		current.cancel = cancel
+		path := "/v1/chat/completions"
+		if i >= 10 {
+			path = "/providers/secondary/v1/chat/completions"
+		}
+		request := gatewayStreamRequest(t, server, path, `{"model":"coding-default","stream":true,"extra":"`+ids[i]+`"}`)
+		request.Header.Set("X-Q6-ID", ids[i])
+		request = request.WithContext(ctx)
+		wg.Go(func() {
+			response, err := client.Do(request)
+			if err != nil {
+				results <- struct {
+					index int
+					value any
+				}{i, err}
+				return
+			}
+			if event, err := readEvent(bufio.NewReader(response.Body)); err != nil || event != "ready" {
+				response.Body.Close()
+				results <- struct {
+					index int
+					value any
+				}{i, fmt.Errorf("event awal tidak diterima: %w", err)}
+				return
+			}
+			results <- struct {
+				index int
+				value any
+			}{i, response}
+		})
+	}
+	wg.Wait()
+	for range probes {
+		result := await(t, results)
+		if err, ok := result.value.(error); ok {
+			t.Fatalf("disconnect %d gagal dimulai: %v", result.index, err)
+		}
+		probes[result.index].response = result.value.(*http.Response)
+		await(t, probes[result.index].entered)
+	}
+	var cancelWG sync.WaitGroup
+	for _, current := range probes {
+		current := current
+		cancelWG.Go(func() {
+			current.cancel()
+			current.response.Body.Close()
+		})
+	}
+	cancelWG.Wait()
+	for _, current := range probes {
+		await(t, current.cancelled)
+		await(t, current.returned)
+	}
+	if got := h.primary.Snapshot().Total; got != 10 {
+		t.Fatalf("dispatch primary = %d, want 10", got)
+	}
+	if got := h.secondary.Snapshot().Total; got != 10 {
+		t.Fatalf("dispatch secondary = %d, want 10", got)
+	}
+
+	for i := range probes {
+		path := "/v1/chat/completions"
+		if i >= 10 {
+			path = "/providers/secondary/v1/chat/completions"
+		}
+		if response := modelCall(t, h.handler, "POST", path, `{"model":"coding-default"}`); response.Code != http.StatusOK {
+			t.Fatalf("disconnect %d: lease tidak tersedia setelah cancellation: status=%d", i, response.Code)
+		}
+	}
+	h.verifyPath(t)
 }
 
 func TestGatewayStreamTimeouts(t *testing.T) {

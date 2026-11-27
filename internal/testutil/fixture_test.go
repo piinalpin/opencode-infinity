@@ -58,13 +58,14 @@ func TestMalformedSOCKS5(t *testing.T) {
 		name              string
 		greeting, request []byte
 		accepted          bool
+		halfClose         bool
 	}{
-		{"auth", []byte{5, 1, 2}, nil, false},
-		{"bad-version", []byte{4, 1, 0}, nil, false},
-		{"truncated-greeting", []byte{5}, nil, false},
-		{"bad-command", []byte{5, 1, 0}, []byte{5, 2, 0, 3, 1, 'x', 0, 1}, true},
-		{"bad-atyp", []byte{5, 1, 0}, []byte{5, 1, 0, 1, 127, 0, 0, 1, 0, 1}, true},
-		{"truncated-domain", []byte{5, 1, 0}, []byte{5, 1, 0, 3, 255, 'x'}, true},
+		{name: "auth", greeting: []byte{5, 1, 2}},
+		{name: "bad-version", greeting: []byte{4, 1, 0}},
+		{name: "truncated-greeting", greeting: []byte{5}, halfClose: true},
+		{name: "bad-command", greeting: []byte{5, 1, 0}, request: []byte{5, 2, 0, 3, 1, 'x', 0, 1}, accepted: true},
+		{name: "bad-atyp", greeting: []byte{5, 1, 0}, request: []byte{5, 1, 0, 1, 127, 0, 0, 1, 0, 1}, accepted: true},
+		{name: "truncated-domain", greeting: []byte{5, 1, 0}, request: []byte{5, 1, 0, 3, 255, 'x'}, accepted: true, halfClose: true},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			c, err := net.DialTimeout("tcp4", p.Addr(), time.Second)
@@ -85,8 +86,10 @@ func TestMalformedSOCKS5(t *testing.T) {
 					t.Fatal(err)
 				}
 			}
-			if err := c.(*net.TCPConn).CloseWrite(); err != nil {
-				t.Fatal(err)
+			if tc.halfClose {
+				if err := c.(*net.TCPConn).CloseWrite(); err != nil {
+					t.Fatal(err)
+				}
 			}
 			payload, err := io.ReadAll(c)
 			if err != nil {
