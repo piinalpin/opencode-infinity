@@ -30,6 +30,129 @@ type modelTimeoutError struct{}
 func (modelTimeoutError) Error() string   { return "synthetic-private-timeout" }
 func (modelTimeoutError) Timeout() bool   { return true }
 func (modelTimeoutError) Temporary() bool { return true }
+
+type requestNotSentError struct{ proved bool }
+
+func (requestNotSentError) Error() string          { return "synthetic-dispatch-failure" }
+func (e requestNotSentError) RequestNotSent() bool { return e.proved }
+
+func TestCoordinatorAllowsOnlyOneFallback(t *testing.T) {
+	cfg := modelConfig(t,
+		"  - id: warp-1\n    proxy_url: socks5h://warp-1:1080\n    max_inflight: 5\nupstreams:",
+		"  - id: warp-1\n    proxy_url: socks5h://warp-1:1080\n    max_inflight: 5\n  - id: warp-2\n    proxy_url: socks5h://warp-2:1080\n    max_inflight: 5\nupstreams:",
+		"relays: [warp-1]",
+		"relays: [warp-1, warp-2]",
+		"fallback_relays: []",
+		"fallback_relays: [warp-2]",
+	)
+	var visits []string
+	c, err := newFixtureCoordinator(cfg, dispatchFunc(func(_ *http.Request, relay config.Relay) (*http.Response, error) {
+		visits = append(visits, relay.ID)
+		if len(visits) == 1 {
+			return nil, requestNotSentError{proved: true}
+		}
+		return nil, requestNotSentError{proved: true}
+	}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	response, err := c.Chat(chatRequest(`{"model":"coding-default"}`), "")
+	if response != nil {
+		response.Body.Close()
+		t.Fatal("fallback gagal menghasilkan respons")
+	}
+	assertFailure(t, err, "upstream_transport_error")
+	if len(visits) != 2 || visits[0] != "warp-1" || visits[1] != "warp-2" {
+		t.Fatalf("jumlah/relay dispatch fallback salah: %v", visits)
+	}
+}
+
+func TestCoordinatorDoesNotFallbackWithoutNoSendProof(t *testing.T) {
+	cfg := modelConfig(t,
+		"  - id: warp-1\n    proxy_url: socks5h://warp-1:1080\n    max_inflight: 5\nupstreams:",
+		"  - id: warp-1\n    proxy_url: socks5h://warp-1:1080\n    max_inflight: 5\n  - id: warp-2\n    proxy_url: socks5h://warp-2:1080\n    max_inflight: 5\nupstreams:",
+		"relays: [warp-1]",
+		"relays: [warp-1, warp-2]",
+		"fallback_relays: []",
+		"fallback_relays: [warp-2]",
+	)
+	calls := 0
+	c, err := newFixtureCoordinator(cfg, dispatchFunc(func(_ *http.Request, _ config.Relay) (*http.Response, error) {
+		calls++
+		if calls == 1 {
+			return nil, requestNotSentError{}
+		}
+		return nil, errors.New("synthetic-ambiguous-dispatch")
+	}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	response, err := c.Chat(chatRequest(`{"model":"coding-default"}`), "")
+	if response != nil {
+		response.Body.Close()
+		t.Fatal("dispatch ambigu menghasilkan respons")
+	}
+	assertFailure(t, err, "upstream_transport_error")
+	if calls != 1 {
+		t.Fatalf("bukti false memicu dispatch kedua: %d", calls)
+	}
+}
+
+func TestCoordinatorDoesNotFallbackOnTimeout(t *testing.T) {
+	cfg := modelConfig(t,
+		"  - id: warp-1\n    proxy_url: socks5h://warp-1:1080\n    max_inflight: 5\nupstreams:",
+		"  - id: warp-1\n    proxy_url: socks5h://warp-1:1080\n    max_inflight: 5\n  - id: warp-2\n    proxy_url: socks5h://warp-2:1080\n    max_inflight: 5\nupstreams:",
+		"relays: [warp-1]",
+		"relays: [warp-1, warp-2]",
+		"fallback_relays: []",
+		"fallback_relays: [warp-2]",
+	)
+	calls := 0
+	c, err := newFixtureCoordinator(cfg, dispatchFunc(func(*http.Request, config.Relay) (*http.Response, error) {
+		calls++
+		return nil, modelTimeoutError{}
+	}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = c.Chat(chatRequest(`{"model":"coding-default"}`), "")
+	assertFailure(t, err, "upstream_timeout")
+	if calls != 1 {
+		t.Fatalf("timeout menunggu header memicu fallback: %d", calls)
+	}
+}
+
+func TestCoordinatorDoesNotFallbackAfterCancellation(t *testing.T) {
+	cfg := modelConfig(t,
+		"  - id: warp-1\n    proxy_url: socks5h://warp-1:1080\n    max_inflight: 5\nupstreams:",
+		"  - id: warp-1\n    proxy_url: socks5h://warp-1:1080\n    max_inflight: 5\n  - id: warp-2\n    proxy_url: socks5h://warp-2:1080\n    max_inflight: 5\nupstreams:",
+		"relays: [warp-1]",
+		"relays: [warp-1, warp-2]",
+		"fallback_relays: []",
+		"fallback_relays: [warp-2]",
+	)
+	calls := 0
+	c, err := newFixtureCoordinator(cfg, dispatchFunc(func(*http.Request, config.Relay) (*http.Response, error) {
+		calls++
+		if calls == 1 {
+			return nil, requestNotSentError{proved: true}
+		}
+		return &http.Response{StatusCode: 200, Body: io.NopCloser(strings.NewReader(`{}`))}, nil
+	}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	response, err := c.Chat(chatRequest(`{"model":"coding-default"}`).WithContext(ctx), "")
+	if response != nil {
+		response.Body.Close()
+	}
+	if calls != 1 {
+		t.Fatalf("request yang dibatalkan memicu fallback: %d", calls)
+	}
+}
+
 func TestModelCoordinatorTimeoutCategory(t *testing.T) {
 	c, err := newFixtureCoordinator(modelConfig(t), dispatchFunc(func(*http.Request, config.Relay) (*http.Response, error) { return nil, modelTimeoutError{} }))
 	if err != nil {

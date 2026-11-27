@@ -15,6 +15,7 @@ type ModelHealthView struct {
 	Stateless                     bool
 	Upstream, Alias, PrimaryRelay string
 	Availability                  ObservationView
+	fallbackRelays                []string
 }
 
 // Manager memiliki keputusan eligibility dan seluruh reservasi di bawah satu mutex.
@@ -47,6 +48,9 @@ func New(c *config.Config, clock func() time.Time, policy Policy) (*Manager, err
 	for _, u := range c.Upstreams() {
 		models += int64(len(u.Models))
 		references += int64(len(u.Relays))
+		for _, model := range u.Models {
+			references += int64(len(model.FallbackRelays))
+		}
 	}
 	// Bound konservatif owner, dua observasi/circuit dan job per relay, scope per model dan ordered candidate references per upstream.
 	// Bukan pengukuran RSS; registry sudah dibatasi loader sehingga perkalian tidak overflow.
@@ -63,7 +67,7 @@ func New(c *config.Config, clock func() time.Time, policy Policy) (*Manager, err
 	for _, u := range c.Upstreams() {
 		a.candidates[u.ID] = u.Relays
 		for _, m := range u.Models {
-			a.view.Models = append(a.view.Models, ModelHealthView{Routing: m.Routing, Stateless: m.Stateless, Upstream: u.ID, Alias: m.Alias, PrimaryRelay: m.PrimaryRelay})
+			a.view.Models = append(a.view.Models, ModelHealthView{Routing: m.Routing, Stateless: m.Stateless, Upstream: u.ID, Alias: m.Alias, PrimaryRelay: m.PrimaryRelay, fallbackRelays: append([]string(nil), m.FallbackRelays...)})
 			if u.ID == c.Server().DefaultUpstream {
 				primary[m.PrimaryRelay] = true
 			}

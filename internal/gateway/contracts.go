@@ -15,6 +15,14 @@ type Dispatcher interface {
 	Dispatch(*http.Request, config.Relay) (*http.Response, error)
 }
 
+// RequestNotSentError marks an error that proves no application request reached the upstream.
+// The dispatcher must release the failed attempt's network resources before returning it.
+// Other dispatch errors are ambiguous and must never trigger a retry.
+type RequestNotSentError interface {
+	error
+	RequestNotSent() bool
+}
+
 // Failure hanya memuat kategori tetap, tanpa input atau error jaringan mentah.
 type Failure struct {
 	Code   string

@@ -239,6 +239,16 @@ POST yang mungkin sudah diproses tidak boleh dikirim ulang hanya karena koneksi 
 - Diblokir oleh: [EP-03-S02](#ep-03-s02), [EP-01-T03](2026-11-22-ep-01-kelayakan-dan-keputusan-mvp.md#ep-01-t03)
 - Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
 
+### Hasil pengerjaan 27 November 2026
+
+Kontrak dan bukti lokal tercatat pada [failover.md](../failover.md). Coordinator hanya mengulang dispatch setelah error eksplisit `RequestNotSentError`; perpindahan lease ke fallback tervalidasi dan atomik, dengan satu fallback maksimum.
+
+- **AC1 parsial produk:** tes unit membuktikan fallback non-strict hanya dengan bukti no-send dan batas dua dispatch. Fixture HTTP/SOCKS5 membuktikan refusal primary sebelum tunnel, satu dispatch melalui fallback, dan nol direct dial.
+- **AC2 parsial produk:** error generik, bukti no-send false, dan timeout tetap satu dispatch. Fixture gateway mengirim POST sampai body terbaca upstream, memutus koneksi sebelum header, dan membuktikan relay fallback tidak menerima dispatch.
+- **AC3 parsial produk:** jalur coordinator tidak mengulang setelah menyerahkan response; tes gateway JSON/SSE membuktikan stream terputus tidak diganti.
+- **AC4 parsial produk:** tes/ledger membedakan dispatch upstream dari CONNECT serta membuktikan satu attempt tanpa bukti no-send. Tidak ada log atau metrik produk baru.
+- Adapter jaringan produksi belum tersedia. Penerbitan bukti no-send oleh adapter runtime, retry provider/client nyata, WARP, performa, dan penerimaan produk tetap belum dibuktikan.
+
 <a id="ep-03-s05"></a>
 
 ## [STORY] EP-03-S05 Kenali batas upstream tanpa merotasi relay secara sembarang

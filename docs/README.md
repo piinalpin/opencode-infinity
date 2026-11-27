@@ -50,7 +50,9 @@ Hasil pemeriksaan lingkungan tidak menyatakan integrasi client, transport WARP, 
 
 [Eligibility health dan mode](eligibility-relay.md) tersedia melalui EP-03-S02/D-027: satu owner melakukan pemeriksaan transport/circuit/mode bersama reservasi atomik. Scheduler fixture bounded berbagi cap outbound; probe sukses tidak mengaktifkan draining/disabled, dan penolakan 503 tidak menambah koneksi generasi/direct. Availability model tetap unknown tanpa sumber aman; default produksi, runtime/provider/WARP, cooldown S05 dan penerimaan M0 tetap terbuka.
 
-[Least-inflight model stateless](least-inflight.md) tersedia melalui EP-03-S03/D-028: opt-in stateless true/none, kandidat ordered upstream allowlist, minimum total inflight dengan tie stabil, serta pemilihan/reservasi/dispatch relay yang konsisten. Cooldown relay minimum eksplisit, kapasitas dan stream diuji pada dua SOCKS5 ke satu upstream TLS. Interpretasi 429 S05, retry S04, provider/WARP, performa dan penerimaan produk tetap terbuka; fixed tetap default.
+[Least-inflight model stateless](least-inflight.md) tersedia melalui EP-03-S03/D-028: opt-in stateless true/none, kandidat ordered upstream allowlist, minimum total inflight dengan tie stabil, serta pemilihan/reservasi/dispatch relay yang konsisten. Cooldown relay minimum eksplisit, kapasitas dan stream diuji pada dua SOCKS5 ke satu upstream TLS. Interpretasi 429 S05, provider/WARP, performa dan penerimaan produk tetap terbuka; fixed tetap default.
+
+[Kontrak failover tanpa generasi duplikat](failover.md) tersedia melalui EP-03-S04: fallback hanya setelah bukti eksplisit POST belum terkirim, dengan maksimal dua dispatch dan reservasi relay atomik. Fixture lokal menguji refusal SOCKS sebelum tunnel serta fallback melalui relay lain; adapter runtime, provider/WARP, dan penerimaan produk tetap belum dibuktikan.
 
 ## Indeks epic MVP
 

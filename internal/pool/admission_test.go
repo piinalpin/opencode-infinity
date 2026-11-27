@@ -167,6 +167,96 @@ func TestFixedAdmissionAtomicPromotion(t *testing.T) {
 	}
 }
 
+func TestFallbackRelaySwitchKeepsLeaseAtomic(t *testing.T) {
+	a, err := newReadyPool(capacityConfig(t,
+		"upstreams:",
+		"  - id: warp-2\n    proxy_url: socks5h://warp-2:1080\n    max_inflight: 1\nupstreams:",
+		"primary_relay: warp-1\n        fallback_relays: []",
+		"primary_relay: warp-1\n        fallback_relays: [warp-2]",
+	))
+	if err != nil {
+		t.Fatal(err)
+	}
+	primary, _ := a.Begin(100)
+	held, _ := a.Begin(100)
+	if err := admitFixtureRelay(primary, "warp-1", 2048); err != nil {
+		t.Fatal(err)
+	}
+	if err := admitFixtureRelay(held, "warp-2", 0); err != nil {
+		t.Fatal(err)
+	}
+	if err := primary.SwitchFallback("primary", "coding-default", "warp-2"); !errors.Is(err, ErrCapacityExceeded) {
+		t.Fatalf("fallback penuh harus ditolak, mendapat %v", err)
+	}
+	if primary.relay != "warp-1" || a.used["warp-1"] != 1 || a.used["warp-2"] != 1 {
+		t.Fatal("fallback penuh mengubah reservasi primary")
+	}
+	held.Release()
+	if err := primary.SwitchFallback("primary", "coding-default", "warp-1"); !errors.Is(err, ErrNoEligibleRelay) {
+		t.Fatalf("relay yang bukan fallback diterima: %v", err)
+	}
+	if err := primary.SwitchFallback("primary", "coding-default", "warp-2"); err != nil {
+		t.Fatalf("fallback eligible ditolak: %v", err)
+	}
+	if primary.relay != "warp-2" || a.used["warp-1"] != 0 || a.used["warp-2"] != 1 || a.active != 1 || a.outbound != 1 || a.streamBytes != 2048 {
+		t.Fatal("perpindahan relay mengubah lease/stream accounting")
+	}
+	primary.Release()
+	assertFixedLedger(t, a, true)
+	var nilLease *Reservation
+	if nilLease.SwitchFallback("primary", "coding-default", "warp-2") != ErrInvalidReservation {
+		t.Fatal("lease nil mengubah relay")
+	}
+}
+
+func TestFallbackRelaySwitchConcurrentCapacity(t *testing.T) {
+	a, err := newReadyPool(capacityConfig(t,
+		"upstreams:",
+		"  - id: warp-2\n    proxy_url: socks5h://warp-2:1080\n    max_inflight: 1\nupstreams:",
+		"  - id: warp-1\n    proxy_url: socks5h://warp-1:1080\n    max_inflight: 1",
+		"  - id: warp-1\n    proxy_url: socks5h://warp-1:1080\n    max_inflight: 2",
+		"primary_relay: warp-1\n        fallback_relays: []",
+		"primary_relay: warp-1\n        fallback_relays: [warp-2]",
+	))
+	if err != nil {
+		t.Fatal(err)
+	}
+	reservations := make([]*Reservation, 2)
+	for i := range reservations {
+		reservations[i], _ = a.Begin(100)
+		if err := admitFixtureRelay(reservations[i], "warp-1", 0); err != nil {
+			t.Fatal(err)
+		}
+	}
+	start := make(chan struct{})
+	results := make(chan error, len(reservations))
+	var workers sync.WaitGroup
+	for _, reservation := range reservations {
+		workers.Go(func() {
+			<-start
+			results <- reservation.SwitchFallback("primary", "coding-default", "warp-2")
+		})
+	}
+	close(start)
+	workers.Wait()
+	close(results)
+	succeeded := 0
+	for err := range results {
+		if err == nil {
+			succeeded++
+		} else if !errors.Is(err, ErrCapacityExceeded) {
+			t.Fatalf("hasil switch konkuren tak terduga: %v", err)
+		}
+	}
+	if succeeded != 1 || a.used["warp-1"] != 1 || a.used["warp-2"] != 1 {
+		t.Fatal("switch konkuren melampaui kapasitas atau kehilangan lease")
+	}
+	for _, reservation := range reservations {
+		reservation.Release()
+	}
+	assertFixedLedger(t, a, true)
+}
+
 func TestFixedAdmissionRejectedPromotion(t *testing.T) {
 	for _, tc := range []struct {
 		name, relay  string

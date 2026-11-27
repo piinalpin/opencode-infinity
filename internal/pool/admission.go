@@ -80,6 +80,49 @@ func (r *Reservation) Admit(upstream, alias string, streamBytes int64) (string, 
 	return relay, nil
 }
 
+// SwitchFallback atomically moves an admitted reservation to one configured eligible fallback relay.
+func (r *Reservation) SwitchFallback(upstream, alias, relay string) error {
+	if r == nil || r.owner == nil || upstream == "" || alias == "" || relay == "" {
+		return ErrInvalidReservation
+	}
+	a := r.owner
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	if r.released || !r.admitted || r.relay == "" {
+		return ErrInvalidReservation
+	}
+	configured := false
+	for _, model := range a.view.Models {
+		if model.Upstream != upstream || model.Alias != alias {
+			continue
+		}
+		for _, candidate := range model.fallbackRelays {
+			if candidate == relay {
+				configured = true
+				break
+			}
+		}
+		break
+	}
+	if !configured {
+		return ErrNoEligibleRelay
+	}
+	if relay == r.relay || !a.transportEligibleLocked(relay, a.clock()) {
+		return ErrNoEligibleRelay
+	}
+	cap, ok := a.relays[relay]
+	if !ok {
+		return ErrNoEligibleRelay
+	}
+	if a.used[relay] >= cap {
+		return ErrCapacityExceeded
+	}
+	a.used[r.relay]--
+	a.used[relay]++
+	r.relay = relay
+	return nil
+}
+
 type Reservation struct {
 	owner       *Manager
 	bytes       int64

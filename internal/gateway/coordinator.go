@@ -206,8 +206,28 @@ func (c *Coordinator) Chat(in *http.Request, id string) (*http.Response, error) 
 	if prepared.Header.Get("Content-Type") == "" {
 		prepared.Header.Set("Content-Type", "application/json")
 	}
-	defer prepared.Body.Close()
+	defer func() { _ = prepared.Body.Close() }()
 	response, err := c.dispatch.Dispatch(prepared, relay)
+	var noSend RequestNotSentError
+	if errors.As(err, &noSend) && noSend.RequestNotSent() && model.Affinity != "strict" && ctx.Err() == nil {
+		if response != nil && response.Body != nil {
+			response.Body.Close()
+			response = nil
+		}
+		for _, fallbackID := range model.FallbackRelays {
+			if fallbackID == selectedRelay || reservation.SwitchFallback(upstreamID, model.Alias, fallbackID) != nil {
+				continue
+			}
+			fallback, exists := c.registry.Relay(fallbackID)
+			if !exists {
+				continue
+			}
+			_ = prepared.Body.Close()
+			prepared.Body = io.NopCloser(bytes.NewReader(mapped))
+			response, err = c.dispatch.Dispatch(prepared, fallback)
+			break
+		}
+	}
 	if err != nil || response == nil || response.Body == nil || response.StatusCode < 200 || response.StatusCode > 599 {
 		if response != nil && response.Body != nil {
 			response.Body.Close()
