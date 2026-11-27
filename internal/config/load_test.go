@@ -238,7 +238,6 @@ func TestLeastInflightConfiguration(t *testing.T) {
 	}
 	rejectConfig(t, validYAML+"        routing: least_inflight\n")
 	rejectConfig(t, validYAML+"        routing: least_inflight\n        stateless: true\n        affinity: strict\n")
-	rejectConfig(t, validYAML+"        routing: fixed\n        stateless: true\n        affinity: strict\n")
 	rejectConfig(t, validYAML+"        stateless: true\n        stateless: true\n")
 	for _, field := range []string{"routing", "alias", "upstream_model", "primary_relay"} {
 		rejectConfig(t, validYAML+"        "+field+": true\n")
@@ -247,5 +246,16 @@ func TestLeastInflightConfiguration(t *testing.T) {
 		if _, err := loadTest(validYAML + "        stateless: " + value + "\n"); err != nil {
 			t.Fatalf("fixed dengan boolean canonical %s ditolak", value)
 		}
+	}
+}
+
+func TestStrictFixedConfigurationAccepted(t *testing.T) {
+	c, err := loadTest(validYAML + "        affinity: strict\n")
+	if err != nil {
+		t.Fatalf("strict fixed config ditolak: %v", err)
+	}
+	models := c.Upstreams()[0].Models
+	if len(models) != 1 || models[0].Affinity != "strict" || models[0].Routing != "fixed" {
+		t.Fatalf("strict fixed tidak dipertahankan: %+v", models)
 	}
 }

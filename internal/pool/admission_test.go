@@ -2,12 +2,216 @@ package pool
 
 import (
 	"errors"
+	"fmt"
+	"opencode-infinity/internal/access"
 	"opencode-infinity/internal/config"
 	"os"
 	"strings"
 	"sync"
 	"testing"
+	"time"
 )
+
+func TestStrictAffinityBindingIsReservedAndRetainedAfterRelease(t *testing.T) {
+	c := admissionConfig(t, "affinity: none", "affinity: strict")
+	now := time.Now()
+	a, err := New(c, func() time.Time { return now }, Policy{Failures: 1, Successes: 1, BindingTTL: time.Hour})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, layer := range []HealthLayer{HealthSOCKS5, HealthHTTPS} {
+		if err := a.Observe("warp-1", layer, ObservationView{State: HealthHealthy, ObservedAt: now, ValidUntil: now.Add(time.Hour)}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	tokens, err := access.New(c)
+	if err != nil {
+		t.Fatal(err)
+	}
+	identity, ok := tokens.GatewayIdentity("synthetic-gateway-credential-12345")
+	if !ok {
+		t.Fatal("identity token valid tidak terbentuk")
+	}
+	first, _ := a.Begin(100)
+	relay, generation, err := first.AdmitAffinity("primary", "coding-default", 0, identity, "same-id", true)
+	if err != nil || relay != "warp-1" || generation != 1 {
+		t.Fatalf("binding sesi baru salah: relay=%q generation=%d err=%v", relay, generation, err)
+	}
+	first.Release()
+
+	continuation, _ := a.Begin(100)
+	gotRelay, gotGeneration, err := continuation.AdmitAffinity("primary", "coding-default", 0, identity, "same-id", false)
+	if err != nil || gotRelay != relay || gotGeneration != generation {
+		t.Fatalf("binding continuation tidak dipertahankan: relay=%q generation=%d err=%v", gotRelay, gotGeneration, err)
+	}
+	continuation.Release()
+	now = now.Add(time.Hour)
+	expired, _ := a.Begin(100)
+	if _, _, err := expired.AdmitAffinity("primary", "coding-default", 0, identity, "same-id", false); !errors.Is(err, ErrAffinityLost) {
+		t.Fatalf("continuation tepat pada TTL harus affinity_lost: %v", err)
+	}
+	expired.Release()
+}
+
+func TestStrictAffinityCapacityPreservesExistingBinding(t *testing.T) {
+	c := admissionConfig(t, "affinity: none", "affinity: strict")
+	now := time.Now()
+	a, err := New(c, func() time.Time { return now }, Policy{Failures: 1, Successes: 1, BindingTTL: time.Hour})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, layer := range []HealthLayer{HealthSOCKS5, HealthHTTPS} {
+		if err := a.Observe("warp-1", layer, ObservationView{State: HealthHealthy, ObservedAt: now, ValidUntil: now.Add(time.Hour)}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	tokens, _ := access.New(c)
+	identity, _ := tokens.GatewayIdentity("synthetic-gateway-credential-12345")
+	for i := 0; i < 1024; i++ {
+		start, _ := a.Begin(100)
+		if _, _, err := start.AdmitAffinity("primary", "coding-default", 0, identity, fmt.Sprintf("active-%d", i), true); err != nil {
+			t.Fatalf("binding %d gagal sebelum batas: %v", i, err)
+		}
+		start.Release()
+	}
+
+	newSession, _ := a.Begin(100)
+	if _, _, err := newSession.AdmitAffinity("primary", "coding-default", 0, identity, "other", true); !errors.Is(err, ErrCapacityExceeded) {
+		t.Fatalf("sesi baru pada kapasitas penuh harus ditolak: %v", err)
+	}
+	newSession.Release()
+	continueSession, _ := a.Begin(100)
+	if _, _, err := continueSession.AdmitAffinity("primary", "coding-default", 0, identity, "active-0", false); err != nil {
+		t.Fatalf("binding aktif tergeser oleh sesi baru: %v", err)
+	}
+	continueSession.Release()
+}
+
+func TestStrictAffinitySeparatesSameSessionIDByTokenIdentity(t *testing.T) {
+	c := admissionConfig(t, "affinity: none", "affinity: strict")
+	data, err := os.ReadFile("../../examples/infinity.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	otherConfig, err := config.Load(strings.NewReader(string(data)), config.Sources{
+		LookupEnv: func(name string) (string, bool) {
+			value, ok := map[string]string{
+				"INFINITY_GATEWAY_TOKEN": "synthetic-second-gateway-token-98765",
+				"INFINITY_ADMIN_TOKEN":   "synthetic-admin-credential-67890",
+				"INFINITY_UPSTREAM_KEY":  "synthetic-provider-key",
+			}[name]
+			return value, ok
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	firstTokens, _ := access.New(c)
+	secondTokens, _ := access.New(otherConfig)
+	firstIdentity, _ := firstTokens.GatewayIdentity("synthetic-gateway-credential-12345")
+	secondIdentity, _ := secondTokens.GatewayIdentity("synthetic-second-gateway-token-98765")
+	now := time.Now()
+	a, err := New(c, func() time.Time { return now }, Policy{Failures: 1, Successes: 1, BindingTTL: time.Hour})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, layer := range []HealthLayer{HealthSOCKS5, HealthHTTPS} {
+		if err := a.Observe("warp-1", layer, ObservationView{State: HealthHealthy, ObservedAt: now, ValidUntil: now.Add(time.Hour)}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for _, identity := range []access.GatewayIdentity{firstIdentity, secondIdentity} {
+		reservation, _ := a.Begin(100)
+		if _, _, err := reservation.AdmitAffinity("primary", "coding-default", 0, identity, "same-id", true); err != nil {
+			t.Fatalf("token identity mengganggu binding lain: %v", err)
+		}
+		reservation.Release()
+	}
+	if len(a.bindings) != 2 {
+		t.Fatalf("diharapkan dua binding terisolasi; got %d", len(a.bindings))
+	}
+}
+
+func TestConcurrentStrictSessionStartCreatesSingleBinding(t *testing.T) {
+	c := admissionConfig(t, "affinity: none", "affinity: strict")
+	now := time.Now()
+	a, err := New(c, func() time.Time { return now }, Policy{Failures: 1, Successes: 1, BindingTTL: time.Hour})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, layer := range []HealthLayer{HealthSOCKS5, HealthHTTPS} {
+		if err := a.Observe("warp-1", layer, ObservationView{State: HealthHealthy, ObservedAt: now, ValidUntil: now.Add(time.Hour)}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	tokens, _ := access.New(c)
+	identity, _ := tokens.GatewayIdentity("synthetic-gateway-credential-12345")
+	reservations := make([]*Reservation, 2)
+	for i := range reservations {
+		reservations[i], _ = a.Begin(100)
+	}
+	start := make(chan struct{})
+	results := make(chan error, 2)
+	var wg sync.WaitGroup
+	for _, reservation := range reservations {
+		wg.Add(1)
+		go func(reservation *Reservation) {
+			defer wg.Done()
+			<-start
+			_, _, err := reservation.AdmitAffinity("primary", "coding-default", 0, identity, "same-id", true)
+			results <- err
+		}(reservation)
+	}
+	close(start)
+	wg.Wait()
+	close(results)
+	successes, lost := 0, 0
+	for err := range results {
+		switch {
+		case err == nil:
+			successes++
+		case errors.Is(err, ErrAffinityLost):
+			lost++
+		default:
+			t.Fatalf("hasil start bersamaan tak terduga: %v", err)
+		}
+	}
+	for _, reservation := range reservations {
+		reservation.Release()
+	}
+	if successes != 1 || lost != 1 || len(a.bindings) != 1 {
+		t.Fatalf("start bersamaan tidak linearizable: success=%d lost=%d bindings=%d", successes, lost, len(a.bindings))
+	}
+}
+
+func TestStrictContinuationDoesNotMoveWhenBoundRelayDrains(t *testing.T) {
+	c := admissionConfig(t, "affinity: none", "affinity: strict")
+	now := time.Now()
+	a, err := New(c, func() time.Time { return now }, Policy{Failures: 1, Successes: 1, BindingTTL: time.Hour})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, layer := range []HealthLayer{HealthSOCKS5, HealthHTTPS} {
+		if err := a.Observe("warp-1", layer, ObservationView{State: HealthHealthy, ObservedAt: now, ValidUntil: now.Add(time.Hour)}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	tokens, _ := access.New(c)
+	identity, _ := tokens.GatewayIdentity("synthetic-gateway-credential-12345")
+	start, _ := a.Begin(100)
+	if _, _, err := start.AdmitAffinity("primary", "coding-default", 0, identity, "bound", true); err != nil {
+		t.Fatal(err)
+	}
+	start.Release()
+	if err := a.SetMode("warp-1", "draining"); err != nil {
+		t.Fatal(err)
+	}
+	next, _ := a.Begin(100)
+	if _, _, err := next.AdmitAffinity("primary", "coding-default", 0, identity, "bound", false); !errors.Is(err, ErrAffinityLost) {
+		t.Fatalf("relay draining harus memutus admission tanpa relay pengganti: %v", err)
+	}
+	next.Release()
+}
 
 func admissionConfig(t *testing.T, edits ...string) *config.Config {
 	t.Helper()

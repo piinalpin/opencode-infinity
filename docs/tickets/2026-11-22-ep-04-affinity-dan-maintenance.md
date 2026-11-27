@@ -114,6 +114,16 @@ D-013 menetapkan MVP memakai fixed routing dan lifecycle strict dibuktikan lewat
 - **AC3:** **Given** client tidak menyediakan sinyal sesi yang dibutuhkan, **When** kompatibilitas dievaluasi, **Then** fixed scope bersama dan batas lifetime proses dijelaskan tanpa klaim isolasi percakapan.
 - **AC4 (negatif/edge):** **Given** kebutuhan model tidak dapat dibuktikan dengan integrasi yang dipilih, **When** hasil fixture dibandingkan dengan D-013, **Then** kombinasi dinyatakan tidak kompatibel dan tidak dipromosikan sebagai strict per percakapan.
 
+### Hasil pengerjaan 27 November 2026
+
+[D-029](../DECISIONS.md#d-029-kontrak-sesi-strict-untuk-fixture-ep-04-t01) menetapkan kontrak fixture; rincian perilaku ada pada [catatan teknis §9.2](../PRD-technical-notes.md#kontrak-sesi-strict-fixture-ep-04-t01). Kemampuan OpenCode Desktop mengirim dan mempertahankan header sesi belum terbukti. Hasil ini dokumentasi kontrak, bukan bukti implementasi binding atau integrasi client/provider/WARP.
+
+- **AC1 ✅ dokumentasi:** sesi baru/lanjutan, scope binding, idle TTL 60 menit, expiry, dan kapasitas fixture 1.024 ditetapkan.
+- **AC2 ✅ dokumentasi:** continuation setelah restart atau expiry ditolak `409 affinity_lost`, tanpa rebinding.
+- **AC3 ✅ dokumentasi:** tanpa sinyal sesi, fixed scope bersama hanya berlaku selama lifetime proses; tidak ada klaim isolasi percakapan.
+- **AC4 ✅ dokumentasi:** kebutuhan sesi/identitas yang belum terbukti dinyatakan tidak kompatibel untuk strict per percakapan.
+- Dependensi EP-01-T01 dan EP-02-S04 serta penerimaan M0/runtime tetap mengikuti statusnya; kontrak ini tidak menutupnya.
+
 ### Batas dan dependensi
 
 - Di luar scope: Plugin session ID otomatis, persistence percakapan, controller WARP otomatis, dan jaminan IP absolut yang tidak dapat dibuktikan.
@@ -144,6 +154,13 @@ Sesi yang memerlukan konsistensi harus terikat sebelum dispatch dan tetap teriso
 - **AC2:** **Given** binding aktif dan relay masih eligible, **When** sesi mengirim request lanjutan, **Then** relay dan generasi yang sama digunakan.
 - **AC3:** **Given** dua token memakai session ID tekstual yang sama, **When** masing-masing mengirim request, **Then** binding tidak tercampur antaridentitas token.
 - **AC4 (negatif/edge):** **Given** batas binding tercapai atau konfigurasi strict digabung least-inflight, **When** sesi baru atau konfigurasi diproses, **Then** binding aktif tidak digusur dan kombinasi yang tidak valid ditolak.
+
+### Hasil implementasi EP-04-S02
+
+- Binding strict dibuat atomik bersama reservasi pool sebelum dispatch; scope memuat identity token tepercaya, upstream, alias model, dan session ID.
+- Generation awal relay `1`; continuation tidak berpindah relay/generation. Binding tetap tersimpan sesudah dispatch awal gagal.
+- Validasi session header menerapkan batas 256 byte; TTL 60 menit dan cap 1.024 mengikuti D-029. Strict fixed diterima; strict least-inflight ditolak.
+- Isolasi beberapa token dibuktikan melalui seam internal; tidak menambah multi-token config atau mengklaim dukungan client nyata. Invalidasi generation menunggu EP-04-S03. Lihat [D-030](../DECISIONS.md#d-030-implementasi-affinity-strict-ep-04-s02).
 
 ### Batas dan dependensi
 

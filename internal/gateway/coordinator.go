@@ -8,11 +8,13 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"opencode-infinity/internal/access"
 	"opencode-infinity/internal/catalog"
 	"opencode-infinity/internal/config"
 	"opencode-infinity/internal/pool"
 	"opencode-infinity/internal/transport"
 	"reflect"
+	"strings"
 	"sync"
 	"time"
 )
@@ -69,6 +71,17 @@ func New(c *config.Config, d Dispatcher, clock func() time.Time, policy pool.Pol
 		return nil, nil, errors.New("invalid_gateway_component")
 	}
 	owned := *c
+	if policy.BindingTTL == 0 {
+		for _, upstream := range owned.Upstreams() {
+			for _, model := range upstream.Models {
+				if model.Affinity == "strict" {
+					// shortcut: D-029 fixture TTL; default produk runtime tetap belum ditetapkan.
+					policy.BindingTTL = 60 * time.Minute
+					break
+				}
+			}
+		}
+	}
 	registry, _ := catalog.New(&owned)
 	boundary, _ := transport.NewRequestBoundary(&owned)
 	admission, err := pool.New(&owned, clock, policy)
@@ -114,6 +127,8 @@ func failure(code string) *Failure {
 		status = 413
 	case "gateway_capacity_exceeded":
 		status = 429
+	case "affinity_lost":
+		status = http.StatusConflict
 	case "no_eligible_relay":
 		status = 503
 	case "unsupported_api":
@@ -143,6 +158,10 @@ func (c *Coordinator) Chat(in *http.Request, id string) (*http.Response, error) 
 		}
 	}()
 	defer in.Body.Close()
+	sessionID, sessionStart, hasSessionHeaders, sessionErr := strictSessionHeaders(in.Header)
+	if sessionErr != nil {
+		return nil, failure("invalid_request")
+	}
 	ctx, cancel := context.WithTimeout(in.Context(), c.timeout)
 	defer func() {
 		if !transferred {
@@ -174,6 +193,13 @@ func (c *Coordinator) Chat(in *http.Request, id string) (*http.Response, error) 
 	if !ok {
 		return nil, failure("model_not_found")
 	}
+	if model.Affinity == "strict" {
+		if sessionID == "" {
+			return nil, failure("invalid_request")
+		}
+	} else if hasSessionHeaders {
+		return nil, failure("invalid_request")
+	}
 	replacement, _ := json.Marshal(model.UpstreamModel)
 	if int64(len(body)-(parsed.end-parsed.start)+len(replacement)) > c.maxBody {
 		return nil, failure("request_too_large")
@@ -187,10 +213,22 @@ func (c *Coordinator) Chat(in *http.Request, id string) (*http.Response, error) 
 	if upstreamID == "" {
 		upstreamID = c.registry.DefaultUpstream()
 	}
-	selectedRelay, err := reservation.Admit(upstreamID, model.Alias, streamBytes)
+	selectedRelay := ""
+	if model.Affinity == "strict" {
+		identity, ok := access.GatewayIdentityFromContext(in.Context())
+		if !ok {
+			return nil, failure("invalid_request")
+		}
+		selectedRelay, _, err = reservation.AdmitAffinity(upstreamID, model.Alias, streamBytes, identity, sessionID, sessionStart)
+	} else {
+		selectedRelay, err = reservation.Admit(upstreamID, model.Alias, streamBytes)
+	}
 	if err != nil {
 		if errors.Is(err, pool.ErrCapacityExceeded) {
 			return nil, failure("gateway_capacity_exceeded")
+		}
+		if errors.Is(err, pool.ErrAffinityLost) {
+			return nil, failure("affinity_lost")
 		}
 		return nil, failure("no_eligible_relay")
 	}
@@ -265,6 +303,39 @@ func (c *Coordinator) Chat(in *http.Request, id string) (*http.Response, error) 
 	context.AfterFunc(ctx, managed.abort)
 	transferred = true
 	return response, nil
+}
+
+func strictSessionHeaders(header http.Header) (string, bool, bool, error) {
+	var sessionValues, startValues []string
+	for name, values := range header {
+		switch {
+		case strings.EqualFold(name, "X-Infinity-Session"):
+			sessionValues = append(sessionValues, values...)
+		case strings.EqualFold(name, "X-Infinity-Session-Start"):
+			startValues = append(startValues, values...)
+		}
+	}
+	if len(sessionValues) > 1 || len(startValues) > 1 {
+		return "", false, len(sessionValues)+len(startValues) > 0, errors.New("duplicate_session_header")
+	}
+	if len(sessionValues) == 0 {
+		if len(startValues) != 0 {
+			return "", false, true, errors.New("session_start_without_id")
+		}
+		return "", false, false, nil
+	}
+	sessionID := sessionValues[0]
+	if sessionID == "" || len(sessionID) > 256 {
+		return "", false, true, errors.New("invalid_session_id")
+	}
+	start := false
+	if len(startValues) == 1 {
+		if startValues[0] != "true" {
+			return "", false, true, errors.New("invalid_session_start")
+		}
+		start = true
+	}
+	return sessionID, start, true, nil
 }
 
 type responseBody struct {

@@ -1,6 +1,6 @@
 # Keputusan opencode-infinity
 
-Versi: 0.1.24
+Versi: 0.1.26
 Tanggal: 27 November 2026
 
 Catatan ini memisahkan keputusan eksplisit pengguna dari usulan dan pertanyaan yang belum selesai. Keputusan terkonfirmasi diterapkan ke PRD/arsitektur terkait; status keseluruhan draft tidak otomatis menjadi approved.
@@ -113,7 +113,7 @@ Catatan ini memisahkan keputusan eksplisit pengguna dari usulan dan pertanyaan y
 - **Status:** ditetapkan pengguna.
 - **Keputusan:** MVP memakai fixed routing sebagai default dan tidak mengklaim strict affinity per percakapan pada client nyata, karena OpenCode Desktop belum memasok sinyal sesi stabil. Lifecycle strict (sesi baru, sesi lanjutan, TTL/kedaluwarsa, dan penolakan sesi lama setelah restart) dibuktikan pada fixture dengan header sesi eksplisit. Dukungan strict untuk client nyata menunggu C-15 plugin session ID pada P1.
 - **Implikasi:** C-6 tetap dipenuhi sebatas binding yang didukung: binding menjaga relay dan generasi identitas, kehilangan binding ditolak eksplisit, dan keterbatasan client tanpa sinyal sesi didokumentasikan. Tidak ada heuristik sesi dari token, IP, atau isi prompt. Drain tetap memeriksa binding aktif.
-- **Belum diputuskan:** skema header sesi yang dipakai fixture dan ambang TTL; dicatat pada EP-04-T01.
+- **Diputuskan melalui D-029:** skema header dan TTL lifecycle fixture. Kapasitas produk final tetap TBD.
 - **Acuan:** O-4, C-6/C-7, Q-3, EP-04-T01, dan EP-04-T05.
 
 ### D-014 Drain 60 detik dengan batas keras yang tercatat
@@ -259,8 +259,28 @@ Catatan ini memisahkan keputusan eksplisit pengguna dari usulan dan pertanyaan y
 - **Batas:** tanpa transport/listener/deployment runtime, provider/WARP/native, benchmark/RSS, binding/maintenance/dashboard atau perubahan default numerik. Tidak mengotorisasi commit/push. [Kontrak least-inflight dan bukti AC](least-inflight.md) memisahkan kelulusan lokal dari penerimaan produk.
 - **Acuan:** EP-03-S03 AC1–AC4, C-4/Q-3/Q-5, D-013/D-027, [arsitektur routing](ARCHITECTURE.md#eligibility-dan-kapasitas).
 
+### D-029 Kontrak sesi strict untuk fixture EP-04-T01
+
+- **Status:** ditetapkan pengguna pada 27 November 2026 melalui persetujuan kontrak EP-04-T01.
+- **Keputusan:** lifecycle strict dibuktikan hanya pada fixture. `X-Infinity-Session` membawa satu ID sesi opaque dan tidak boleh kosong. Request sesi baru wajib membawa `X-Infinity-Session-Start: true`; request lanjutan membawa ID yang sama tanpa header start. Header start tanpa ID sesi, nilai selain literal `true`, atau duplikasi salah satu header ditolak `400 invalid_request`. Start untuk ID yang sudah terikat ditolak `409 affinity_lost`, bukan menimpa binding. Binding mencakup identitas token gateway, upstream, model, session ID, relay, dan generasi identitas.
+- **TTL:** fixture memakai idle TTL 60 menit sejak request terakhir yang berhasil di-admit. Request pada atau setelah batas expiry tidak memperpanjang binding; continuation ditolak dengan HTTP 409 `affinity_lost`. Binding aktif tidak digusur demi sesi baru.
+- **Kapasitas:** fixture membatasi total 1.024 binding. Binding expired dibersihkan sebelum admission sesi baru. Jika kapasitas tetap penuh, sesi baru ditolak dengan HTTP 429 `gateway_capacity_exceeded`; continuation binding yang ada tetap dapat diproses jika eligible. Angka ini bukan default produk atau bukti accounting runtime; kapasitas produk tetap TBD.
+- **Restart dan sesi tanpa sinyal:** binding hanya berada di memory proses. Setelah restart, continuation tanpa marker start ditolak dengan HTTP 409 `affinity_lost`; gateway tidak membuat binding atau memilih relay pengganti. Tanpa sinyal sesi, fixed routing hanya memberi jalur bersama selama lifetime proses, tanpa isolasi percakapan atau deteksi sesi lama setelah restart.
+- **Batas kompatibilitas:** kemampuan OpenCode Desktop 2.3.0 mengirim dan mempertahankan header sesi belum terbukti. MVP tetap fixed routing. Jika kebutuhan sesi/identitas model tidak dapat dibuktikan melalui integrasi terpilih, kombinasi itu dinyatakan tidak kompatibel dengan strict per percakapan; fixture bukan bukti dukungan client nyata.
+- **Privasi:** session ID opaque tidak dicatat pada log, snapshot, error, atau metrik.
+- **Batas:** keputusan ini menetapkan kontrak fixture, bukan implementasi binding, kapasitas runtime, default produk, persistence, plugin client, atau penerimaan M0. Dependensi EP-01-T01 dan EP-02-S04 tetap mengikuti status masing-masing.
+- **Acuan:** O-4, C-6, Q-3/Q-10, D-013/D-019, EP-04-T01, [kontrak sesi strict](PRD-technical-notes.md#kontrak-sesi-strict-fixture-ep-04-t01).
+
+### D-030 Implementasi affinity strict EP-04-S02
+
+- **Status:** ditetapkan pengguna pada 27 November 2026 untuk implementasi EP-04-S02.
+- **Keputusan:** pembuktian token terisolasi memakai seam identitas gateway tepercaya setelah autentikasi; konfigurasi multi-token tidak ditambahkan. Generation awal tiap relay bernilai `1`; invalidasi/perubahan generation tetap milik EP-04-S03. ID sesi dibatasi maksimal 256 byte dan nilai invalid ditolak sebagai `400 invalid_request`.
+- **Lifecycle:** binding baru, pemeriksaan eligibility, dan reservasi relay dilakukan di bawah owner/mutex pool yang sama sebelum dispatch. Binding dipertahankan sesudah dispatch awal gagal; request lanjutan memakai relay/generation terikat atau gagal `409 affinity_lost`, tanpa rebinding/fallback. `strict` hanya valid dengan fixed routing; `strict + least_inflight` ditolak.
+- **Batas bukti:** isolasi beberapa identity dibuktikan pada seam internal fixture, bukan dukungan beberapa token API/runtime. Binding berada di memory dan hilang saat proses restart. D-029 tetap menentukan TTL 60 menit dan kapasitas fixture 1.024; keputusan ini tidak menetapkan default produk atau lulus integrasi client/provider/WARP.
+- **Acuan:** D-013, D-029, EP-04-S02 AC1–AC4, [aturan affinity](ARCHITECTURE.md#aturan-affinity).
+
 ## Status pertanyaan terbuka
 
 Seluruh pertanyaan keputusan yang dijadwalkan (O-1–O-10) sudah memiliki jawaban pengguna atau batas terbuka yang tercatat. Provider/model sudah dipilih D-016 dan versi Desktop/CLI bawaan sudah dicatat pada matriks lingkungan. D-019 menetapkan profil resource/metode serta protokol baseline awal; angka baseline aktual, versi SDK/runtime provider terpisah, listener/tailnet, default produk final dan bukti kelayakan integrasi M0 tetap terbuka. Profil bukan hasil pengukuran atau kelulusan M0.
 
-O-1 tetap terbuka untuk angka baseline dan bukti aktual meskipun metode pelaksanaannya sudah ditetapkan D-005/D-019; O-2 terbuka hanya untuk alamat/listener serta detail Tailscale, sedangkan host, CPU image, dan topologi akses sudah ditetapkan D-006; O-3 menetapkan client dan kelas upstream melalui D-007, lalu OpenCode Free/model `deepseek-v4.1-flash-free` melalui D-016; bukti akses gateway dan runtime provider masih terbuka; O-6 menetapkan target performa provisional dan fixture 5×5 (D-008), dilengkapi profil/metode D-019 dengan default produk final belum diputuskan; O-10 menetapkan polling 5 detik dengan stale >15 detik untuk MVP dan menunda push SSE ke P1 (D-009); O-8 menetapkan rilis event-driven tanpa anggaran baru dengan tag `v0.1.0-mvp` (D-010); O-7 menetapkan tidak ada SLA formal dan pemulihan best-effort (D-011); O-9 menetapkan urutan P1 dengan Responses API lebih dulu (D-012); O-4 menetapkan fixed routing pada MVP dengan lifecycle strict diuji lewat fixture (D-013); O-5 menetapkan drain 60 detik dengan batas keras 30 menit yang tercatat (D-014). Task EP-01-T01 belum dinyatakan selesai hanya dari D-001–D-014.
+O-1 tetap terbuka untuk angka baseline dan bukti aktual meskipun metode pelaksanaannya sudah ditetapkan D-005/D-019; O-2 terbuka hanya untuk alamat/listener serta detail Tailscale, sedangkan host, CPU image, dan topologi akses sudah ditetapkan D-006; O-3 menetapkan client dan kelas upstream melalui D-007, lalu OpenCode Free/model `deepseek-v4.1-flash-free` melalui D-016; bukti akses gateway dan runtime provider masih terbuka; O-6 menetapkan target performa provisional dan fixture 5×5 (D-008), dilengkapi profil/metode D-019 dengan default produk final belum diputuskan; O-10 menetapkan polling 5 detik dengan stale >15 detik untuk MVP dan menunda push SSE ke P1 (D-009); O-8 menetapkan rilis event-driven tanpa anggaran baru dengan tag `v0.1.0-mvp` (D-010); O-7 menetapkan tidak ada SLA formal dan pemulihan best-effort (D-011); O-9 menetapkan urutan P1 dengan hot reload tidak diprioritaskan (D-012); O-4 menetapkan fixed routing pada MVP dan kontrak strict fixture (D-013/D-029), tanpa klaim dukungan client nyata; O-5 menetapkan drain 60 detik dengan batas keras 30 menit yang tercatat (D-014). Task EP-01-T01 belum dinyatakan selesai hanya dari D-001–D-014.

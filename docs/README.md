@@ -9,11 +9,11 @@ Aturan kontribusi dan guardrail agent tersedia di [AGENTS.md](../AGENTS.md).
 | Dokumen | Isi | Status acuan |
 |---|---|---|
 | [PRD](PRD.md) | Masalah, pengguna, cakupan, kapabilitas, target kualitas, dan keputusan terbuka | Draft 0.1.13 |
-| [DECISIONS](DECISIONS.md) | Keputusan eksplisit pengguna dan bagian pertanyaan yang masih terbuka | Catatan 0.1.24; D-001–D-028 terkonfirmasi; profil D-019 provisional |
-| [ARCHITECTURE](ARCHITECTURE.md) | Komponen, alur, state, lifecycle, dan [struktur project](ARCHITECTURE.md#13-struktur-project-yang-disarankan), termasuk MicroWARP | Draft 0.1.4 |
+| [DECISIONS](DECISIONS.md) | Keputusan eksplisit pengguna dan bagian pertanyaan yang masih terbuka | Catatan 0.1.26; D-001–D-030 terkonfirmasi; profil D-019 provisional |
+| [ARCHITECTURE](ARCHITECTURE.md) | Komponen, alur, state, lifecycle, dan [struktur project](ARCHITECTURE.md#13-struktur-project-yang-disarankan), termasuk MicroWARP | Draft 0.1.6 |
 | [TECHSTACK](TECHSTACK.md) | Pilihan stack/pin untuk spike serta batas validasi lanjutan | Spike M0 0.1.3; pin dan fixture T02 tersedia |
 | [ROADMAP](ROADMAP.md) | Milestone M0–M3, dependensi, serta gerbang MVP/P1 | Draft 0.1.2 |
-| [Catatan teknis](PRD-technical-notes.md) | Kontrak awal serta AC-01–AC-22 | Pendamping 0.1.3; bagian historis dipertahankan |
+| [Catatan teknis](PRD-technical-notes.md) | Kontrak awal serta AC-01–AC-22 | Pendamping 0.1.5; kontrak fixture D-029/D-030 ditambahkan, bagian historis dipertahankan |
 
 Urutan desain adalah PRD → ARCHITECTURE → TECHSTACK → implementasi. ROADMAP mengatur urutan pengerjaan. Jika isi bertentangan, selesaikan kebutuhan di PRD dan batas desain di ARCHITECTURE sebelum mengubah kandidat stack atau tiket.
 
@@ -53,6 +53,8 @@ Hasil pemeriksaan lingkungan tidak menyatakan integrasi client, transport WARP, 
 [Least-inflight model stateless](least-inflight.md) tersedia melalui EP-03-S03/D-028: opt-in stateless true/none, kandidat ordered upstream allowlist, minimum total inflight dengan tie stabil, serta pemilihan/reservasi/dispatch relay yang konsisten. Cooldown relay minimum eksplisit, kapasitas dan stream diuji pada dua SOCKS5 ke satu upstream TLS. Interpretasi 429 S05, provider/WARP, performa dan penerimaan produk tetap terbuka; fixed tetap default.
 
 [Kontrak failover tanpa generasi duplikat](failover.md) tersedia melalui EP-03-S04: fallback hanya setelah bukti eksplisit POST belum terkirim, dengan maksimal dua dispatch dan reservasi relay atomik. Fixture lokal menguji refusal SOCKS sebelum tunnel serta fallback melalui relay lain; adapter runtime, provider/WARP, dan penerimaan produk tetap belum dibuktikan.
+
+[Affinity sesi strict fixture](tickets/2026-11-22-ep-04-affinity-dan-maintenance.md#ep-04-s02) tersedia melalui EP-04-S02/D-030: admission binding+relay atomik, continuation same relay/generation, isolasi token pada seam internal, TTL/capacity, serta validasi header diuji lokal. Dukungan multi-token, client nyata, invalidasi generation EP-04-S03, provider/WARP dan penerimaan M0 tetap belum dibuktikan.
 
 ## Indeks epic MVP
 
@@ -152,7 +154,7 @@ Seluruh O-1–O-10 sudah memiliki jawaban pengguna; task lokal tetap menutup det
 | O-1 | D-005 | Metode ditetapkan; angka baseline TBD sampai M0 | [EP-01-T01](tickets/2026-11-22-ep-01-kelayakan-dan-keputusan-mvp.md#ep-01-t01) |
 | O-2 | D-006 | Host/topologi ditetapkan; listener dan tailnet TBD | [EP-01-T01](tickets/2026-11-22-ep-01-kelayakan-dan-keputusan-mvp.md#ep-01-t01) |
 | O-3 | D-007/D-016 | Desktop `2.3.0`, OpenCode Free/model `deepseek-v4.1-flash-free`; kelayakan gateway dan versi SDK aktif masih terbuka | [EP-01-T01](tickets/2026-11-22-ep-01-kelayakan-dan-keputusan-mvp.md#ep-01-t01) |
-| O-4 | D-013 | Fixed routing MVP; fixture membuktikan lifecycle strict | [EP-04-T01](tickets/2026-11-22-ep-04-affinity-dan-maintenance.md#ep-04-t01) |
+| O-4 | D-013/D-029 | Fixed routing MVP; schema/TTL strict fixture ditetapkan; client nyata belum terbukti | [EP-04-T01](tickets/2026-11-22-ep-04-affinity-dan-maintenance.md#ep-04-t01) |
 | O-5 | D-014 | Drain 60 detik + batas keras 30 menit; nilai grace period TBD | [EP-04-T05](tickets/2026-11-22-ep-04-affinity-dan-maintenance.md#ep-04-t05) |
 | O-6 | D-008/D-019 | Target dan profil/metode provisional tersedia; default produk final serta hasil benchmark belum tersedia | [EP-01-T06](tickets/2026-11-22-ep-01-kelayakan-dan-keputusan-mvp.md#ep-01-t06), [EP-06-T03](tickets/2026-11-22-ep-06-integrasi-dan-rilis-mvp.md#ep-06-t03) |
 | O-7 | D-011 | Tidak ada SLA formal; best-effort | [EP-06-T05](tickets/2026-11-22-ep-06-integrasi-dan-rilis-mvp.md#ep-06-t05) |

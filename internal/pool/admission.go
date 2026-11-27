@@ -130,6 +130,8 @@ type Reservation struct {
 	admitted    bool
 	relay       string
 	streamBytes int64
+	binding     bindingKey
+	hasBinding  bool
 }
 
 // AdmitLocal mengaktifkan pekerjaan katalog tanpa slot relay/outbound/stream.
@@ -198,6 +200,13 @@ func (r *Reservation) Release() {
 	r.released = true
 	if r.admitted {
 		a.active--
+		if r.hasBinding {
+			if binding, ok := a.bindings[r.binding]; ok && binding.inflight > 0 {
+				binding.inflight--
+				a.bindings[r.binding] = binding
+			}
+			r.hasBinding = false
+		}
 	} else {
 		a.pending--
 	}

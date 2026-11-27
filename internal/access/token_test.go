@@ -106,3 +106,20 @@ func TestConcurrentRoleChecks(t *testing.T) {
 	}
 	wg.Wait()
 }
+
+func TestGatewayIdentityFormattingIsRedacted(t *testing.T) {
+	p, err := New(snapshot(t, gatewayToken))
+	if err != nil {
+		t.Fatal(err)
+	}
+	identity, ok := p.GatewayIdentity(gatewayToken)
+	if !ok {
+		t.Fatal("identity token gateway valid tidak terbentuk")
+	}
+	for _, format := range []string{"%v", "%+v", "%#v", "%s", "%q"} {
+		out := fmt.Sprintf(format, identity)
+		if !strings.Contains(out, "gateway-identity") || strings.Contains(out, fmt.Sprintf("%v", identity.digest)) {
+			t.Fatalf("identity membocorkan material token: %s", out)
+		}
+	}
+}

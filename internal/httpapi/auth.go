@@ -31,9 +31,22 @@ func require(p *access.Tokens, next http.Handler, admin bool) (http.Handler, err
 	}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		token, ok := bearerToken(r.Header)
-		if !ok || !verify(token) {
+		if !ok {
 			unauthorized(w, admin)
 			return
+		}
+		if admin {
+			if !verify(token) {
+				unauthorized(w, true)
+				return
+			}
+		} else {
+			identity, valid := p.GatewayIdentity(token)
+			if !valid {
+				unauthorized(w, false)
+				return
+			}
+			r = r.WithContext(access.WithGatewayIdentity(r.Context(), identity))
 		}
 		next.ServeHTTP(w, r)
 	}), nil

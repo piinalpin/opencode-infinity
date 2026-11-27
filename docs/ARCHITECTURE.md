@@ -1,7 +1,7 @@
 # ARCHITECTURE opencode-infinity
 
-Versi: 0.1.4  
-Tanggal: 23 November 2026  
+Versi: 0.1.6
+Tanggal: 27 November 2026
 Status: Draft arsitektur MVP; belum disetujui  
 Acuan kebutuhan: [PRD 0.1.13](PRD.md)  
 Referensi utama: [warp-relay-pool](https://github.com/trefeon/warp-relay-pool)
@@ -146,9 +146,9 @@ Pemisahan dimensi di atas adalah penjabaran arsitektur **(agent's call)**. State
 
 ### Aturan affinity
 
-Binding eksplisit mengikuti identitas token, upstream, model, dan session ID. Jika identitas yang dibutuhkan binding tidak dapat dipertahankan, request gagal secara eksplisit; router tidak membuat binding pengganti secara diam-diam. Jumlah binding dan TTL dibatasi, dan binding aktif tidak digusur untuk menerima sesi baru.
+Binding eksplisit mengikuti identitas token, upstream, model, dan session ID. Pool membuat binding, memeriksa eligibility, serta mereservasi relay secara atomik sebelum dispatch. Binding sesi strict menyimpan relay dan generation awal `1`; binding tetap ada setelah dispatch awal gagal. Jika identitas/binding hilang atau relay terikat tidak eligible, request gagal secara eksplisit; router tidak membuat binding pengganti atau fallback secara diam-diam. Jumlah binding dan TTL dibatasi, dan binding aktif tidak digusur untuk menerima sesi baru. Rincian fixture tercatat pada [D-029/D-030](DECISIONS.md#d-030-implementasi-affinity-strict-ep-04-s02).
 
-Tanpa sinyal sesi eksplisit, fixed routing hanya memberi kestabilan jalur bersama pada scope mapping dan lifetime proses. Ia tidak memberikan isolasi percakapan atau deteksi sesi lama setelah restart. Kontrak awal pembentukan sesi pada catatan teknis harus divalidasi dengan client yang dipilih; D-013 menetapkan MVP tidak mengklaim strict affinity untuk client nyata, sedangkan lifecycle strict dibuktikan lewat fixture dan dukungan client menunggu C-15.
+Tanpa sinyal sesi eksplisit, fixed routing hanya memberi kestabilan jalur bersama pada scope mapping dan lifetime proses. Ia tidak memberikan isolasi percakapan atau deteksi sesi lama setelah restart. D-029 menetapkan header dan TTL untuk fixture lifecycle strict; kemampuan client nyata tetap belum terbukti. D-013 menetapkan MVP tidak mengklaim strict affinity untuk client nyata, sedangkan dukungan client menunggu C-15.
 
 Generasi identitas adalah state yang diketahui gateway, bukan bukti bahwa setiap perubahan IP atau restart eksternal dapat dideteksi. Maintenance terkontrol harus memberi gateway kesempatan menonaktifkan assignment, membatalkan binding bila disetujui operator, dan memperbarui generasi sebelum trafik dibuka. Model yang memerlukan identitas jaringan absolut dinyatakan tidak kompatibel bila persyaratannya tidak dapat dibuktikan.
 

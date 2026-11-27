@@ -1,7 +1,7 @@
 # Catatan teknis — opencode-infinity
 
-Versi pendamping: 0.1.3  
-Tanggal revisi: 23 November 2026  
+Versi pendamping: 0.1.5
+Tanggal revisi: 27 November 2026
 Status: Draft; belum disetujui  
 Dokumen utama: [PRD](PRD.md)  
 Acuan arsitektur terkini: [ARCHITECTURE](ARCHITECTURE.md)
@@ -167,11 +167,28 @@ Eligibility dihitung dari kombinasi status transport global, drain state, kapasi
 
 Model yang memerlukan jalur konsisten memakai `affinity: strict`. Selama percakapan atau binding masih aktif, gateway tidak memindahkannya ke relay atau generasi identitas WARP yang lain.
 
-Jika client mampu mengirim `X-Infinity-Session`, binding dikunci berdasarkan identitas token, upstream, model, dan session ID. TTL default adalah 60 menit sejak request terakhir, dapat dikonfigurasi. Jumlah binding dibatasi; binding aktif tidak dihapus untuk memberi ruang request baru. Binding baru ditolak dengan error kapasitas jika batas tercapai.
+#### Kontrak sesi strict fixture EP-04-T01
 
-Tanpa session ID, `strict` memakai fixed relay bersama pada scope upstream/model. Dokumentasi menyebutkan konsekuensinya: tidak ada isolasi percakapan per agent. Gateway tidak menebak session dari isi prompt atau hash pesan. Plugin pemasang session ID dinamis termasuk P1.
+Kontrak berikut ditetapkan oleh [D-029](DECISIONS.md#d-029-kontrak-sesi-strict-untuk-fixture-ep-04-t01) untuk fixture lifecycle. Kontrak ini bukan klaim dukungan strict pada client nyata atau default produk runtime.
 
-Jaminan binding lintas-request dengan deteksi sesi lama setelah restart memerlukan session ID eksplisit. Tanpa sinyal itu, fixed routing hanya menjamin pemilihan relay dalam lifetime proses; gateway tidak dapat mengenali percakapan lama setelah restart. Model yang mensyaratkan jaminan lebih kuat tidak boleh diaktifkan tanpa integrasi sesi yang memadai. Kombinasi `strict` dan `least_inflight` ditolak saat validasi konfigurasi.
+- **Sesi baru:** kirim `X-Infinity-Session` berisi ID opaque dan `X-Infinity-Session-Start: true`.
+- **Sesi lanjutan:** kirim ID yang sama tanpa header `X-Infinity-Session-Start`. Header start tidak dipakai untuk melanjutkan sesi.
+- **Validasi header:** ID sesi harus tepat satu dan tidak kosong. Header start harus absent atau tepat satu nilai literal `true`; header start tanpa ID sesi, nilai lain, atau duplikasi salah satu header ditolak dengan `400 invalid_request`.
+- **Batas ID:** maksimal 256 byte; ID lebih panjang ditolak dengan `400 invalid_request` ([D-030](DECISIONS.md#d-030-implementasi-affinity-strict-ep-04-s02)).
+- **Validasi sesi baru:** jika binding untuk scope dan ID tersebut sudah ada, tolak dengan `409 affinity_lost`; jangan menimpa relay/generasi.
+- **Scope binding:** identitas token gateway, upstream, model, session ID, relay, dan generasi identitas. Raw session ID tidak dicatat pada log, snapshot, error, atau metrik.
+- **TTL dan expiry:** idle TTL fixture 60 menit sejak request terakhir yang berhasil di-admit. Request pada atau setelah batas expiry tidak memperpanjang binding. Continuation setelah expiry ditolak dengan HTTP 409 `affinity_lost`; gateway tidak membuat binding baru. Binding aktif tidak digusur.
+- **Kapasitas:** fixture menampung maksimal 1.024 binding. Binding expired dibersihkan sebelum admission sesi baru. Jika kapasitas masih penuh, sesi baru ditolak HTTP 429 `gateway_capacity_exceeded`; binding aktif tidak dihapus. Angka ini bukan default produk atau bukti accounting runtime.
+- **Restart:** binding memory hilang bersama proses. Continuation tanpa header start yang tidak lagi memiliki binding ditolak HTTP 409 `affinity_lost`, tanpa rebinding atau relay pengganti. Sesi baru hanya terbentuk melalui sinyal start yang eksplisit.
+- **Fixture wajib:** buktikan sesi baru lalu continuation pada relay/generasi sama; isolasi scope token/upstream/model; expiry pada batas 60 menit; penolakan continuation setelah expiry/restart; dan penolakan sesi baru saat 1.024 binding aktif tanpa menggusur binding.
+
+Implementasi EP-04-S02 menginisialisasi generation relay pada `1` dan membuat binding sebelum dispatch di bawah owner pool yang juga mereservasi kapasitas. Binding tetap ada bila dispatch awal gagal. Invalidasi generation tetap menunggu EP-04-S03. Isolasi token dibuktikan pada seam identity internal; konfigurasi saat ini tetap satu gateway token dan hasil ini bukan bukti multi-token runtime ([D-030](DECISIONS.md#d-030-implementasi-affinity-strict-ep-04-s02)).
+
+Kemampuan OpenCode Desktop 2.3.0 mengirim dan mempertahankan header ini belum terbukti. Fixed routing tetap default MVP. Jika integrasi terpilih tidak dapat membuktikan kebutuhan sesi/identitas model, tandai kombinasi tidak kompatibel dengan strict per percakapan. Fixture tidak menggantikan bukti integrasi client, provider, atau WARP.
+
+Tanpa session ID, hanya fixed routing yang berlaku. Gateway memakai relay bersama pada scope upstream/model selama lifetime proses, tanpa isolasi percakapan atau pengenalan sesi lama setelah restart. Tidak ada heuristik sesi dari isi prompt atau hash pesan. Plugin pemasang session ID dinamis termasuk P1.
+
+Jaminan binding lintas-request dengan deteksi sesi lama setelah restart memerlukan session ID eksplisit. Model yang mensyaratkan jaminan lebih kuat tidak boleh diaktifkan tanpa integrasi sesi yang memadai. Kombinasi `strict` dan `least_inflight` ditolak saat validasi konfigurasi.
 
 Identitas relay mencakup ID container logis dan nomor generasi. Restart/rekey yang dikendalikan operator menaikkan generasi dan membatalkan binding lama secara eksplisit. Perubahan IP teramati yang relevan menandai binding sebagai tidak valid. Probe tidak dapat menjamin alamat keluar identik untuk setiap tujuan; model yang memerlukan identitas jaringan absolut harus dinyatakan tidak kompatibel jika syarat itu tidak dapat dibuktikan.
 
@@ -293,7 +310,7 @@ Aturan konfigurasi:
 - Registry model dan routing divalidasi sebelum melayani trafik. Alias ganda, relay hilang, dan URL upstream tidak valid menggagalkan startup.
 - Perubahan konfigurasi membutuhkan restart gateway pada MVP; hot reload termasuk pengembangan berikutnya.
 - State health dan binding berada di memory. Restart gateway menghapus binding; client strict menerima error binding setelah restart dan perlu memulai sesi baru.
-- Untuk binding strict, sesi yang tidak dikenal tidak dibuat ulang diam-diam jika client sedang melanjutkan percakapan. Kontrak pembentukan sesi menggunakan header `X-Infinity-Session-Start: true` pada request pertama; client tanpa kemampuan itu memakai fixed scope yang dijelaskan sebelumnya.
+- Untuk binding strict, sesi yang tidak dikenal tidak dibuat ulang diam-diam jika client sedang melanjutkan percakapan. Header sesi dan perilaku restart/expiry fixture kini mengikuti [D-029](DECISIONS.md#d-029-kontrak-sesi-strict-untuk-fixture-ep-04-t01); bagian historis ini tidak menetapkan default produk.
 
 ## 12. Keamanan dan privasi
 
@@ -412,4 +429,3 @@ Diakses 22 November 2026. Referensi menjelaskan integrasi dan inspirasi awal; at
 - [S1 — warp-relay-pool](https://github.com/trefeon/warp-relay-pool): konteks pool WARP dan batasan alamat keluar.
 - [S2 — Overview: how it works](https://github.com/trefeon/warp-relay-pool/blob/main/docs/01-overview-how-it-works.md): kontrak relay HTTP, SOCKS5, dan opsi ingress proyek referensi.
 - [S3 — OpenCode Providers](https://opencode.ai/docs/providers/): konfigurasi custom provider dan endpoint pada dokumentasi yang diperiksa.
-

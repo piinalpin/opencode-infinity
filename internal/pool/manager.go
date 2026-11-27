@@ -8,18 +8,22 @@ import (
 )
 
 // Policy menetapkan ambang komponen secara eksplisit, tanpa default produk.
-type Policy struct{ Failures, Successes uint32 }
+type Policy struct {
+	Failures, Successes uint32
+	BindingTTL          time.Duration
+}
 
 type ModelHealthView struct {
 	Routing                       string
 	Stateless                     bool
+	Affinity                      string
 	Upstream, Alias, PrimaryRelay string
 	Availability                  ObservationView
 	fallbackRelays                []string
 }
 
 // Manager memiliki keputusan eligibility dan seluruh reservasi di bawah satu mutex.
-// shortcut: strict binding menunggu EP-04; provider-specific scope evidence menunggu integrasi provider.
+// shortcut: generation invalidation menunggu EP-04-S03; provider-specific scope evidence menunggu integrasi provider.
 type Manager struct {
 	candidates                         map[string][]string
 	probes                             map[string][2]bool
@@ -36,6 +40,10 @@ type Manager struct {
 	upstreamCooldowns                  map[string]time.Time
 	modelCooldowns                     map[string]time.Time
 	lastUpstreamErrors                 map[string]upstreamError
+	bindings                           map[bindingKey]affinityBinding
+	generations                        map[string]uint64
+	maxBindings                        int64
+	bindingTTL                         time.Duration
 }
 
 // upstreamError contains bounded, redacted classification metadata only.
@@ -58,25 +66,37 @@ func New(c *config.Config, clock func() time.Time, policy Policy) (*Manager, err
 		models += int64(len(u.Models))
 		references += int64(len(u.Relays))
 		for _, model := range u.Models {
+			if model.Affinity == "strict" && policy.BindingTTL <= 0 {
+				return nil, errors.New("affinity_policy_invalid")
+			}
 			references += int64(len(model.FallbackRelays))
 		}
 	}
 	// Bound konservatif owner, cooldown/error metadata per upstream/model, observasi/circuit per relay, dan candidate references.
 	// Bukan pengukuran RSS; registry sudah dibatasi loader sehingga perkalian tidak overflow.
-	if c.Limits().StateBytes < 4096+1024*int64(len(relays))+128*int64(len(c.Upstreams()))+1024*models+64*references {
+	bindingState := int64(0)
+	for _, upstream := range c.Upstreams() {
+		for _, model := range upstream.Models {
+			if model.Affinity == "strict" {
+				bindingState = 512 * c.Limits().Bindings
+				break
+			}
+		}
+	}
+	if c.Limits().StateBytes < 4096+1024*int64(len(relays))+128*int64(len(c.Upstreams()))+1024*models+64*references+bindingState {
 		return nil, errors.New("health_state_budget_exceeded")
 	}
 	workers := min(c.Limits().ParallelProbes, int64(2*len(relays)))
 	if workers > c.Limits().MonitoringBytes/4096 {
 		return nil, errors.New("health_monitoring_budget_exceeded")
 	}
-	a := &Manager{candidates: make(map[string][]string), probes: make(map[string][2]bool), maxProbes: c.Limits().ParallelProbes, clock: clock, policy: policy, maxActive: c.Server().MaxActiveRequests, maxBytes: c.Limits().BodyBufferBytes, maxStreamBytes: c.Limits().StreamBufferBytes, maxOutbound: c.Limits().OutboundConnections, relays: make(map[string]int64), used: make(map[string]int64), upstreamCooldowns: make(map[string]time.Time), modelCooldowns: make(map[string]time.Time), lastUpstreamErrors: make(map[string]upstreamError)}
+	a := &Manager{candidates: make(map[string][]string), probes: make(map[string][2]bool), maxProbes: c.Limits().ParallelProbes, clock: clock, policy: policy, maxActive: c.Server().MaxActiveRequests, maxBytes: c.Limits().BodyBufferBytes, maxStreamBytes: c.Limits().StreamBufferBytes, maxOutbound: c.Limits().OutboundConnections, relays: make(map[string]int64), used: make(map[string]int64), upstreamCooldowns: make(map[string]time.Time), modelCooldowns: make(map[string]time.Time), lastUpstreamErrors: make(map[string]upstreamError), bindings: make(map[bindingKey]affinityBinding), generations: make(map[string]uint64), maxBindings: c.Limits().Bindings, bindingTTL: policy.BindingTTL}
 	a.view = HealthView{Accepting: true, Revision: 1, StateChangedAt: now, DefaultUpstream: c.Server().DefaultUpstream}
 	primary := map[string]bool{}
 	for _, u := range c.Upstreams() {
 		a.candidates[u.ID] = u.Relays
 		for _, m := range u.Models {
-			a.view.Models = append(a.view.Models, ModelHealthView{Routing: m.Routing, Stateless: m.Stateless, Upstream: u.ID, Alias: m.Alias, PrimaryRelay: m.PrimaryRelay, fallbackRelays: append([]string(nil), m.FallbackRelays...)})
+			a.view.Models = append(a.view.Models, ModelHealthView{Routing: m.Routing, Stateless: m.Stateless, Affinity: m.Affinity, Upstream: u.ID, Alias: m.Alias, PrimaryRelay: m.PrimaryRelay, fallbackRelays: append([]string(nil), m.FallbackRelays...)})
 			if u.ID == c.Server().DefaultUpstream {
 				primary[m.PrimaryRelay] = true
 			}
@@ -84,6 +104,7 @@ func New(c *config.Config, clock func() time.Time, policy Policy) (*Manager, err
 	}
 	for _, r := range relays {
 		a.relays[r.ID] = r.MaxInflight
+		a.generations[r.ID] = 1
 		a.probes[r.ID] = [2]bool{}
 		a.view.Relays = append(a.view.Relays, RelayHealthView{ID: r.ID, Mode: "serving", DefaultPrimary: primary[r.ID]})
 	}

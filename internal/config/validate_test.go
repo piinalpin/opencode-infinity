@@ -31,7 +31,6 @@ func TestRegistryValidation(t *testing.T) {
 		"fallback_missing":          validYAML + "        fallback_relays: [missing]\n",
 		"fallback_primary":          validYAML + "        fallback_relays: [warp-1]\n",
 		"least_inflight":            validYAML + "        routing: least_inflight\n",
-		"strict":                    validYAML + "        affinity: strict\n",
 		"strict_least":              validYAML + "        routing: least_inflight\n        affinity: strict\n",
 		"mode_unknown":              validYAML + "        routing: FIXED\n",
 	}

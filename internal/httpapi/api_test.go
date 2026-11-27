@@ -45,6 +45,121 @@ func TestModelAPITransportPrivacyAndSnapshot(t *testing.T) {
 	}
 }
 
+func TestStrictUnknownContinuationRejectedBeforeDispatch(t *testing.T) {
+	calls := 0
+	h, err := fixtureModelAPI(apiConfig(t, "affinity: none", "affinity: strict"), modelDispatch(func(*http.Request, config.Relay) (*http.Response, error) {
+		calls++
+		return &http.Response{StatusCode: 200, Body: io.NopCloser(strings.NewReader(`{}`))}, nil
+	}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	h, err = RequireGateway(testPolicy(t), h)
+	if err != nil {
+		t.Fatal(err)
+	}
+	r := httptest.NewRequest("POST", "/v1/chat/completions", strings.NewReader(`{"model":"coding-default"}`))
+	r.Header.Set("Authorization", "Bearer "+gatewayToken)
+	r.Header.Set("Content-Type", "application/json")
+	r.Header.Set("X-Infinity-Session", "session-unbound")
+	w := httptest.NewRecorder()
+	h.ServeHTTP(w, r)
+	var envelope struct {
+		Error struct{ Code string }
+	}
+	if w.Code != http.StatusConflict || json.Unmarshal(w.Body.Bytes(), &envelope) != nil || envelope.Error.Code != "affinity_lost" || calls != 0 {
+		t.Fatal("continuation tanpa binding harus 409 tanpa dispatch")
+	}
+}
+
+func TestStrictSessionKeepsBindingAfterInitialDispatchFailure(t *testing.T) {
+	var calls int
+	var relays []string
+	h, err := fixtureModelAPI(apiConfig(t, "affinity: none", "affinity: strict"), modelDispatch(func(_ *http.Request, relay config.Relay) (*http.Response, error) {
+		calls++
+		relays = append(relays, relay.ID)
+		if calls == 1 {
+			return nil, errors.New("fixture dispatch failed")
+		}
+		return &http.Response{StatusCode: 200, Header: http.Header{"Content-Type": {"application/json"}}, Body: io.NopCloser(strings.NewReader(`{}`))}, nil
+	}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	h, err = RequireGateway(testPolicy(t), h)
+	if err != nil {
+		t.Fatal(err)
+	}
+	request := func(start bool) *httptest.ResponseRecorder {
+		r := httptest.NewRequest("POST", "/v1/chat/completions", strings.NewReader(`{"model":"coding-default"}`))
+		r.Header.Set("Authorization", "Bearer "+gatewayToken)
+		r.Header.Set("Content-Type", "application/json")
+		r.Header.Set("X-Infinity-Session", "session-sticky")
+		if start {
+			r.Header.Set("X-Infinity-Session-Start", "true")
+		}
+		w := httptest.NewRecorder()
+		h.ServeHTTP(w, r)
+		return w
+	}
+	if w := request(true); w.Code != http.StatusBadGateway {
+		t.Fatalf("dispatch awal gagal harus dilaporkan upstream: %d", w.Code)
+	}
+	if w := request(false); w.Code != http.StatusOK {
+		t.Fatalf("continuation setelah dispatch awal gagal harus tetap terikat: %d %s", w.Code, w.Body.String())
+	}
+	if calls != 2 || len(relays) != 2 || relays[0] != relays[1] {
+		t.Fatalf("relay berubah antar request: calls=%d relays=%v", calls, relays)
+	}
+}
+
+func TestStrictSessionHeadersRejectMalformedValuesBeforeDispatch(t *testing.T) {
+	calls := 0
+	h, err := fixtureModelAPI(apiConfig(t, "affinity: none", "affinity: strict"), modelDispatch(func(*http.Request, config.Relay) (*http.Response, error) {
+		calls++
+		return &http.Response{StatusCode: 200, Body: io.NopCloser(strings.NewReader(`{}`))}, nil
+	}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	h, err = RequireGateway(testPolicy(t), h)
+	if err != nil {
+		t.Fatal(err)
+	}
+	tests := []struct {
+		name    string
+		session []string
+		start   []string
+	}{
+		{name: "missing_session", start: []string{"true"}},
+		{name: "empty_session", session: []string{""}, start: []string{"true"}},
+		{name: "too_long", session: []string{strings.Repeat("x", 257)}, start: []string{"true"}},
+		{name: "bad_start", session: []string{"s"}, start: []string{"false"}},
+		{name: "duplicate_session", session: []string{"s", "s"}, start: []string{"true"}},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			r := httptest.NewRequest("POST", "/v1/chat/completions", strings.NewReader(`{"model":"coding-default"}`))
+			r.Header.Set("Authorization", "Bearer "+gatewayToken)
+			r.Header.Set("Content-Type", "application/json")
+			for _, value := range test.session {
+				r.Header.Add("X-Infinity-Session", value)
+			}
+			for _, value := range test.start {
+				r.Header.Add("X-Infinity-Session-Start", value)
+			}
+			w := httptest.NewRecorder()
+			h.ServeHTTP(w, r)
+			if w.Code != http.StatusBadRequest {
+				t.Fatalf("header invalid harus 400: %d", w.Code)
+			}
+		})
+	}
+	if calls != 0 {
+		t.Fatalf("header invalid menyebabkan dispatch: %d", calls)
+	}
+}
+
 func TestModelAPIAuthBeforeRead(t *testing.T) {
 	h, err := fixtureModelAPI(apiConfig(t), modelDispatch(func(*http.Request, config.Relay) (*http.Response, error) {
 		t.Fatal("auth invalid melakukan dispatch")

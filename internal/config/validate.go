@@ -92,8 +92,8 @@ func validateDocument(d *document) error {
 			if m.Affinity == "" {
 				m.Affinity = "none"
 			}
-			// shortcut: strict binding menunggu EP-04; least hanya deklarasi stateless eksplisit.
-			if m.Affinity != "none" || (m.Routing != "fixed" && m.Routing != "least_inflight") || (m.Routing == "least_inflight" && !m.Stateless) {
+			// shortcut: generation invalidation menunggu EP-04-S03; strict hanya memakai fixed routing.
+			if (m.Affinity != "none" && m.Affinity != "strict") || (m.Routing != "fixed" && m.Routing != "least_inflight") || (m.Routing == "least_inflight" && (!m.Stateless || m.Affinity == "strict")) {
 				return errors.New("config_unsupported_routing")
 			}
 		}
