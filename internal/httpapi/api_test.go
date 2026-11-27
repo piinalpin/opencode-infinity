@@ -7,9 +7,12 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"opencode-infinity/internal/config"
+	"opencode-infinity/internal/pool"
+	"opencode-infinity/internal/status"
 	"os"
 	"strings"
 	"testing"
+	"time"
 )
 
 type modelDispatch func(*http.Request, config.Relay) (*http.Response, error)
@@ -69,6 +72,53 @@ func TestStrictUnknownContinuationRejectedBeforeDispatch(t *testing.T) {
 	}
 	if w.Code != http.StatusConflict || json.Unmarshal(w.Body.Bytes(), &envelope) != nil || envelope.Error.Code != "affinity_lost" || calls != 0 {
 		t.Fatal("continuation tanpa binding harus 409 tanpa dispatch")
+	}
+}
+
+func TestStrictContinuationAfterGenerationInvalidationRejectedBeforeDispatch(t *testing.T) {
+	c := apiConfig(t, "affinity: none", "affinity: strict")
+	now := time.Now()
+	calls := 0
+	components, err := NewComponents(c, modelDispatch(func(*http.Request, config.Relay) (*http.Response, error) {
+		calls++
+		return &http.Response{StatusCode: http.StatusOK, Header: http.Header{"Content-Type": {"application/json"}}, Body: io.NopCloser(strings.NewReader(`{}`))}, nil
+	}), status.Build{}, func() time.Time { return now }, pool.Policy{Failures: 1, Successes: 1, BindingTTL: time.Hour})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, layer := range []pool.HealthLayer{pool.HealthSOCKS5, pool.HealthHTTPS} {
+		if err := components.Pool.Observe("warp-1", layer, pool.ObservationView{State: pool.HealthHealthy, ObservedAt: now, ValidUntil: now.Add(time.Hour)}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	handler, err := RequireGateway(testPolicy(t), components.Models)
+	if err != nil {
+		t.Fatal(err)
+	}
+	request := func(start bool) *httptest.ResponseRecorder {
+		r := httptest.NewRequest("POST", "/v1/chat/completions", strings.NewReader(`{"model":"coding-default"}`))
+		r.Header.Set("Authorization", "Bearer "+gatewayToken)
+		r.Header.Set("Content-Type", "application/json")
+		r.Header.Set("X-Infinity-Session", "session-invalidated")
+		if start {
+			r.Header.Set("X-Infinity-Session-Start", "true")
+		}
+		w := httptest.NewRecorder()
+		handler.ServeHTTP(w, r)
+		return w
+	}
+	if w := request(true); w.Code != http.StatusOK {
+		t.Fatalf("start sesi gagal: status=%d body=%s", w.Code, w.Body.String())
+	}
+	if err := components.Pool.InvalidateRelayGeneration("warp-1"); err != nil {
+		t.Fatal(err)
+	}
+	w := request(false)
+	var envelope struct {
+		Error struct{ Code string }
+	}
+	if w.Code != http.StatusConflict || json.Unmarshal(w.Body.Bytes(), &envelope) != nil || envelope.Error.Code != "affinity_lost" || calls != 1 {
+		t.Fatalf("continuation stale harus 409 tanpa dispatch tambahan: status=%d body=%s calls=%d", w.Code, w.Body.String(), calls)
 	}
 }
 

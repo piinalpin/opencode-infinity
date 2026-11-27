@@ -51,6 +51,200 @@ func TestStrictAffinityBindingIsReservedAndRetainedAfterRelease(t *testing.T) {
 		t.Fatalf("continuation tepat pada TTL harus affinity_lost: %v", err)
 	}
 	expired.Release()
+	if len(a.bindings) != 0 {
+		t.Fatalf("continuation expired tidak boleh membuat binding baru: %d", len(a.bindings))
+	}
+	for _, layer := range []HealthLayer{HealthSOCKS5, HealthHTTPS} {
+		if err := a.Observe("warp-1", layer, ObservationView{State: HealthHealthy, ObservedAt: now, ValidUntil: now.Add(time.Hour)}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	newSession, _ := a.Begin(100)
+	if _, _, err := newSession.AdmitAffinity("primary", "coding-default", 0, identity, "same-id", true); err != nil {
+		t.Fatalf("explicit start setelah expiry harus membuat sesi baru: %v", err)
+	}
+	newSession.Release()
+}
+
+func TestInvalidateRelayGenerationRejectsOldContinuation(t *testing.T) {
+	c := admissionConfig(t, "affinity: none", "affinity: strict")
+	now := time.Now()
+	a, err := New(c, func() time.Time { return now }, Policy{Failures: 1, Successes: 1, BindingTTL: time.Hour})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, layer := range []HealthLayer{HealthSOCKS5, HealthHTTPS} {
+		if err := a.Observe("warp-1", layer, ObservationView{State: HealthHealthy, ObservedAt: now, ValidUntil: now.Add(time.Hour)}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	tokens, err := access.New(c)
+	if err != nil {
+		t.Fatal(err)
+	}
+	identity, ok := tokens.GatewayIdentity("synthetic-gateway-credential-12345")
+	if !ok {
+		t.Fatal("identity token valid tidak terbentuk")
+	}
+
+	start, _ := a.Begin(100)
+	relay, generation, err := start.AdmitAffinity("primary", "coding-default", 0, identity, "invalidated", true)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err := a.InvalidateRelayGeneration(relay); err != nil {
+		t.Fatal(err)
+	}
+	if a.generations[relay] != generation+1 {
+		t.Fatalf("generation tidak naik: got %d, want %d", a.generations[relay], generation+1)
+	}
+	a.mu.Lock()
+	mode := a.view.Relays[0].Mode
+	socksState := a.view.Relays[0].SOCKS5.State
+	httpsState := a.view.Relays[0].HTTPS.State
+	a.mu.Unlock()
+	if mode != "serving" || socksState != HealthHealthy || httpsState != HealthHealthy {
+		t.Fatalf("invalidasi mengubah mode/health relay: mode=%q socks=%q https=%q", mode, socksState, httpsState)
+	}
+	a.mu.Lock()
+	activeBeforeContinuation := a.active
+	bindingInflight := a.bindings[bindingKey{token: identity, upstream: "primary", alias: "coding-default", id: "invalidated"}].inflight
+	a.mu.Unlock()
+	if activeBeforeContinuation != 1 || bindingInflight != 1 {
+		t.Fatalf("invalidasi menghentikan request admitted: active=%d binding inflight=%d", activeBeforeContinuation, bindingInflight)
+	}
+
+	repeatedStart, _ := a.Begin(100)
+	if _, _, err := repeatedStart.AdmitAffinity("primary", "coding-default", 0, identity, "invalidated", true); !errors.Is(err, ErrAffinityLost) {
+		t.Fatalf("start ulang untuk binding generation-invalidated harus ditolak: %v", err)
+	}
+	repeatedStart.Release()
+	continuation, _ := a.Begin(100)
+	if _, _, err := continuation.AdmitAffinity("primary", "coding-default", 0, identity, "invalidated", false); !errors.Is(err, ErrAffinityLost) {
+		t.Fatalf("continuation generation lama harus affinity_lost: %v", err)
+	}
+	continuation.Release()
+	start.Release()
+	a.mu.Lock()
+	activeAfterRelease := a.active
+	bindingInflight = a.bindings[bindingKey{token: identity, upstream: "primary", alias: "coding-default", id: "invalidated"}].inflight
+	a.mu.Unlock()
+	if activeAfterRelease != 0 || bindingInflight != 0 {
+		t.Fatalf("request admitted tidak dilepas tepat sekali: active=%d binding inflight=%d", activeAfterRelease, bindingInflight)
+	}
+	newSession, _ := a.Begin(100)
+	if gotRelay, gotGeneration, err := newSession.AdmitAffinity("primary", "coding-default", 0, identity, "new-session", true); err != nil || gotRelay != relay || gotGeneration != generation+1 {
+		t.Fatalf("sesi baru harus mengikat generation terkini: relay=%q generation=%d err=%v", gotRelay, gotGeneration, err)
+	}
+	newSession.Release()
+	if len(a.bindings) != 2 {
+		t.Fatalf("binding invalidated dan sesi baru harus tetap ada, got %d", len(a.bindings))
+	}
+}
+
+func TestStrictContinuationAfterRestartDoesNotRebind(t *testing.T) {
+	c := admissionConfig(t, "affinity: none", "affinity: strict")
+	now := time.Now()
+	oldManager, err := New(c, func() time.Time { return now }, Policy{Failures: 1, Successes: 1, BindingTTL: time.Hour})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, layer := range []HealthLayer{HealthSOCKS5, HealthHTTPS} {
+		if err := oldManager.Observe("warp-1", layer, ObservationView{State: HealthHealthy, ObservedAt: now, ValidUntil: now.Add(time.Hour)}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	tokens, err := access.New(c)
+	if err != nil {
+		t.Fatal(err)
+	}
+	identity, ok := tokens.GatewayIdentity("synthetic-gateway-credential-12345")
+	if !ok {
+		t.Fatal("identity token valid tidak terbentuk")
+	}
+	oldStart, _ := oldManager.Begin(100)
+	if _, _, err := oldStart.AdmitAffinity("primary", "coding-default", 0, identity, "restarted", true); err != nil {
+		t.Fatal(err)
+	}
+	oldStart.Release()
+
+	restartedManager, err := New(c, func() time.Time { return now }, Policy{Failures: 1, Successes: 1, BindingTTL: time.Hour})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, layer := range []HealthLayer{HealthSOCKS5, HealthHTTPS} {
+		if err := restartedManager.Observe("warp-1", layer, ObservationView{State: HealthHealthy, ObservedAt: now, ValidUntil: now.Add(time.Hour)}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	continuation, _ := restartedManager.Begin(100)
+	if _, _, err := continuation.AdmitAffinity("primary", "coding-default", 0, identity, "restarted", false); !errors.Is(err, ErrAffinityLost) {
+		t.Fatalf("continuation selepas restart harus affinity_lost: %v", err)
+	}
+	continuation.Release()
+	if len(restartedManager.bindings) != 0 {
+		t.Fatalf("continuation selepas restart membuat binding: %d", len(restartedManager.bindings))
+	}
+	newSession, _ := restartedManager.Begin(100)
+	if _, _, err := newSession.AdmitAffinity("primary", "coding-default", 0, identity, "restarted", true); err != nil {
+		t.Fatalf("explicit start setelah restart harus membuat sesi baru: %v", err)
+	}
+	newSession.Release()
+}
+
+func TestInvalidateRelayGenerationRejectsUnknownAndExhausted(t *testing.T) {
+	c := admissionConfig(t, "affinity: none", "affinity: strict")
+	a, err := New(c, time.Now, Policy{Failures: 1, Successes: 1, BindingTTL: time.Hour})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := a.InvalidateRelayGeneration("unknown"); err == nil || err.Error() != "health_unknown_relay" {
+		t.Fatalf("relay tak dikenal harus ditolak: %v", err)
+	}
+	a.mu.Lock()
+	a.generations["warp-1"] = ^uint64(0)
+	a.mu.Unlock()
+	if err := a.InvalidateRelayGeneration("warp-1"); err == nil || err.Error() != "pool_generation_exhausted" {
+		t.Fatalf("generation maksimum harus ditolak: %v", err)
+	}
+	a.mu.Lock()
+	generation := a.generations["warp-1"]
+	a.mu.Unlock()
+	if generation != ^uint64(0) {
+		t.Fatalf("generation berubah setelah overflow ditolak: %d", generation)
+	}
+}
+
+func TestConcurrentGenerationInvalidationsSerialize(t *testing.T) {
+	c := admissionConfig(t, "affinity: none", "affinity: strict")
+	a, err := New(c, time.Now, Policy{Failures: 1, Successes: 1, BindingTTL: time.Hour})
+	if err != nil {
+		t.Fatal(err)
+	}
+	const invalidations = 32
+	var wg sync.WaitGroup
+	errs := make(chan error, invalidations)
+	for i := 0; i < invalidations; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			errs <- a.InvalidateRelayGeneration("warp-1")
+		}()
+	}
+	wg.Wait()
+	close(errs)
+	for err := range errs {
+		if err != nil {
+			t.Fatalf("invalidasi concurrent gagal: %v", err)
+		}
+	}
+	a.mu.Lock()
+	generation := a.generations["warp-1"]
+	a.mu.Unlock()
+	if generation != 1+invalidations {
+		t.Fatalf("generation invalidasi hilang: got %d, want %d", generation, 1+invalidations)
+	}
 }
 
 func TestStrictAffinityCapacityPreservesExistingBinding(t *testing.T) {

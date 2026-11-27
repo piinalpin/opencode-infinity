@@ -146,11 +146,13 @@ Pemisahan dimensi di atas adalah penjabaran arsitektur **(agent's call)**. State
 
 ### Aturan affinity
 
-Binding eksplisit mengikuti identitas token, upstream, model, dan session ID. Pool membuat binding, memeriksa eligibility, serta mereservasi relay secara atomik sebelum dispatch. Binding sesi strict menyimpan relay dan generation awal `1`; binding tetap ada setelah dispatch awal gagal. Jika identitas/binding hilang atau relay terikat tidak eligible, request gagal secara eksplisit; router tidak membuat binding pengganti atau fallback secara diam-diam. Jumlah binding dan TTL dibatasi, dan binding aktif tidak digusur untuk menerima sesi baru. Rincian fixture tercatat pada [D-029/D-030](DECISIONS.md#d-030-implementasi-affinity-strict-ep-04-s02).
+Binding eksplisit mengikuti identitas token, upstream, model, dan session ID. Pool membuat binding, memeriksa eligibility, serta mereservasi relay secara atomik sebelum dispatch. Binding sesi strict menyimpan relay dan generation awal `1`; binding tetap ada setelah dispatch awal gagal. Jika identitas/binding hilang atau relay terikat tidak eligible, request gagal secara eksplisit; router tidak membuat binding pengganti atau fallback secara diam-diam. Jumlah binding dan TTL dibatasi, dan binding aktif tidak digusur untuk menerima sesi baru. Rincian fixture dan invalidasi generation tercatat pada [D-029–D-031](DECISIONS.md#d-031-invalidasi-generation-relay-ep-04-s03).
 
 Tanpa sinyal sesi eksplisit, fixed routing hanya memberi kestabilan jalur bersama pada scope mapping dan lifetime proses. Ia tidak memberikan isolasi percakapan atau deteksi sesi lama setelah restart. D-029 menetapkan header dan TTL untuk fixture lifecycle strict; kemampuan client nyata tetap belum terbukti. D-013 menetapkan MVP tidak mengklaim strict affinity untuk client nyata, sedangkan dukungan client menunggu C-15.
 
-Generasi identitas adalah state yang diketahui gateway, bukan bukti bahwa setiap perubahan IP atau restart eksternal dapat dideteksi. Maintenance terkontrol harus memberi gateway kesempatan menonaktifkan assignment, membatalkan binding bila disetujui operator, dan memperbarui generasi sebelum trafik dibuka. Model yang memerlukan identitas jaringan absolut dinyatakan tidak kompatibel bila persyaratannya tidak dapat dibuktikan.
+Generasi identitas adalah state yang diketahui gateway, bukan bukti bahwa setiap perubahan IP atau restart eksternal dapat dideteksi. Invalidasi generation dilakukan eksplisit oleh Pool Manager dan terserialisasi dengan admission; continuation binding generation lama gagal tanpa fallback. Request yang sudah admitted tetap berjalan, sementara pemanggil bertanggung jawab atas drain dan pemeriksaan health sebelum trafik dibuka kembali. Invalidasi tidak mengubah mode atau health relay dan tidak menjalankan controller WARP.
+
+Alamat IP keluar yang teramati hanya berlaku untuk tujuan probe pada waktu observasi tersebut. Hasil probe tidak membuktikan alamat yang dilihat tujuan lain atau menjamin identitas IP absolut. Model yang memerlukan jaminan lebih kuat dinyatakan tidak kompatibel bila persyaratannya tak dapat dibuktikan.
 
 ## 6. Penanganan kegagalan
 

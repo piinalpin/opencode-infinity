@@ -23,7 +23,7 @@ type ModelHealthView struct {
 }
 
 // Manager memiliki keputusan eligibility dan seluruh reservasi di bawah satu mutex.
-// shortcut: generation invalidation menunggu EP-04-S03; provider-specific scope evidence menunggu integrasi provider.
+// shortcut: provider-specific scope evidence menunggu integrasi provider.
 type Manager struct {
 	candidates                         map[string][]string
 	probes                             map[string][2]bool

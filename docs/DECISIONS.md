@@ -1,6 +1,6 @@
 # Keputusan opencode-infinity
 
-Versi: 0.1.26
+Versi: 0.1.27
 Tanggal: 27 November 2026
 
 Catatan ini memisahkan keputusan eksplisit pengguna dari usulan dan pertanyaan yang belum selesai. Keputusan terkonfirmasi diterapkan ke PRD/arsitektur terkait; status keseluruhan draft tidak otomatis menjadi approved.
@@ -278,6 +278,15 @@ Catatan ini memisahkan keputusan eksplisit pengguna dari usulan dan pertanyaan y
 - **Lifecycle:** binding baru, pemeriksaan eligibility, dan reservasi relay dilakukan di bawah owner/mutex pool yang sama sebelum dispatch. Binding dipertahankan sesudah dispatch awal gagal; request lanjutan memakai relay/generation terikat atau gagal `409 affinity_lost`, tanpa rebinding/fallback. `strict` hanya valid dengan fixed routing; `strict + least_inflight` ditolak.
 - **Batas bukti:** isolasi beberapa identity dibuktikan pada seam internal fixture, bukan dukungan beberapa token API/runtime. Binding berada di memory dan hilang saat proses restart. D-029 tetap menentukan TTL 60 menit dan kapasitas fixture 1.024; keputusan ini tidak menetapkan default produk atau lulus integrasi client/provider/WARP.
 - **Acuan:** D-013, D-029, EP-04-S02 AC1–AC4, [aturan affinity](ARCHITECTURE.md#aturan-affinity).
+
+### D-031 Invalidasi generation relay EP-04-S03
+
+- **Status:** dikonfirmasi pengguna pada 27 November 2026 untuk implementasi EP-04-S03.
+- **Keputusan:** invalidasi generation adalah operasi eksplisit Pool Manager, terserialisasi dengan admission strict di bawah mutex owner yang sama. Invalidasi menaikkan generation relay dan membuat continuation yang masih terikat generation lama gagal `409 affinity_lost`; tidak ada relay pengganti atau rebinding diam-diam.
+- **Request admitted:** invalidasi tidak membatalkan atau melepas request yang sudah admitted, serta tidak mengubah mode operasi maupun observasi health relay. Pemanggil mengatur drain dan pemeriksaan health sesuai prosedur maintenance; assignment baru mengikuti state pool dan generation terkini.
+- **Batas:** tidak ada controller/restart/rekey WARP otomatis. Binding generation lama tetap ada sampai expiry; start eksplisit untuk ID yang masih terikat ditolak. Setelah binding tidak ada atau telah expired, `X-Infinity-Session-Start: true` dapat memulai sesi baru sesuai D-029. Continuation tanpa start setelah restart/expiry tetap ditolak dan tidak membuat atau memperbarui binding.
+- **Identitas jaringan:** alamat keluar yang teramati hanya berlaku untuk tujuan probe dan waktu observasinya. Hasil itu tidak membuktikan alamat yang dilihat tujuan lain atau menjamin identitas IP absolut; model yang memerlukan bukti lebih kuat tidak kompatibel bila syaratnya tak dapat dibuktikan.
+- **Acuan:** EP-04-S03 AC1–AC4, D-029/D-030, [aturan affinity](ARCHITECTURE.md#aturan-affinity), [kontrak sesi strict](PRD-technical-notes.md#kontrak-sesi-strict-fixture-ep-04-t01).
 
 ## Status pertanyaan terbuka
 

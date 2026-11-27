@@ -20,6 +20,26 @@ type affinityBinding struct {
 	inflight   int64
 }
 
+// InvalidateRelayGeneration invalidates existing bindings without interrupting
+// requests that have already been admitted.
+// shortcut: controlled identity-maintenance callers must invoke this explicitly; lifecycle wiring is outside S03 and belongs with maintenance integration.
+func (a *Manager) InvalidateRelayGeneration(relay string) error {
+	if a == nil || a.clock == nil {
+		return errors.New("pool_invalid_component")
+	}
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	generation, ok := a.generations[relay]
+	if !ok {
+		return errors.New("health_unknown_relay")
+	}
+	if generation == ^uint64(0) {
+		return errors.New("pool_generation_exhausted")
+	}
+	a.generations[relay] = generation + 1
+	return nil
+}
+
 // AdmitAffinity binds strict sessions and reserves their relay under the same owner lock.
 func (r *Reservation) AdmitAffinity(upstream, alias string, streamBytes int64, token access.GatewayIdentity, sessionID string, start bool) (string, uint64, error) {
 	if r == nil || r.owner == nil || token == (access.GatewayIdentity{}) || sessionID == "" || len(sessionID) > 256 {

@@ -9,11 +9,11 @@ Aturan kontribusi dan guardrail agent tersedia di [AGENTS.md](../AGENTS.md).
 | Dokumen | Isi | Status acuan |
 |---|---|---|
 | [PRD](PRD.md) | Masalah, pengguna, cakupan, kapabilitas, target kualitas, dan keputusan terbuka | Draft 0.1.13 |
-| [DECISIONS](DECISIONS.md) | Keputusan eksplisit pengguna dan bagian pertanyaan yang masih terbuka | Catatan 0.1.26; D-001–D-030 terkonfirmasi; profil D-019 provisional |
+| [DECISIONS](DECISIONS.md) | Keputusan eksplisit pengguna dan bagian pertanyaan yang masih terbuka | Catatan 0.1.27; D-001–D-031 terkonfirmasi; profil D-019 provisional |
 | [ARCHITECTURE](ARCHITECTURE.md) | Komponen, alur, state, lifecycle, dan [struktur project](ARCHITECTURE.md#13-struktur-project-yang-disarankan), termasuk MicroWARP | Draft 0.1.6 |
 | [TECHSTACK](TECHSTACK.md) | Pilihan stack/pin untuk spike serta batas validasi lanjutan | Spike M0 0.1.3; pin dan fixture T02 tersedia |
 | [ROADMAP](ROADMAP.md) | Milestone M0–M3, dependensi, serta gerbang MVP/P1 | Draft 0.1.2 |
-| [Catatan teknis](PRD-technical-notes.md) | Kontrak awal serta AC-01–AC-22 | Pendamping 0.1.5; kontrak fixture D-029/D-030 ditambahkan, bagian historis dipertahankan |
+| [Catatan teknis](PRD-technical-notes.md) | Kontrak awal serta AC-01–AC-22 | Pendamping 0.1.6; kontrak fixture D-029–D-031 ditambahkan, bagian historis dipertahankan |
 
 Urutan desain adalah PRD → ARCHITECTURE → TECHSTACK → implementasi. ROADMAP mengatur urutan pengerjaan. Jika isi bertentangan, selesaikan kebutuhan di PRD dan batas desain di ARCHITECTURE sebelum mengubah kandidat stack atau tiket.
 

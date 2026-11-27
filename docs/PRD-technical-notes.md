@@ -190,7 +190,9 @@ Tanpa session ID, hanya fixed routing yang berlaku. Gateway memakai relay bersam
 
 Jaminan binding lintas-request dengan deteksi sesi lama setelah restart memerlukan session ID eksplisit. Model yang mensyaratkan jaminan lebih kuat tidak boleh diaktifkan tanpa integrasi sesi yang memadai. Kombinasi `strict` dan `least_inflight` ditolak saat validasi konfigurasi.
 
-Identitas relay mencakup ID container logis dan nomor generasi. Restart/rekey yang dikendalikan operator menaikkan generasi dan membatalkan binding lama secara eksplisit. Perubahan IP teramati yang relevan menandai binding sebagai tidak valid. Probe tidak dapat menjamin alamat keluar identik untuk setiap tujuan; model yang memerlukan identitas jaringan absolut harus dinyatakan tidak kompatibel jika syarat itu tidak dapat dibuktikan.
+Identitas relay mencakup ID container logis dan nomor generasi. Restart/rekey yang dikendalikan operator menaikkan generasi dan membatalkan binding lama secara eksplisit. Perubahan IP teramati yang relevan menandai binding sebagai tidak valid. Invalidasi generation Pool Manager terserialisasi dengan admission; continuation binding lama ditolak tanpa fallback, sedangkan request yang sudah admitted tetap berjalan. Invalidasi tidak mengubah mode atau health relay; pemanggil mengatur drain dan pemeriksaan health sebelum trafik dibuka kembali.
+
+Alamat IP keluar yang teramati hanya berlaku untuk tujuan probe pada waktu observasi tersebut. Probe tidak membuktikan alamat yang dilihat tujuan lain atau menjamin identitas IP absolut. Model yang memerlukan jaminan jaringan lebih kuat harus dinyatakan tidak kompatibel bila syaratnya tidak dapat dibuktikan.
 
 ### 9.3 Retry dan failover
 
@@ -247,7 +249,7 @@ Default usulan: probe ringan setiap 30 detik dengan jitter, timeout 5 detik, tig
 - Binding aktif dalam bentuk hitungan; session ID mentah tidak ditampilkan.
 - Versi gateway dan fingerprint konfigurasi tanpa secret.
 
-Probe IPv4 dan IPv6 terpisah. IP yang terlihat di endpoint probe bukan bukti bahwa API tujuan selalu melihat IP yang sama. Ketiadaan IPv6 atau kesamaan IPv4 ditampilkan sebagai kondisi jaringan, bukan otomatis dianggap kerusakan container.
+Probe IPv4 dan IPv6 terpisah. IP yang terlihat hanya berlaku untuk endpoint probe dan waktu observasinya; itu bukan bukti bahwa API atau tujuan lain melihat IP yang sama dan bukan jaminan identitas absolut. Ketiadaan IPv6 atau kesamaan IPv4 ditampilkan sebagai kondisi jaringan, bukan otomatis dianggap kerusakan container.
 
 ### 10.2 Log dan metrik
 
