@@ -19,7 +19,7 @@ type ModelHealthView struct {
 }
 
 // Manager memiliki keputusan eligibility dan seluruh reservasi di bawah satu mutex.
-// shortcut: cooldown provider, fallback dan binding menunggu S04/S05 serta EP-04.
+// shortcut: strict binding menunggu EP-04; provider-specific scope evidence menunggu integrasi provider.
 type Manager struct {
 	candidates                         map[string][]string
 	probes                             map[string][2]bool
@@ -33,6 +33,15 @@ type Manager struct {
 	outbound, maxOutbound              int64
 	relays, used                       map[string]int64
 	streamBytes, maxStreamBytes        int64
+	upstreamCooldowns                  map[string]time.Time
+	modelCooldowns                     map[string]time.Time
+	lastUpstreamErrors                 map[string]upstreamError
+}
+
+// upstreamError contains bounded, redacted classification metadata only.
+type upstreamError struct {
+	Status   int
+	Category string
 }
 
 func New(c *config.Config, clock func() time.Time, policy Policy) (*Manager, error) {
@@ -52,16 +61,16 @@ func New(c *config.Config, clock func() time.Time, policy Policy) (*Manager, err
 			references += int64(len(model.FallbackRelays))
 		}
 	}
-	// Bound konservatif owner, dua observasi/circuit dan job per relay, scope per model dan ordered candidate references per upstream.
+	// Bound konservatif owner, cooldown/error metadata per upstream/model, observasi/circuit per relay, dan candidate references.
 	// Bukan pengukuran RSS; registry sudah dibatasi loader sehingga perkalian tidak overflow.
-	if c.Limits().StateBytes < 4096+1024*int64(len(relays))+1024*models+64*references {
+	if c.Limits().StateBytes < 4096+1024*int64(len(relays))+128*int64(len(c.Upstreams()))+1024*models+64*references {
 		return nil, errors.New("health_state_budget_exceeded")
 	}
 	workers := min(c.Limits().ParallelProbes, int64(2*len(relays)))
 	if workers > c.Limits().MonitoringBytes/4096 {
 		return nil, errors.New("health_monitoring_budget_exceeded")
 	}
-	a := &Manager{candidates: make(map[string][]string), probes: make(map[string][2]bool), maxProbes: c.Limits().ParallelProbes, clock: clock, policy: policy, maxActive: c.Server().MaxActiveRequests, maxBytes: c.Limits().BodyBufferBytes, maxStreamBytes: c.Limits().StreamBufferBytes, maxOutbound: c.Limits().OutboundConnections, relays: make(map[string]int64), used: make(map[string]int64)}
+	a := &Manager{candidates: make(map[string][]string), probes: make(map[string][2]bool), maxProbes: c.Limits().ParallelProbes, clock: clock, policy: policy, maxActive: c.Server().MaxActiveRequests, maxBytes: c.Limits().BodyBufferBytes, maxStreamBytes: c.Limits().StreamBufferBytes, maxOutbound: c.Limits().OutboundConnections, relays: make(map[string]int64), used: make(map[string]int64), upstreamCooldowns: make(map[string]time.Time), modelCooldowns: make(map[string]time.Time), lastUpstreamErrors: make(map[string]upstreamError)}
 	a.view = HealthView{Accepting: true, Revision: 1, StateChangedAt: now, DefaultUpstream: c.Server().DefaultUpstream}
 	primary := map[string]bool{}
 	for _, u := range c.Upstreams() {

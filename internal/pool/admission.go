@@ -32,7 +32,7 @@ func (r *Reservation) Admit(upstream, alias string, streamBytes int64) (string, 
 			break
 		}
 	}
-	if model == nil || (fresh(model.Availability, now) && model.Availability.Circuit == CircuitOpen) {
+	if model == nil || a.upstreamCoolingLocked(upstream, alias, now) || (fresh(model.Availability, now) && model.Availability.Circuit == CircuitOpen) {
 		return "", ErrNoEligibleRelay
 	}
 	candidates := []string{model.PrimaryRelay}

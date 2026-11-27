@@ -123,6 +123,6 @@ func validRetryAfter(value string) bool {
 			return false
 		}
 	}
-	_, err := strconv.ParseUint(value, 10, 63)
-	return err == nil
+	seconds, err := strconv.ParseUint(value, 10, 63)
+	return err == nil && seconds <= uint64((time.Duration(1<<63-1))/time.Second)
 }

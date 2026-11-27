@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"net/http/httptest"
 	"opencode-infinity/internal/config"
 	"strings"
 	"sync"
@@ -336,5 +337,30 @@ func TestLeastInflightSingleDispatchOnFailure(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestUpstream429CooldownBlocksSameScopeWithoutRetry(t *testing.T) {
+	calls := 0
+	c, err := newFixtureCoordinator(modelConfig(t), dispatchFunc(func(*http.Request, config.Relay) (*http.Response, error) {
+		calls++
+		return &http.Response{StatusCode: 429, Header: http.Header{"Retry-After": {"120"}}, Body: io.NopCloser(strings.NewReader("limited"))}, nil
+	}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	request := func() *http.Request {
+		return httptest.NewRequest("POST", "/v1/chat/completions", strings.NewReader(`{"model":"coding-default"}`))
+	}
+	response, err := c.Chat(request(), "")
+	if err != nil || response == nil || response.StatusCode != 429 {
+		t.Fatalf("upstream response tidak diteruskan: %v", err)
+	}
+	response.Body.Close()
+	if _, err := c.Chat(request(), ""); err == nil || err.Error() != "no_eligible_relay" {
+		t.Fatalf("429 Retry-After tidak mencegah assignment scope sama: %v", err)
+	}
+	if calls != 1 {
+		t.Fatalf("dispatch otomatis terjadi: %d", calls)
 	}
 }

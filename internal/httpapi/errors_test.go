@@ -177,6 +177,7 @@ func TestGatewayErrorRetryAfter(t *testing.T) {
 		{"date", []string{"Wed, 21 Oct 2015 07:28:00 GMT"}, "Wed, 21 Oct 2015 07:28:00 GMT"},
 		{"negative", []string{"-1"}, ""}, {"fraction", []string{"1.5"}, ""},
 		{"overflow", []string{"99999999999999999999999999"}, ""},
+		{"unrepresentable-deadline", []string{"9223372037"}, ""},
 		{"text", []string{"private-marker"}, ""}, {"list", []string{"1, 2"}, ""},
 		{"duplicate", []string{"1", "2"}, ""},
 	} {

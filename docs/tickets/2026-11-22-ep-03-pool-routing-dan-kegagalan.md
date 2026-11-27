@@ -280,6 +280,15 @@ Auth, akses, quota, timeout, dan gangguan jaringan memerlukan tindakan yang berb
 - Diblokir oleh: [EP-03-S04](#ep-03-s04)
 - Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
 
+### Hasil pengerjaan 27 November 2026
+
+Komponen lokal meneruskan error upstream, menyimpan kategori/status teredaksi, dan menerapkan cooldown upstream-wide untuk scope tidak diketahui atau model-scoped hanya dari sinyal server tepercaya. Cooldown scoped tidak mengubah health/readiness relay; error upstream tidak memicu retry generasi. `Retry-After` malformed/overflow dihilangkan; tanggal valid kedaluwarsa diteruskan tanpa cooldown aktif.
+
+- **AC1–AC2 parsial produk:** tes pool/gateway membuktikan cooldown model/upstream, expiry, scope isolasi, dan satu dispatch; tes integrasi membuktikan status/body/header upstream 429 dipertahankan. Sumber bukti scope provider nyata belum tersedia; gateway memakai scope konservatif upstream-wide.
+- **AC3 parsial produk:** metadata kategori/status teredaksi diuji untuk 400/401/403/404/422/5xx; integrasi membuktikan respons dipertahankan tanpa retry. Runtime provider/WARP belum diuji.
+- **AC4 parsial produk:** tes pool membuktikan cooldown satu model tidak menghalangi alias lain pada relay yang sama dan tidak mengubah readiness/health relay.
+- `go test ./...`, race test paket terkait, `go vet ./...`, dan pemeriksaan `gofmt` lulus. Penerimaan runtime/provider dan gerbang M0 tetap terbuka.
+
 <a id="ep-03-s06"></a>
 
 ## [STORY] EP-03-S06 Batalkan pekerjaan upstream dan lepaskan resource tepat waktu

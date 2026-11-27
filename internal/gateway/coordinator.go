@@ -238,6 +238,14 @@ func (c *Coordinator) Chat(in *http.Request, id string) (*http.Response, error) 
 		}
 		return nil, failure("upstream_transport_error")
 	}
+	if response.StatusCode >= 400 {
+		retryAfter := ""
+		if values := response.Header.Values("Retry-After"); len(values) == 1 {
+			retryAfter = values[0]
+		}
+		// No provider-specific scope evidence exists yet; apply conservative upstream scope.
+		_ = c.admission.RecordUpstreamResponse(upstreamID, model.Alias, response.StatusCode, retryAfter, "")
+	}
 	// Endpoint generasi tidak menerima respons 3xx, termasuk 304 tanpa request conditional.
 	// Tolak sebelum forwarding dan tanpa membaca body atau mengulang POST.
 	if response.StatusCode >= 300 && response.StatusCode < 400 {

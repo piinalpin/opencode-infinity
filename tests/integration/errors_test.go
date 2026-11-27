@@ -179,9 +179,6 @@ func TestGatewayErrorUpstream(t *testing.T) {
 			payload := []byte("opaque upstream error\x00\xff")
 			coding := ""
 			retryAfter := "120"
-			if status == 429 {
-				retryAfter = ""
-			}
 			if status == 503 {
 				retryAfter = "Wed, 21 Oct 2015 07:28:00 GMT"
 				var encoded bytes.Buffer
@@ -197,12 +194,7 @@ func TestGatewayErrorUpstream(t *testing.T) {
 				if coding != "" {
 					w.Header().Set("Content-Encoding", coding)
 				}
-				if status == 429 {
-					w.Header().Add("Retry-After", "1")
-					w.Header().Add("Retry-After", "2")
-				} else {
-					w.Header().Set("Retry-After", retryAfter)
-				}
+				w.Header().Set("Retry-After", retryAfter)
 				w.Header().Set("X-Request-ID", "private-marker")
 				w.Header().Set("X-Infinity-Error-Source", "gateway")
 				w.Header().Set("Location", "https://private-marker.invalid")
