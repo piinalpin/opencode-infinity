@@ -10,7 +10,7 @@ import (
 
 func TestHealthInitial(t *testing.T) {
 	now := time.Date(2026, 11, 26, 3, 0, 0, 0, time.UTC)
-	h, err := NewHealth(admissionConfig(t), func() time.Time { return now })
+	h, err := newDiagnosticPool(admissionConfig(t), func() time.Time { return now })
 	if err != nil || h == nil {
 		t.Fatal("health untuk konfigurasi valid tidak tersedia")
 	}
@@ -30,7 +30,7 @@ func TestHealthInitial(t *testing.T) {
 func TestHealthLayersAndPrimary(t *testing.T) {
 	now := time.Date(2026, 11, 26, 3, 0, 0, 0, time.UTC)
 	c := admissionConfig(t, "upstreams:", "  - id: warp-2\n    proxy_url: socks5h://warp-2:1080\n    max_inflight: 1\nupstreams:", "relays: [warp-1]", "relays: [warp-1, warp-2]", "fallback_relays: []", "fallback_relays: [warp-2]")
-	h, err := NewHealth(c, func() time.Time { return now })
+	h, err := newDiagnosticPool(c, func() time.Time { return now })
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -69,7 +69,7 @@ func TestHealthLayersAndPrimary(t *testing.T) {
 
 func TestHealthFreshnessAndOrdering(t *testing.T) {
 	now := time.Date(2026, 11, 26, 3, 0, 0, 0, time.UTC)
-	h, _ := NewHealth(admissionConfig(t), func() time.Time { return now })
+	h, _ := newDiagnosticPool(admissionConfig(t), func() time.Time { return now })
 	observation := ObservationView{State: HealthHealthy, ObservedAt: now, ValidUntil: now.Add(time.Minute)}
 	for _, layer := range []HealthLayer{HealthSOCKS5, HealthHTTPS} {
 		if err := h.Observe("warp-1", layer, observation); err != nil {
@@ -119,7 +119,7 @@ func TestHealthFreshnessAndOrdering(t *testing.T) {
 
 func TestHealthAccepting(t *testing.T) {
 	now := time.Date(2026, 11, 26, 3, 0, 0, 0, time.UTC)
-	h, _ := NewHealth(admissionConfig(t), func() time.Time { return now })
+	h, _ := newDiagnosticPool(admissionConfig(t), func() time.Time { return now })
 	observation := ObservationView{State: HealthHealthy, ObservedAt: now, ValidUntil: now.Add(time.Minute)}
 	for _, layer := range []HealthLayer{HealthSOCKS5, HealthHTTPS} {
 		if err := h.Observe("warp-1", layer, observation); err != nil {
@@ -155,11 +155,11 @@ func TestHealthConstructorBounds(t *testing.T) {
 		{admissionConfig(t), func() time.Time { return time.Time{} }},
 		{admissionConfig(t), func() time.Time { return time.Date(10000, 1, 1, 0, 0, 0, 0, time.UTC) }},
 	} {
-		if h, err := NewHealth(tc.config, tc.clock); err == nil || h != nil {
+		if h, err := newDiagnosticPool(tc.config, tc.clock); err == nil || h != nil {
 			t.Fatal("health menerima budget/state/clock tidak valid")
 		}
 	}
-	var zero Health
+	var zero Manager
 	if zero.View().Ready || zero.Observe("warp-1", HealthSOCKS5, ObservationView{}) == nil || zero.SetAccepting(true) == nil {
 		t.Fatal("zero-value owner tidak fail-closed")
 	}
@@ -179,7 +179,7 @@ func TestHealthDefaultScope(t *testing.T) {
 		{"one-default-mapping", []string{"upstreams:", relay, "relays: [warp-1]", "relays: [warp-1, warp-2]", "affinity: none", otherModel}, true},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			h, err := NewHealth(admissionConfig(t, tc.edits...), func() time.Time { return now })
+			h, err := newDiagnosticPool(admissionConfig(t, tc.edits...), func() time.Time { return now })
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -196,7 +196,7 @@ func TestHealthDefaultScope(t *testing.T) {
 }
 
 func TestHealthConcurrentSnapshots(t *testing.T) {
-	h, err := NewHealth(admissionConfig(t), time.Now)
+	h, err := newDiagnosticPool(admissionConfig(t), time.Now)
 	if err != nil {
 		t.Fatal(err)
 	}

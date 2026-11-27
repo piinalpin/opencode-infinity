@@ -4,17 +4,17 @@ Tanggal: 26 November 2026
 Task: [EP-03-S01](tickets/2026-11-22-ep-03-pool-routing-dan-kegagalan.md#ep-03-s01)  
 Status: komponen dan fixture lokal tersedia; penerimaan produk terintegrasi tetap terbuka
 
-[D-026](DECISIONS.md#d-026-admission-fixed-independen-ep-03-s01) menyetujui pekerjaan lokal independen sementara EP-02-S05, EP-01-T06 dan gerbang M0 masih parsial. Pembuktian ini memakai primary fixture yang tersedia. Keanggotaan relay dalam konfigurasi bukan bukti health runtime. Eligibility health/mode/circuit terpadu tetap [EP-03-S02](tickets/2026-11-22-ep-03-pool-routing-dan-kegagalan.md#ep-03-s02), sedangkan cooldown mengikuti S05; tidak ada snapshot readiness yang dipakai sebagai pemeriksaan sebelum reservasi.
+[D-026](DECISIONS.md#d-026-admission-fixed-independen-ep-03-s01) menyetujui pekerjaan lokal independen sementara EP-02-S05, EP-01-T06 dan gerbang M0 masih parsial. Pembuktian ini memakai primary fixture yang tersedia. Keanggotaan relay dalam konfigurasi bukan bukti health runtime. Pembaruan 27 November 2026 menambahkan [eligibility health/mode/circuit lokal S02](eligibility-relay.md), sedangkan cooldown mengikuti S05; tidak ada snapshot readiness yang dipakai sebagai pemeriksaan sebelum reservasi.
 
 ## Pemilik dan transisi lease
 
-`internal/pool.Admission` memiliki seluruh counter persiapan, request admitted, byte body, byte stream, relay dan slot dispatch outbound. Semua operasi check/update menggunakan mutex owner yang sama. Tidak ada antrean menunggu kapasitas.
+`internal/pool.Manager` memiliki seluruh counter persiapan, request admitted, byte body, byte stream, relay dan slot dispatch outbound. Semua operasi check/update menggunakan mutex owner yang sama. Tidak ada antrean menunggu kapasitas.
 
 | Operasi | Pemeriksaan dan efek |
 |---|---|
-| `NewAdmission(snapshot)` | Memerlukan snapshot tervalidasi; mengambil batas eksplisit dari konfigurasi |
+| `pool.New(snapshot, clock, policy)` | Memerlukan snapshot tervalidasi; mengambil batas eksplisit dari konfigurasi |
 | `Begin(bytes)` | Memeriksa `pending + active < max_active_requests` dan sisa buffer body sebelum alokasi/read; mengambil satu pending lease serta byte konservatif |
-| `Reservation.AdmitFixed(primary, streamBytes)` | Menerima primary dari mapping fixed server tervalidasi; memeriksa lease, keanggotaan relay serta kapasitas gateway/relay/outbound/stream; lalu memindahkan pending ke active dan mengambil seluruh slot terkait dalam satu commit |
+| `Reservation.AdmitFixed(upstream, alias, streamBytes)` | Menentukan primary dari scope mapping server; memeriksa lease, mode/health/circuit serta kapasitas gateway/relay/outbound/stream; lalu memindahkan pending ke active dan mengambil seluruh slot terkait dalam satu commit |
 | `Reservation.AdmitLocal()` | Memindahkan pending ke active untuk katalog lokal; tidak mengambil relay, outbound atau stream |
 | `Reservation.ReserveStream(bytes)` | Hanya untuk generasi yang sudah di-admit dan mendapat SSE tanpa deklarasi stream; mengambil byte sebelum alokasi buffer forwarding |
 | `Reservation.Release()` | Mengurangi counter sesuai tahap pending/admitted tepat sekali; panggilan berulang atau konkuren tidak menggandakan pelepasan |
@@ -23,7 +23,7 @@ Lease berada dalam satu tahap: pending, admitted, lalu released. Lease tidak bol
 
 Seluruh pemeriksaan promosi mendahului mutasi counter di bawah mutex. Promosi gagal tidak mengambil sebagian slot gateway/relay/outbound/stream. Pending dan byte yang sudah dimiliki dilepas melalui finalisasi caller. Fixed tidak mencari relay pengganti ketika primary penuh; request untuk primary lain masih dapat berjalan jika batas global dan primary tersebut mencukupi.
 
-`AdmitFixed` memvalidasi keanggotaan primary yang diberikan server. Operasi ini belum menentukan eligibility health/mode/cooldown produksi. Tidak ada constructor baru, kebijakan health default sehat, atau jalur jaringan langsung. Sebelum penerimaan runtime, eligibility terpadu harus dikoordinasikan dengan reservasi di owner pool sesuai [arsitektur](ARCHITECTURE.md#eligibility-dan-kapasitas).
+Sejak [S02/D-027](eligibility-relay.md), `AdmitFixed` memeriksa mode, transport fresh/circuit closed dan availability scoped bersama kapasitas di owner yang sama. Startup unknown tidak di-admit. Availability model unknown tidak diklaim sehat dan tidak memblokir transport sehat. Constructor capacity-only lama digantikan; tidak ada snapshot readiness sebagai precheck. Cooldown, binding dan penerimaan runtime tetap terbuka.
 
 ## Byte sebelum alokasi
 
@@ -37,12 +37,12 @@ Budget ini mencakup body wire, hasil remap, salinan metadata serta cadangan scan
 
 Untuk `stream:true`, copy buffer 32 KiB diambil bersama commit admission sebelum dispatch. Ukuran copy bukan batas ukuran event. SSE tak terduga pada absent/false baru diketahui dari header upstream: `ReserveStream` mengambil budget setelah satu dispatch dan sebelum forwarding. Jika tidak muat, body ditutup dan 429 dikembalikan tanpa retry, sesuai [D-023](DECISIONS.md#d-023-streaming-sse-independen-ep-02-s04).
 
-Profil D-019 dan angka konfigurasi contoh tetap bukan default final atau bukti RSS. Ledger body/stream tidak mengukur GC, stack, TLS, socket, maupun seluruh heap proses. Slot outbound membatasi dispatch aktif, bukan seluruh koneksi idle/probe. Accounting koneksi runtime dan penerimaan Q-5 tetap membutuhkan pengujian terintegrasi.
+Profil D-019 dan angka konfigurasi contoh tetap bukan default final atau bukti RSS. Ledger body/stream tidak mengukur GC, stack, TLS, socket, maupun seluruh heap proses. Sejak S02, slot outbound dibagi dengan probe fixture; adapter fixture menutup socket sebelum release. Seluruh socket idle/runtime belum dibuktikan. Accounting koneksi runtime dan penerimaan Q-5 tetap membutuhkan pengujian terintegrasi.
 
 ## Error dan finalisasi
 
 - Batas global, body, relay, outbound atau stream deklaratif habis menghasilkan `429 gateway_capacity_exceeded` sebelum dispatch. Ini memperjelas kontrak lama S03/S05 yang menyatukan slot relay penuh dengan `503 no_eligible_relay`.
-- Primary tidak dikenal pada operasi pool menghasilkan `no_eligible_relay`; lease invalid/released/admitted ganda menghasilkan `invalid_reservation`, tanpa mutasi. Endpoint normal mengambil primary dari registry tervalidasi, bukan input relay client. Eligibility produksi 503 seluruh kandidat tidak layak tetap harus dibuktikan pada S02.
+- Primary tidak dikenal pada operasi pool menghasilkan `no_eligible_relay`; lease invalid/released/admitted ganda menghasilkan `invalid_reservation`, tanpa mutasi. Endpoint normal mengambil primary dari registry tervalidasi, bukan input relay client. 503 tanpa tambahan koneksi generasi sudah dibuktikan pada fixture S02; integrasi produksi tetap terbuka.
 - Envelope, request ID server dan error source memakai boundary HTTP yang sudah ada. Status/body 429 dari upstream tetap opaque; perubahan kategori kapasitas gateway tidak menambahkan cooldown atau retry.
 - Kegagalan sebelum transfer ownership melepas pending/admitted lease melalui defer. Setelah respons tersedia, caller wajib `response.Body.Close()` juga sesudah EOF/error/cancellation. Handler HTTP menutup body setelah forwarding selesai.
 - EOF/error/cancellation menutup jaringan tepat sekali, tetapi tidak melepas lease sebelum caller selesai menulis tail respons. Close berulang/konkuren tetap melepas seluruh kapasitas tepat sekali.

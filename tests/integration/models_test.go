@@ -14,7 +14,6 @@ import (
 	"testing"
 	"time"
 
-	"opencode-infinity/internal/httpapi"
 	"opencode-infinity/internal/testutil"
 )
 
@@ -51,7 +50,7 @@ func TestModelEncodedJSON(t *testing.T) {
 	client, _ := controlClient(t, p.Addr(), u.Authority, u.Addr(), u.Roots, false)
 	client.Transport.(*http.Transport).DisableCompression = true
 	c := modelConfiguration(t, "https://api.provider.example/v1", "https://"+u.Authority+"/v1", "socks5h://warp-1:1080", "socks5h://"+p.Addr())
-	h, err := httpapi.NewAPI(c, &modelFixtureDispatcher{clients: map[string]*http.Client{"warp-1": client}})
+	h, err := fixtureAPI(c, &modelFixtureDispatcher{clients: map[string]*http.Client{"warp-1": client}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -197,7 +196,7 @@ func TestModelNetworkBoundaries(t *testing.T) {
 		p := newProxy(t, "warp-1", wrong, u.Addr(), false)
 		client, log := controlClient(t, p.Addr(), wrong, u.Addr(), u.Roots, false)
 		c := modelConfiguration(t, "https://api.provider.example/v1", "https://"+wrong+"/v1", "socks5h://warp-1:1080", "socks5h://"+p.Addr())
-		h, err := httpapi.NewAPI(c, &modelFixtureDispatcher{clients: map[string]*http.Client{"warp-1": client}})
+		h, err := fixtureAPI(c, &modelFixtureDispatcher{clients: map[string]*http.Client{"warp-1": client}})
 		if err != nil {
 			t.Fatal(err)
 		}

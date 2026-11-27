@@ -20,7 +20,7 @@ func (f modelDispatch) Dispatch(r *http.Request, v config.Relay) (*http.Response
 
 func TestModelAPITransportPrivacyAndSnapshot(t *testing.T) {
 	c := apiConfig(t)
-	h, err := NewAPI(c, modelDispatch(func(r *http.Request, _ config.Relay) (*http.Response, error) {
+	h, err := fixtureModelAPI(c, modelDispatch(func(r *http.Request, _ config.Relay) (*http.Response, error) {
 		if r.Header.Get("Authorization") != "Bearer "+upstreamKey || r.URL.Host != "api.provider.example" {
 			t.Fatal("snapshot berubah di luar constructor")
 		}
@@ -46,7 +46,7 @@ func TestModelAPITransportPrivacyAndSnapshot(t *testing.T) {
 }
 
 func TestModelAPIAuthBeforeRead(t *testing.T) {
-	h, err := NewAPI(apiConfig(t), modelDispatch(func(*http.Request, config.Relay) (*http.Response, error) {
+	h, err := fixtureModelAPI(apiConfig(t), modelDispatch(func(*http.Request, config.Relay) (*http.Response, error) {
 		t.Fatal("auth invalid melakukan dispatch")
 		return nil, nil
 	}))
@@ -79,7 +79,7 @@ func TestModelAPIAuthBeforeRead(t *testing.T) {
 
 func TestModelAPIRejectsBeforeDispatch(t *testing.T) {
 	calls := 0
-	h, err := NewAPI(apiConfig(t), modelDispatch(func(*http.Request, config.Relay) (*http.Response, error) {
+	h, err := fixtureModelAPI(apiConfig(t), modelDispatch(func(*http.Request, config.Relay) (*http.Response, error) {
 		calls++
 		return &http.Response{StatusCode: 200, Body: io.NopCloser(strings.NewReader(`{}`))}, nil
 	}))
@@ -139,7 +139,7 @@ func TestModelAPIBodyLimitAndAdmission(t *testing.T) {
 		calls++
 		return &http.Response{StatusCode: 200, Body: io.NopCloser(strings.NewReader(`{}`))}, nil
 	})
-	h, err := NewAPI(apiConfig(t), dispatch)
+	h, err := fixtureModelAPI(apiConfig(t), dispatch)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -164,7 +164,7 @@ func TestModelAPIBodyLimitAndAdmission(t *testing.T) {
 	if calls != 1 {
 		t.Fatal("body melewati batas melakukan dispatch")
 	}
-	bounded, err := NewAPI(apiConfig(t, "body_buffer_bytes: 67108864", "body_buffer_bytes: 4096"), dispatch)
+	bounded, err := fixtureModelAPI(apiConfig(t, "body_buffer_bytes: 67108864", "body_buffer_bytes: 4096"), dispatch)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -178,10 +178,10 @@ func TestModelAPIBodyLimitAndAdmission(t *testing.T) {
 	if w.Code != 429 || body.reads != 0 {
 		t.Fatal("admission tidak mendahului alokasi/read")
 	}
-	if h, err := NewAPI(apiConfig(t), modelDispatch(nil)); err == nil || h != nil {
+	if h, err := fixtureModelAPI(apiConfig(t), modelDispatch(nil)); err == nil || h != nil {
 		t.Fatal("typed nil dispatcher diterima")
 	}
-	if h, err := NewAPI(nil, dispatch); err == nil || h != nil {
+	if h, err := fixtureModelAPI(nil, dispatch); err == nil || h != nil {
 		t.Fatal("snapshot nil diterima")
 	}
 }
@@ -204,7 +204,7 @@ func apiConfig(t *testing.T, edits ...string) *config.Config {
 }
 func TestModelAPIEndpoints(t *testing.T) {
 	calls := 0
-	h, err := NewAPI(apiConfig(t), modelDispatch(func(r *http.Request, _ config.Relay) (*http.Response, error) {
+	h, err := fixtureModelAPI(apiConfig(t), modelDispatch(func(r *http.Request, _ config.Relay) (*http.Response, error) {
 		calls++
 		b, _ := io.ReadAll(r.Body)
 		if !strings.Contains(string(b), `"model":"provider-model-id"`) {
@@ -240,7 +240,7 @@ func TestModelAPIEndpoints(t *testing.T) {
 }
 
 func TestModelAPIRequiredContentType(t *testing.T) {
-	h, err := NewAPI(apiConfig(t), modelDispatch(func(r *http.Request, _ config.Relay) (*http.Response, error) {
+	h, err := fixtureModelAPI(apiConfig(t), modelDispatch(func(r *http.Request, _ config.Relay) (*http.Response, error) {
 		if r.Header.Get("Content-Type") != "application/json" {
 			t.Fatal("header JSON wajib hilang karena nominasi hop-by-hop")
 		}
@@ -261,7 +261,7 @@ func TestModelAPIRequiredContentType(t *testing.T) {
 }
 
 func TestModelAPIHeadCatalogue(t *testing.T) {
-	h, err := NewAPI(apiConfig(t), modelDispatch(func(*http.Request, config.Relay) (*http.Response, error) {
+	h, err := fixtureModelAPI(apiConfig(t), modelDispatch(func(*http.Request, config.Relay) (*http.Response, error) {
 		t.Fatal("HEAD katalog melakukan dispatch")
 		return nil, nil
 	}))

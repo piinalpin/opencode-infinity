@@ -159,6 +159,16 @@ Relay hidup, relay sehat, dan relay diaktifkan operator adalah kondisi yang berb
 - Diblokir oleh: [EP-03-S01](#ep-03-s01), [EP-02-T06](2026-11-22-ep-02-gateway-api-dasar.md#ep-02-t06)
 - Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
 
+### Hasil pengerjaan 27 November 2026
+
+[D-027](../DECISIONS.md#d-027-eligibility-health-dan-mode-independen-ep-03-s02) menyetujui komponen dan fixture lokal independen. [Kontrak dan bukti eligibility](../eligibility-relay.md) memakai satu owner untuk health/circuit/mode/admission, scheduler bounded, dan handler model/admin dari snapshot yang sama. Status `approved` tetap persetujuan tiket; penerimaan produk S01/T06/M0 tetap parsial.
+
+- **AC1 parsial produk:** scheduler fixture mengumpulkan SOCKS5 dan HTTPS keluar secara terpisah melalui jaringan lokal. Availability upstream/model dicatat per scope dan tetap unknown tanpa sumber aman; tidak ada probe generasi berbayar atau klaim provider tersedia.
+- **AC2 parsial produk:** threshold 3 gagal/2 sukses, replay/order, expiry/recovery, jitter/backoff/timeout dan hasil lama diuji dengan waktu virtual serta fixture. Mode tidak diubah oleh hasil probe; angka fixture bukan default produksi.
+- **AC3 parsial produk:** draining/disabled tetap menolak assignment sesudah probe pulih. SSE admitted berlanjut sampai DONE dan resource dipulihkan, tanpa menjalankan maintenance atau shutdown penuh.
+- **AC4 parsial produk:** primary default/nondefault unknown atau disabled menghasilkan `503 no_eligible_relay`, dengan nol tambahan dial/CONNECT/POST/direct. Cap probe/generasi bersama tetap menghasilkan 429; failure model primary tidak merusak scope secondary atau readiness transport.
+- Snapshot/redaksi/budget maksimum relay+model, linearization, release tepat sekali dan cancellation worker dibuktikan secara lokal. Hasil command dan batas pengujian ada pada dokumen kontrak; integrasi provider/WARP, RSS/performa, cooldown/binding serta gerbang produk tetap terbuka.
+
 <a id="ep-03-s03"></a>
 
 ## [STORY] EP-03-S03 Sebarkan request stateless ke relay dengan inflight terendah

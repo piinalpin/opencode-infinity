@@ -9,7 +9,7 @@ Aturan kontribusi dan guardrail agent tersedia di [AGENTS.md](../AGENTS.md).
 | Dokumen | Isi | Status acuan |
 |---|---|---|
 | [PRD](PRD.md) | Masalah, pengguna, cakupan, kapabilitas, target kualitas, dan keputusan terbuka | Draft 0.1.13 |
-| [DECISIONS](DECISIONS.md) | Keputusan eksplisit pengguna dan bagian pertanyaan yang masih terbuka | Catatan 0.1.22; D-001–D-025 terkonfirmasi; profil D-019 provisional |
+| [DECISIONS](DECISIONS.md) | Keputusan eksplisit pengguna dan bagian pertanyaan yang masih terbuka | Catatan 0.1.23; D-001–D-027 terkonfirmasi; profil D-019 provisional |
 | [ARCHITECTURE](ARCHITECTURE.md) | Komponen, alur, state, lifecycle, dan [struktur project](ARCHITECTURE.md#13-struktur-project-yang-disarankan), termasuk MicroWARP | Draft 0.1.4 |
 | [TECHSTACK](TECHSTACK.md) | Pilihan stack/pin untuk spike serta batas validasi lanjutan | Spike M0 0.1.3; pin dan fixture T02 tersedia |
 | [ROADMAP](ROADMAP.md) | Milestone M0–M3, dependensi, serta gerbang MVP/P1 | Draft 0.1.2 |
@@ -46,7 +46,9 @@ Hasil pemeriksaan lingkungan tidak menyatakan integrasi client, transport WARP, 
 
 [Liveness dan readiness dasar](health-dasar.md) tersedia melalui EP-02-T06/D-025: handler admin terpisah membedakan proses hidup dari observasi transport primary default, dengan versi/revisi/waktu teredaksi. Read tidak memicu probe/generasi; unknown/expired tidak ready. Budget, snapshot konkuren, HEAD dan isolasi lease dibuktikan pada komponen/fixture; eligibility dispatch EP-03, observasi/runtime produksi, private binding dan gerbang M0 tetap terbuka.
 
-[Admission kapasitas primary fixed](admission-fixed.md) tersedia melalui EP-03-S01/D-026: persiapan body tetap dibatasi sebelum parsing, lalu kapasitas gateway/relay/outbound dan stream deklaratif diambil secara atomik. Saturasi memberi `429 gateway_capacity_exceeded`; finalisasi mempertahankan lease sampai forwarding selesai dan melepas tepat sekali. Bukti lokal tidak menggantikan eligibility health/mode/cooldown terpadu S02/S05, accounting koneksi runtime, penerimaan produk atau M0.
+[Admission kapasitas primary fixed](admission-fixed.md) tersedia melalui EP-03-S01/D-026: persiapan body tetap dibatasi sebelum parsing, lalu kapasitas gateway/relay/outbound dan stream deklaratif diambil secara atomik. Saturasi memberi `429 gateway_capacity_exceeded`; finalisasi mempertahankan lease sampai forwarding selesai dan melepas tepat sekali. Bukti S01 dilengkapi eligibility health/mode lokal S02; cooldown S05 tetap terbuka. Bukti lokal tidak menggantikan accounting koneksi runtime, penerimaan produk atau M0.
+
+[Eligibility health dan mode](eligibility-relay.md) tersedia melalui EP-03-S02/D-027: satu owner melakukan pemeriksaan transport/circuit/mode bersama reservasi atomik. Scheduler fixture bounded berbagi cap outbound; probe sukses tidak mengaktifkan draining/disabled, dan penolakan 503 tidak menambah koneksi generasi/direct. Availability model tetap unknown tanpa sumber aman; default produksi, runtime/provider/WARP, cooldown S05 dan penerimaan M0 tetap terbuka.
 
 ## Indeks epic MVP
 

@@ -12,7 +12,6 @@ import (
 	"testing"
 	"time"
 
-	"opencode-infinity/internal/httpapi"
 	"opencode-infinity/internal/pool"
 	"opencode-infinity/internal/status"
 )
@@ -39,7 +38,7 @@ func TestHealthWireAndNoDispatch(t *testing.T) {
 	var instant atomic.Int64
 	instant.Store(time.Date(2026, 11, 26, 3, 0, 0, 0, time.UTC).UnixNano())
 	clock := func() time.Time { return time.Unix(0, instant.Load()).UTC() }
-	api, owner, err := httpapi.NewHealthAPI(c, status.Build{}, clock)
+	api, owner, err := fixtureHealthAPI(c, status.Build{}, clock)
 	if err != nil {
 		t.Fatal(err)
 	}

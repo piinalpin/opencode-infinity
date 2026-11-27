@@ -2,10 +2,7 @@ package pool
 
 import (
 	"errors"
-	"opencode-infinity/internal/config"
 	"slices"
-	"strings"
-	"sync"
 	"time"
 )
 
@@ -25,13 +22,24 @@ const (
 	HealthHTTPS
 )
 
+type CircuitState uint8
+
+const (
+	CircuitChecking CircuitState = iota
+	CircuitClosed
+	CircuitOpen
+)
+
 type ObservationView struct {
+	Circuit                CircuitState
+	successes, failures    uint32
 	State                  HealthState
 	ObservedAt, ValidUntil time.Time
 }
 
 type RelayHealthView struct {
 	ID             string
+	Mode           string
 	DefaultPrimary bool
 	SOCKS5, HTTPS  ObservationView
 }
@@ -42,53 +50,17 @@ type HealthView struct {
 	StateChangedAt, SnapshotAt time.Time
 	DefaultUpstream            string
 	Relays                     []RelayHealthView
+	Models                     []ModelHealthView
 }
 
-// Health memiliki observasi diagnostik, bukan reservasi atau keputusan dispatch.
-// shortcut: integrasi eligibility dengan Admission menunggu EP-03-S01/S02.
-type Health struct {
-	mu    sync.Mutex
-	clock func() time.Time
-	view  HealthView
-}
-
-func NewHealth(c *config.Config, clock func() time.Time) (*Health, error) {
-	if !c.Validated() || clock == nil {
-		return nil, errors.New("health_invalid_component")
-	}
-	owned := *c
-	now := clock()
-	if !healthTime(now) {
-		return nil, errors.New("health_invalid_clock")
-	}
-	relays := owned.Relays()
-	// Accounting konservatif untuk owner, ID dan dua observasi tetap per relay.
-	// Ini batas alokasi state komponen, bukan pengukuran RSS atau default konfigurasi.
-	if owned.Limits().StateBytes < 2048+512*int64(len(relays)) {
-		return nil, errors.New("health_state_budget_exceeded")
-	}
-	primary := make(map[string]bool)
-	for _, u := range owned.Upstreams() {
-		if u.ID == owned.Server().DefaultUpstream {
-			for _, m := range u.Models {
-				primary[m.PrimaryRelay] = true
-			}
-		}
-	}
-	view := HealthView{Accepting: true, Revision: 1, StateChangedAt: now, DefaultUpstream: strings.Clone(owned.Server().DefaultUpstream)}
-	for _, r := range relays {
-		view.Relays = append(view.Relays, RelayHealthView{ID: strings.Clone(r.ID), DefaultPrimary: primary[r.ID]})
-	}
-	return &Health{clock: clock, view: view}, nil
-}
-
-func (h *Health) View() HealthView {
+func (h *Manager) View() HealthView {
 	if h == nil || h.clock == nil {
 		return HealthView{}
 	}
 	h.mu.Lock()
 	view := h.view
 	view.Relays = slices.Clone(view.Relays)
+	view.Models = slices.Clone(view.Models)
 	h.mu.Unlock()
 	view.SnapshotAt = h.clock()
 	for i := range view.Relays {
@@ -98,21 +70,28 @@ func (h *Health) View() HealthView {
 				observation.State = HealthStale
 			}
 		}
-		if view.Accepting && relay.DefaultPrimary && relay.SOCKS5.State == HealthHealthy && relay.HTTPS.State == HealthHealthy {
+		if view.Accepting && relay.Mode == "serving" && relay.DefaultPrimary && relay.SOCKS5.Circuit == CircuitClosed && relay.HTTPS.Circuit == CircuitClosed && relay.SOCKS5.State != HealthStale && relay.HTTPS.State != HealthStale {
 			view.Ready = true
+		}
+	}
+	for i := range view.Models {
+		if !fresh(view.Models[i].Availability, view.SnapshotAt) {
+			view.Models[i].Availability.State = HealthUnknown
+			view.Models[i].Availability.Circuit = CircuitChecking
 		}
 	}
 	return view
 }
 
-func (h *Health) Observe(relay string, layer HealthLayer, observation ObservationView) error {
+func (h *Manager) Observe(relay string, layer HealthLayer, observation ObservationView) error {
 	if h == nil || h.clock == nil || layer > HealthHTTPS || (observation.State != HealthHealthy && observation.State != HealthUnhealthy) {
 		return errors.New("health_invalid_observation")
 	}
 	now := h.clock()
-	if !healthTime(now) || !healthTime(observation.ObservedAt) || !healthTime(observation.ValidUntil) || observation.ObservedAt.After(now) || !observation.ValidUntil.After(now) || !observation.ValidUntil.After(observation.ObservedAt) {
+	if !validObservation(observation, now) {
 		return errors.New("health_invalid_observation")
 	}
+
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	for i := range h.view.Relays {
@@ -123,26 +102,15 @@ func (h *Health) Observe(relay string, layer HealthLayer, observation Observatio
 		if layer == HealthHTTPS {
 			target = &h.view.Relays[i].HTTPS
 		}
-		if target.State == observation.State && target.ObservedAt.Equal(observation.ObservedAt) && target.ValidUntil.Equal(observation.ValidUntil) {
-			return nil
-		}
-		if !observation.ObservedAt.After(target.ObservedAt) {
-			return errors.New("health_observation_order")
-		}
-		*target = observation
-		h.view.Revision++
-		if now.After(h.view.StateChangedAt) {
-			h.view.StateChangedAt = now
-		}
-		return nil
+		return h.updateObservation(target, observation, now)
 	}
 	return errors.New("health_unknown_relay")
 }
 
 func healthTime(t time.Time) bool { return !t.IsZero() && t.Year() >= 1 && t.Year() <= 9999 }
 
-// SetAccepting mencatat kondisi proses; tidak menjalankan drain atau mengubah Admission.
-func (h *Health) SetAccepting(accepting bool) error {
+// SetAccepting mengendalikan admission baru tanpa membatalkan request aktif.
+func (h *Manager) SetAccepting(accepting bool) error {
 	if h == nil || h.clock == nil {
 		return errors.New("health_invalid_component")
 	}
@@ -159,5 +127,56 @@ func (h *Health) SetAccepting(accepting bool) error {
 			h.view.StateChangedAt = now
 		}
 	}
+	return nil
+}
+
+func advanceObservation(target *ObservationView, observation ObservationView, now time.Time, policy Policy) {
+	circuit, successes, failures := target.Circuit, target.successes, target.failures
+	if !fresh(*target, now) {
+		circuit = CircuitChecking
+		successes = 0
+		if target.State != HealthUnhealthy {
+			failures = 0
+		}
+	}
+	if observation.State == HealthHealthy {
+		failures = 0
+		if successes < policy.Successes {
+			successes++
+		}
+		if successes >= policy.Successes {
+			circuit = CircuitClosed
+		}
+	} else {
+		successes = 0
+		if failures < policy.Failures {
+			failures++
+		}
+		if failures >= policy.Failures {
+			circuit = CircuitOpen
+		}
+	}
+	*target = ObservationView{State: observation.State, ObservedAt: observation.ObservedAt, ValidUntil: observation.ValidUntil, Circuit: circuit, successes: successes, failures: failures}
+}
+
+func (a *Manager) changed(now time.Time) {
+	a.view.Revision++
+	if now.After(a.view.StateChangedAt) {
+		a.view.StateChangedAt = now
+	}
+}
+
+func validObservation(o ObservationView, now time.Time) bool {
+	return (o.State == HealthHealthy || o.State == HealthUnhealthy) && healthTime(now) && healthTime(o.ObservedAt) && healthTime(o.ValidUntil) && !o.ObservedAt.After(now) && o.ValidUntil.After(now) && o.ValidUntil.After(o.ObservedAt)
+}
+func (a *Manager) updateObservation(target *ObservationView, o ObservationView, now time.Time) error {
+	if target.State == o.State && target.ObservedAt.Equal(o.ObservedAt) && target.ValidUntil.Equal(o.ValidUntil) {
+		return nil
+	}
+	if !o.ObservedAt.After(target.ObservedAt) {
+		return errors.New("health_observation_order")
+	}
+	advanceObservation(target, o, now, a.policy)
+	a.changed(now)
 	return nil
 }

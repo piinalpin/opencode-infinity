@@ -41,7 +41,7 @@ func assertGatewayError(t *testing.T, w *httptest.ResponseRecorder, status int, 
 
 func errorAPI(t *testing.T) http.Handler {
 	t.Helper()
-	h, err := NewAPI(apiConfig(t), modelDispatch(func(*http.Request, config.Relay) (*http.Response, error) {
+	h, err := fixtureModelAPI(apiConfig(t), modelDispatch(func(*http.Request, config.Relay) (*http.Response, error) {
 		t.Fatal("error route melakukan dispatch")
 		return nil, nil
 	}))
@@ -181,7 +181,7 @@ func TestGatewayErrorRetryAfter(t *testing.T) {
 		{"duplicate", []string{"1", "2"}, ""},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			h, err := NewAPI(apiConfig(t), modelDispatch(func(*http.Request, config.Relay) (*http.Response, error) {
+			h, err := fixtureModelAPI(apiConfig(t), modelDispatch(func(*http.Request, config.Relay) (*http.Response, error) {
 				return &http.Response{StatusCode: 429, Header: http.Header{"Retry-After": tc.values}, Body: io.NopCloser(strings.NewReader("opaque upstream error"))}, nil
 			}))
 			if err != nil {
@@ -208,7 +208,7 @@ func (b *brokenRequestBody) Close() error { b.closes++; return nil }
 
 func TestGatewayErrorBodyRead(t *testing.T) {
 	calls := 0
-	h, err := NewAPI(apiConfig(t, "max_active_requests: 20", "max_active_requests: 1"), modelDispatch(func(*http.Request, config.Relay) (*http.Response, error) {
+	h, err := fixtureModelAPI(apiConfig(t, "max_active_requests: 20", "max_active_requests: 1"), modelDispatch(func(*http.Request, config.Relay) (*http.Response, error) {
 		calls++
 		return &http.Response{StatusCode: 200, Body: io.NopCloser(strings.NewReader(`{}`))}, nil
 	}))

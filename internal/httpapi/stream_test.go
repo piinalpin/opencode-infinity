@@ -129,7 +129,7 @@ func TestGatewayStreamBackpressureAndLease(t *testing.T) {
 		}
 		body := &countedStreamReader{remaining: size, eofWithData: eof}
 		var calls atomic.Int32
-		h, err := NewAPI(apiConfig(t, "max_active_requests: 20", "max_active_requests: 1"), modelDispatch(func(*http.Request, config.Relay) (*http.Response, error) {
+		h, err := fixtureModelAPI(apiConfig(t, "max_active_requests: 20", "max_active_requests: 1"), modelDispatch(func(*http.Request, config.Relay) (*http.Response, error) {
 			if calls.Add(1) == 1 {
 				return &http.Response{StatusCode: 200, Header: http.Header{"Content-Type": {"text/event-stream"}}, Body: body}, nil
 			}
@@ -169,7 +169,7 @@ func TestGatewayStreamBackpressureAndLease(t *testing.T) {
 func TestGatewayStreamWriterFailures(t *testing.T) {
 	for _, mode := range []string{"unsupported", "flush", "short"} {
 		body := &countedStreamReader{remaining: 10}
-		h, err := NewAPI(apiConfig(t), modelDispatch(func(*http.Request, config.Relay) (*http.Response, error) {
+		h, err := fixtureModelAPI(apiConfig(t), modelDispatch(func(*http.Request, config.Relay) (*http.Response, error) {
 			return &http.Response{StatusCode: 200, Header: http.Header{"Content-Type": {"text/event-stream"}, "Content-Encoding": {"gzip"}}, Body: body}, nil
 		}))
 		if err != nil {

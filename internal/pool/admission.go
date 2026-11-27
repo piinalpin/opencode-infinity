@@ -3,21 +3,7 @@ package pool
 
 import (
 	"errors"
-	"opencode-infinity/internal/config"
-	"sync"
 )
-
-// Admission memiliki pending+active dengan satu batas, serta byte dan slot dispatch.
-// shortcut: kapasitas primary fixture; eligibility health/mode/cooldown/binding terpadu menunggu S02/integrasi.
-type Admission struct {
-	mu                                 sync.Mutex
-	active, bytes, maxActive, maxBytes int64
-	pending                            int64
-	outbound, maxOutbound              int64
-	relays                             map[string]int64
-	used                               map[string]int64
-	streamBytes, maxStreamBytes        int64
-}
 
 var (
 	ErrCapacityExceeded   = errors.New("gateway_capacity_exceeded")
@@ -27,7 +13,7 @@ var (
 
 // AdmitFixed menerima primary dari mapping server tervalidasi, tanpa fallback.
 // Seluruh pemeriksaan mendahului satu commit gateway/relay/outbound/stream.
-func (r *Reservation) AdmitFixed(relay string, streamBytes int64) error {
+func (r *Reservation) AdmitFixed(upstream, alias string, streamBytes int64) error {
 	if r == nil || r.owner == nil {
 		return ErrInvalidReservation
 	}
@@ -36,6 +22,19 @@ func (r *Reservation) AdmitFixed(relay string, streamBytes int64) error {
 	defer a.mu.Unlock()
 	if r.released || r.admitted || streamBytes < 0 {
 		return ErrInvalidReservation
+	}
+	relay := ""
+	for _, m := range a.view.Models {
+		if m.Upstream == upstream && m.Alias == alias {
+			relay = m.PrimaryRelay
+			if fresh(m.Availability, a.clock()) && m.Availability.Circuit == CircuitOpen {
+				return ErrNoEligibleRelay
+			}
+			break
+		}
+	}
+	if !a.transportEligibleLocked(relay, a.clock()) {
+		return ErrNoEligibleRelay
 	}
 	cap, ok := a.relays[relay]
 	if !ok {
@@ -56,7 +55,7 @@ func (r *Reservation) AdmitFixed(relay string, streamBytes int64) error {
 }
 
 type Reservation struct {
-	owner       *Admission
+	owner       *Manager
 	bytes       int64
 	released    bool
 	admitted    bool
@@ -101,20 +100,9 @@ func (r *Reservation) ReserveStream(bytes int64) bool {
 	return true
 }
 
-func NewAdmission(c *config.Config) (*Admission, error) {
-	if !c.Validated() {
-		return nil, errors.New("admission_unvalidated_config")
-	}
-	a := &Admission{maxActive: c.Server().MaxActiveRequests, maxBytes: c.Limits().BodyBufferBytes, maxStreamBytes: c.Limits().StreamBufferBytes, maxOutbound: c.Limits().OutboundConnections, relays: make(map[string]int64), used: make(map[string]int64)}
-	for _, r := range c.Relays() {
-		a.relays[r.ID] = r.MaxInflight
-	}
-	return a, nil
-}
-
 // Begin membatasi persiapan pending dan mereservasi byte sebelum alokasi/read.
 // Lease pending maupun admitted wajib Release; tidak ada antrean menunggu kapasitas.
-func (a *Admission) Begin(bytes int64) (*Reservation, bool) {
+func (a *Manager) Begin(bytes int64) (*Reservation, bool) {
 	if a == nil {
 		return nil, false
 	}

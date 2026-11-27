@@ -9,6 +9,7 @@ import (
 	"opencode-infinity/internal/config"
 	"opencode-infinity/internal/pool"
 	"opencode-infinity/internal/status"
+	"os"
 	"strings"
 	"sync"
 	"testing"
@@ -18,7 +19,7 @@ import (
 func TestHealthAdminAndReadiness(t *testing.T) {
 	now := time.Date(2026, 11, 26, 3, 0, 0, 0, time.UTC)
 	reads := 0
-	h, state, err := NewHealthAPI(apiConfig(t), status.Build{}, func() time.Time { reads++; return now })
+	h, state, err := fixtureHealthAPI(apiConfig(t), status.Build{}, func() time.Time { reads++; return now })
 	if err != nil || h == nil || state == nil {
 		t.Fatal("handler health privat tidak tersedia")
 	}
@@ -75,7 +76,7 @@ func TestHealthAdminAndReadiness(t *testing.T) {
 }
 
 func TestHealthRouteErrors(t *testing.T) {
-	h, _, err := NewHealthAPI(apiConfig(t), status.Build{}, time.Now)
+	h, _, err := fixtureHealthAPI(apiConfig(t), status.Build{}, time.Now)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -111,7 +112,7 @@ func TestHealthHTTPBudgets(t *testing.T) {
 		{"snapshot_bytes: 262144", "snapshot_bytes: 1"},
 		{"snapshot_bytes: 262144", "snapshot_bytes: 4096", "monitoring_bytes: 8388608", "monitoring_bytes: 16384"},
 	} {
-		if h, owner, err := NewHealthAPI(apiConfig(t, edits...), status.Build{}, time.Now); err == nil || h != nil || owner != nil {
+		if h, owner, err := fixtureHealthAPI(apiConfig(t, edits...), status.Build{}, time.Now); err == nil || h != nil || owner != nil {
 			t.Fatal("health menerima budget snapshot/monitoring tidak cukup")
 		}
 	}
@@ -131,7 +132,7 @@ func (w *healthBlockedWriter) Write(p []byte) (int, error) {
 }
 
 func TestHealthParallelAndSlowWriter(t *testing.T) {
-	h, owner, err := NewHealthAPI(apiConfig(t, "parallel_status: 4", "parallel_status: 1"), status.Build{}, time.Now)
+	h, owner, err := fixtureHealthAPI(apiConfig(t, "parallel_status: 4", "parallel_status: 1"), status.Build{}, time.Now)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -178,7 +179,7 @@ func TestHealthParallelAndSlowWriter(t *testing.T) {
 
 func TestHealthSerializationFailureReleases(t *testing.T) {
 	now := time.Now()
-	h, _, err := NewHealthAPI(apiConfig(t, "parallel_status: 4", "parallel_status: 1"), status.Build{}, func() time.Time { return now })
+	h, _, err := fixtureHealthAPI(apiConfig(t, "parallel_status: 4", "parallel_status: 1"), status.Build{}, func() time.Time { return now })
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -197,11 +198,11 @@ func TestHealthSerializationFailureReleases(t *testing.T) {
 }
 
 func TestHealthHandlerIsolation(t *testing.T) {
-	health, _, err := NewHealthAPI(apiConfig(t), status.Build{}, time.Now)
+	health, _, err := fixtureHealthAPI(apiConfig(t), status.Build{}, time.Now)
 	if err != nil {
 		t.Fatal(err)
 	}
-	model, err := NewAPI(apiConfig(t), modelDispatch(func(*http.Request, config.Relay) (*http.Response, error) {
+	model, err := fixtureModelAPI(apiConfig(t), modelDispatch(func(*http.Request, config.Relay) (*http.Response, error) {
 		t.Fatal("route health melakukan dispatch model")
 		return nil, nil
 	}))
@@ -232,9 +233,9 @@ func TestHealthMaximumRegistrySnapshot(t *testing.T) {
 	for i := 1; i < 128; i++ {
 		fmt.Fprintf(&extra, "  - id: relay-%03d-%s\n    proxy_url: socks5h://fixture:1080\n    max_inflight: 1\n", i, strings.Repeat("x", 54))
 	}
-	c := apiConfig(t, "relays:\n", extra.String())
+	c := apiConfig(t, "relays:\n", extra.String(), "snapshot_bytes: 262144", "snapshot_bytes: 524288")
 	now := time.Now()
-	h, owner, err := NewHealthAPI(c, status.Build{Version: "v1.2.3+" + strings.Repeat("a", 57), Revision: strings.Repeat("a", 64)}, func() time.Time { return now })
+	h, owner, err := fixtureHealthAPI(c, status.Build{Version: "v1.2.3+" + strings.Repeat("a", 57), Revision: strings.Repeat("a", 64)}, func() time.Time { return now })
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -254,5 +255,111 @@ func TestHealthMaximumRegistrySnapshot(t *testing.T) {
 	}
 	if w.Code != 200 || int64(w.Body.Len()) > c.Limits().SnapshotBytes || json.Unmarshal(w.Body.Bytes(), &envelope) != nil || len(envelope.Health.Relays) != 128 {
 		t.Fatal("snapshot registry maksimum tidak bounded/utuh")
+	}
+}
+
+func TestEligibilityProjectionAndSharedOwner(t *testing.T) {
+	c := apiConfig(t)
+	now := time.Now()
+	components, err := NewComponents(c, modelDispatch(func(*http.Request, config.Relay) (*http.Response, error) {
+		t.Fatal("dispatch pada startup unknown")
+		return nil, nil
+	}), status.Build{}, func() time.Time { return now }, pool.Policy{Failures: 3, Successes: 2})
+	if err != nil {
+		t.Fatal(err)
+	}
+	r := httptest.NewRequest("GET", "/health/ready", nil)
+	r.Header.Set("Authorization", "Bearer "+adminToken)
+	w := httptest.NewRecorder()
+	components.Health.ServeHTTP(w, r)
+	var wire struct {
+		Health struct {
+			Relays []struct {
+				Mode   string
+				SOCKS5 struct{ Circuit string }
+			}
+			Models []struct {
+				Upstream, Alias string
+				Availability    struct{ State string }
+			}
+		}
+	}
+	if json.Unmarshal(w.Body.Bytes(), &wire) != nil || len(wire.Health.Relays) != 1 || wire.Health.Relays[0].Mode != "serving" || wire.Health.Relays[0].SOCKS5.Circuit != "checking" || len(wire.Health.Models) != 1 || wire.Health.Models[0].Availability.State != "unknown" {
+		t.Fatal("snapshot belum memisahkan mode/circuit/availability")
+	}
+	if w.Code != 503 {
+		t.Fatal("startup harus not-ready")
+	}
+	if err := components.Pool.SetMode("warp-1", "disabled"); err != nil {
+		t.Fatal(err)
+	}
+	// Dua lapisan pulih pada owner yang sama, tetapi mode operator tetap disabled.
+	for i := 0; i < 2; i++ {
+		now = now.Add(time.Second)
+		for _, layer := range []pool.HealthLayer{pool.HealthSOCKS5, pool.HealthHTTPS} {
+			if err := components.Pool.Observe("warp-1", layer, pool.ObservationView{State: pool.HealthHealthy, ObservedAt: now, ValidUntil: now.Add(time.Hour)}); err != nil {
+				t.Fatal(err)
+			}
+		}
+	}
+	request := httptest.NewRequest("POST", "/v1/chat/completions", strings.NewReader(`{"model":"coding-default"}`))
+	request.Header.Set("Authorization", "Bearer "+gatewayToken)
+	request.Header.Set("Content-Type", "application/json")
+	response := httptest.NewRecorder()
+	components.Models.ServeHTTP(response, request)
+	assertGatewayError(t, response, 503, "no_eligible_relay")
+	for _, marker := range []string{gatewayToken, adminToken, upstreamKey, "provider.example", "socks5h://"} {
+		if strings.Contains(w.Body.String(), marker) {
+			t.Fatal("snapshot bocor")
+		}
+	}
+}
+
+func TestEligibilitySnapshotBudgetIncludesModels(t *testing.T) {
+	// 4096 cukup untuk bound relay lama, tetapi tidak untuk scope/circuit/model baru.
+	c := apiConfig(t, "snapshot_bytes: 262144", "snapshot_bytes: 4096")
+	if components, err := NewComponents(c, modelDispatch(func(*http.Request, config.Relay) (*http.Response, error) { return nil, nil }), status.Build{}, time.Now, pool.Policy{Failures: 3, Successes: 2}); err == nil || components != nil {
+		t.Fatal("constructor mengabaikan budget snapshot model/circuit")
+	}
+}
+
+func TestEligibilityMaximumModelSnapshot(t *testing.T) {
+	var upstreams strings.Builder
+	upstreams.WriteString("upstreams:\n")
+	for u := 0; u < 4; u++ {
+		id := "primary"
+		if u != 0 {
+			id = fmt.Sprintf("upstream-%d-%s", u, strings.Repeat("x", 53))
+		}
+		fmt.Fprintf(&upstreams, "  - id: %s\n    base_url: https://api.provider.example/v1\n    api_key_env: INFINITY_UPSTREAM_KEY\n    relays: [warp-1]\n    models:\n", id)
+		for m := 0; m < 256; m++ {
+			fmt.Fprintf(&upstreams, "      - alias: model-%03d-%s\n        upstream_model: fixture-model\n        primary_relay: warp-1\n        fallback_relays: []\n", m, strings.Repeat("x", 118))
+		}
+	}
+	source, err := os.ReadFile("../../examples/infinity.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	suffix := string(source)[strings.Index(string(source), "upstreams:\n"):]
+	var relays strings.Builder
+	relays.WriteString("relays:\n")
+	for i := 1; i < 128; i++ {
+		fmt.Fprintf(&relays, "  - id: relay-%03d-%s\n    proxy_url: socks5h://fixture:1080\n    max_inflight: 1\n", i, strings.Repeat("x", 54))
+	}
+	c := apiConfig(t, suffix, upstreams.String(), "relays:\n", relays.String(), "snapshot_bytes: 262144", "snapshot_bytes: 2097152", "monitoring_bytes: 8388608", "monitoring_bytes: 33554432")
+	components, err := NewComponents(c, modelDispatch(func(*http.Request, config.Relay) (*http.Response, error) {
+		t.Fatal("snapshot memicu dispatch")
+		return nil, nil
+	}), status.Build{}, time.Now, pool.Policy{Failures: 3, Successes: 2})
+	if err != nil {
+		t.Fatal(err)
+	}
+	r := httptest.NewRequest("GET", "/health/live", nil)
+	r.Header.Set("Authorization", "Bearer "+adminToken)
+	w := httptest.NewRecorder()
+	components.Health.ServeHTTP(w, r)
+	var wire struct{ Health status.HealthSnapshot }
+	if w.Code != 200 || json.Unmarshal(w.Body.Bytes(), &wire) != nil || len(wire.Health.Models) != 1024 || len(wire.Health.Relays) != 128 || int64(w.Body.Len()) > c.Limits().SnapshotBytes {
+		t.Fatal("snapshot maksimum model tidak bounded/utuh")
 	}
 }

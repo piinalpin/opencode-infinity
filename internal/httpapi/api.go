@@ -6,21 +6,40 @@ import (
 	"opencode-infinity/internal/access"
 	"opencode-infinity/internal/config"
 	"opencode-infinity/internal/gateway"
+	"opencode-infinity/internal/pool"
+	"opencode-infinity/internal/status"
 	"strings"
 	"time"
 )
 
-// NewAPI merakit komponen HTTP; tidak membuka listener atau membuat transport default.
-// shortcut: listener, batas koneksi inbound dan health runtime menunggu perakitan aplikasi.
-func NewAPI(c *config.Config, d gateway.Dispatcher) (http.Handler, error) {
+// Components berbagi owner dari satu snapshot server; constructor tidak memulai probe.
+type Components struct {
+	Models, Health http.Handler
+	Pool           *pool.Manager
+}
+
+func NewComponents(c *config.Config, d gateway.Dispatcher, build status.Build, clock func() time.Time, healthPolicy pool.Policy) (*Components, error) {
 	if !c.Validated() {
 		return nil, errors.New("invalid_api_component")
 	}
 	owned := *c
-	coordinator, err := gateway.New(&owned, d)
+	coordinator, owner, err := gateway.New(&owned, d, clock, healthPolicy)
 	if err != nil {
 		return nil, errors.New("invalid_api_component")
 	}
+	health, err := newHealthAPI(&owned, build, owner)
+	if err != nil {
+		return nil, errors.New("invalid_api_component")
+	}
+	models, err := newModelAPI(&owned, coordinator)
+	if err != nil {
+		return nil, err
+	}
+	return &Components{Models: models, Health: health, Pool: owner}, nil
+}
+
+func newModelAPI(c *config.Config, coordinator *gateway.Coordinator) (http.Handler, error) {
+	owned := *c
 	policy, err := access.New(&owned)
 	if err != nil {
 		return nil, errors.New("invalid_api_component")

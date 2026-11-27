@@ -53,9 +53,17 @@ type HealthSnapshot struct {
 	DefaultUpstream string        `json:"default_upstream"`
 	UpstreamModel   string        `json:"upstream_model"`
 	Relays          []RelayHealth `json:"relays"`
+	Models          []ModelHealth `json:"models"`
 }
 
+type ModelHealth struct {
+	Upstream     string      `json:"upstream"`
+	Alias        string      `json:"alias"`
+	PrimaryRelay string      `json:"primary_relay"`
+	Availability Observation `json:"availability"`
+}
 type RelayHealth struct {
+	Mode           string      `json:"mode"`
 	ID             string      `json:"id"`
 	DefaultPrimary bool        `json:"default_primary"`
 	SOCKS5         Observation `json:"socks5"`
@@ -63,6 +71,7 @@ type RelayHealth struct {
 }
 
 type Observation struct {
+	Circuit    string     `json:"circuit"`
 	State      string     `json:"state"`
 	ObservedAt *time.Time `json:"observed_at"`
 	ValidUntil *time.Time `json:"valid_until"`
@@ -71,13 +80,22 @@ type Observation struct {
 func (h *Health) Snapshot(view pool.HealthView) HealthSnapshot {
 	result := HealthSnapshot{Scope: "default_primary_transport", Live: view.Revision != 0, Ready: view.Ready, Accepting: view.Accepting, Application: h.build, Revision: view.Revision, StateChangedAt: view.StateChangedAt.UTC(), SnapshotAt: view.SnapshotAt.UTC(), DefaultUpstream: view.DefaultUpstream, UpstreamModel: "unknown", Relays: make([]RelayHealth, 0, len(view.Relays))}
 	for _, r := range view.Relays {
-		result.Relays = append(result.Relays, RelayHealth{ID: r.ID, DefaultPrimary: r.DefaultPrimary, SOCKS5: observation(r.SOCKS5), HTTPS: observation(r.HTTPS)})
+		result.Relays = append(result.Relays, RelayHealth{ID: r.ID, Mode: r.Mode, DefaultPrimary: r.DefaultPrimary, SOCKS5: observation(r.SOCKS5), HTTPS: observation(r.HTTPS)})
+	}
+	for _, m := range view.Models {
+		result.Models = append(result.Models, ModelHealth{Upstream: m.Upstream, Alias: m.Alias, PrimaryRelay: m.PrimaryRelay, Availability: observation(m.Availability)})
 	}
 	return result
 }
 
 func observation(source pool.ObservationView) Observation {
-	result := Observation{State: "unknown"}
+	result := Observation{State: "unknown", Circuit: "checking"}
+	switch source.Circuit {
+	case pool.CircuitClosed:
+		result.Circuit = "closed"
+	case pool.CircuitOpen:
+		result.Circuit = "open"
+	}
 	switch source.State {
 	case pool.HealthHealthy:
 		result.State = "healthy"

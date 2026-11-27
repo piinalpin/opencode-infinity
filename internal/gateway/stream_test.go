@@ -26,7 +26,7 @@ func (b *waitingStream) Close() error {
 
 func TestGatewayStreamIdleDeadline(t *testing.T) {
 	body := &waitingStream{closed: make(chan struct{})}
-	c, err := New(modelConfig(t, "stream_idle_seconds: 120", "stream_idle_seconds: 1"), dispatchFunc(func(*http.Request, config.Relay) (*http.Response, error) {
+	c, err := newFixtureCoordinator(modelConfig(t, "stream_idle_seconds: 120", "stream_idle_seconds: 1"), dispatchFunc(func(*http.Request, config.Relay) (*http.Response, error) {
 		return &http.Response{StatusCode: 200, Header: http.Header{"Content-Type": {"text/event-stream"}}, Body: body}, nil
 	}))
 	if err != nil {

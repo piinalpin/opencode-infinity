@@ -8,15 +8,11 @@ Status: komponen dan fixture lokal tersedia; penerimaan produk terintegrasi teta
 
 ## API dan ownership
 
-| Komponen | API | Tanggung jawab |
-|---|---|---|
-| `pool` | `NewHealth(config, clock)`, `Observe(relay, layer, observation)`, `SetAccepting(bool)`, `View()` | Memiliki observasi finite, kondisi accepting, revisi, dan kebijakan readiness primary default |
-| `status` | `NewHealth(build)`, `Snapshot(view)` | Membentuk salinan teredaksi dengan versi build dan waktu UTC; tidak menghitung eligibility sendiri |
-| `httpapi` | `NewHealthAPI(config, build, clock)` | Mengembalikan handler admin serta owner health yang dibentuk dari satu snapshot konfigurasi; tidak menerima dispatcher/prober |
+Pembaruan 27 November 2026 melalui [S02/D-027](eligibility-relay.md) mengganti owner `Health` dan `Admission` terpisah dengan `pool.Manager`. `pool.New(config, clock, policy)` membentuk owner, `gateway.New` membentuk coordinator serta owner dari satu snapshot, dan `httpapi.NewComponents(config, dispatcher, build, clock, policy)` mengembalikan handler `Models`, `Health` dan `Pool` yang sama. `status.NewHealth(build).Snapshot(view)` tetap membentuk proyeksi teredaksi.
 
-Constructor HTTP mengembalikan `(handler, owner, error)`. Pemakai server tepercaya memasok clock dan metadata build, lalu menerapkan observasi melalui operasi owner. State menyimpan ID relay/default serta observasi typed; tidak menyimpan pointer Config, key, URL proxy/upstream, prompt, body atau raw error adapter. Konfigurasi pemakai setelah constructor tidak menjadi hot reload.
+Constructor/read tidak menjalankan probe. Scheduler fixture dijalankan eksplisit di luar handler; availability provider tanpa sumber aman tetap unknown. State hanya menyimpan ID dan metadata typed, bukan URL/key/raw error adapter. Tidak ada hot reload melalui perubahan object caller.
 
-Owner health berada dalam package pool, terpisah dari `Admission` yang masih capacity-only. T06 tidak mengubah handler model, coordinator atau algoritme reservasi/dispatch. Integrasi satu keputusan eligibility/health/mode/cooldown/kapasitas tetap EP-03-S01/S02. `SetAccepting(false)` mencatat kondisi proses untuk diagnosis, bukan implementasi drain atau penolakan admission generasi.
+`Observe`, `ObserveModel`, `SetMode`, `SetAccepting` dan lease berkoordinasi dengan satu mutex. `SetAccepting(false)` kini menolak admission generasi baru; mode draining/disabled juga menolak assignment tanpa memutus stream admitted. Cooldown/binding/lifecycle penuh tetap task berikutnya. Bukti historis T06 di bawah tidak otomatis meluluskan penerimaan produk terintegrasi.
 
 ## Endpoint privat
 
@@ -25,7 +21,7 @@ Owner health berada dalam package pool, terpisah dari `Admission` yang masih cap
 | GET/HEAD | `/health/live` | 200 selama komponen handler berfungsi, terlepas dari relay/accepting |
 | GET/HEAD | `/health/ready` | 200 bila scope readiness terpenuhi; 503 bila belum siap |
 
-Kedua endpoint memakai `RequireAdmin` paling luar. Missing/invalid/wrong-role/Authorization ambigu menghasilkan `401 invalid_admin_token` dengan challenge realm admin sebelum body atau snapshot dibaca. Token gateway/upstream bukan token admin; query dan cookie tidak menjadi tempat token. Health tidak dipasang pada `NewAPI` model, dan handler health tidak melayani endpoint model atau `/admin/status` dashboard lengkap.
+Kedua endpoint memakai `RequireAdmin` paling luar. Missing/invalid/wrong-role/Authorization ambigu menghasilkan `401 invalid_admin_token` dengan challenge realm admin sebelum body atau snapshot dibaca. Token gateway/upstream bukan token admin; query dan cookie tidak menjadi tempat token. Handler health tetap terpisah dari handler model, dan handler health tidak melayani endpoint model atau `/admin/status` dashboard lengkap.
 
 Respons GET berisi `health` dan `request_id`; saat not-ready, respons 503 juga mempunyai `error.message`, `error.type: gateway_unavailable`, `error.code: gateway_not_ready`. Jadi error tetap memakai shape boundary S05 dengan snapshot diagnostik tambahan. `X-Request-ID` server cocok dengan body dan tidak menerima ID client. `X-Infinity-Error-Source: gateway`, JSON, `no-store` dan `nosniff` dipasang. HEAD hanya mengirim status/header pada wire.
 
@@ -36,10 +32,10 @@ Method salah pada path health menghasilkan `405 method_not_allowed` dengan `Allo
 Scope tetap `default_primary_transport`:
 
 1. Konfigurasi sudah lolos loader dan kondisi proses `accepting` bernilai true.
-2. Sedikitnya satu **primary relay** milik mapping model pada default upstream mempunyai observasi SOCKS5 dan HTTPS keluar yang masing-masing sehat serta belum kedaluwarsa.
+2. Sedikitnya satu **primary relay** milik mapping model pada default upstream mempunyai observasi SOCKS5 dan HTTPS keluar yang belum kedaluwarsa. Sejak S02, mode harus serving dan kedua circuit closed sesuai policy eksplisit; outcome gagal terbaru di bawah ambang tidak langsung membuka circuit.
 3. Relay fallback, relay yang hanya terdaftar pada upstream, atau primary upstream nondefault tidak menggantikan primary mapping tersebut. Tidak disyaratkan seluruh model default sehat.
 
-Proses hidup, SOCKS5 terjangkau, HTTPS keluar, serta availability upstream/model adalah lapisan berbeda. Update SOCKS5 tidak mengubah HTTPS. Status `upstream_model` tetap `unknown`: readiness tidak membuktikan provider/model tersedia, quota/auth upstream valid, IP tertentu, ataupun bahwa request selanjutnya pasti diterima. Saturasi kapasitas tidak termasuk scope diagnostik ini; request generasi yang masih memegang satu-satunya slot tidak membuat read health mengambil/melepas slotnya.
+Proses hidup, SOCKS5 terjangkau, HTTPS keluar, serta availability upstream/model adalah lapisan berbeda. Update SOCKS5 tidak mengubah HTTPS. Field agregat historis `upstream_model` tetap `unknown`; sejak S02 observasi scoped ada pada `models[].availability`. Readiness tidak membuktikan provider/model tersedia, quota/auth upstream valid, IP tertentu, ataupun bahwa request selanjutnya pasti diterima. Saturasi kapasitas tidak termasuk scope diagnostik ini; request generasi yang masih memegang satu-satunya slot tidak membuat read health mengambil/melepas slotnya.
 
 Startup tanpa observasi menghasilkan live 200 dan ready 503. Kondisi relay unavailable, unknown, expired, hanya satu lapisan sehat, atau accepting=false tetap not-ready. Liveness tidak memicu probe/generasi atau ikut gagal hanya karena relay unavailable. Endpoint membaca state yang sudah dikumpulkan, tanpa socket atau pekerjaan probe baru meskipun dipanggil berulang.
 
@@ -61,12 +57,12 @@ Registry tetap dibatasi loader (maksimal 128 relay). Update untuk ID unknown tid
 
 Budget memakai konfigurasi existing, tanpa schema/default numerik baru:
 
-- `state_bytes` harus menampung accounting konservatif `2048 + 512 × jumlah_relay` untuk owner, ID dan dua observasi per relay.
-- `snapshot_bytes` minimal `2048 + 1024 × jumlah_relay`, bound konservatif envelope, build, waktu dan setiap relay dalam schema ini.
-- `monitoring_bytes` harus menampung `parallel_status × 3 × bound_snapshot` untuk salinan view/proyeksi dan buffer encode/body. Pemeriksaan memakai pembagian agar tidak overflow. Constructor menolak budget yang tidak cukup.
-- Counter pembacaan dibatasi `parallel_status` tanpa alokasi sebesar nilai count. Slot dipegang sampai write selesai, dilepas melalui defer pada sukses/error. Request tambahan mendapat `429 gateway_capacity_exceeded` tanpa antrean. Client lambat tidak menahan lock owner atau dispatch generasi.
+- Sejak S02, state owner/job/circuit memakai bound `4096 + 1024 × relay + 1024 × model` byte.
+- Bound snapshot memakai `4096 + 2048 × relay + 1024 × model`; monitoring mencakup `parallel_status × 3 × bound_snapshot + worker × 4096` byte.
+- Constructor menolak budget kurang; worker dibatasi parallel_probes dan jumlah job finite. Rincian current policy serta bukti maksimum gabungan 128 relay/1.024 model ada pada [kontrak S02](eligibility-relay.md#scheduler-dan-batas-resource).
+- Pembacaan dibatasi `parallel_status` sampai write selesai; overload tetap 429 tanpa queue. Copy/proyeksi/encode/write tidak menahan lock dispatch.
 
-Accounting tersebut konservatif untuk komponen ini, bukan bukti RSS proses atau resource accounting gabungan semua fitur mendatang. Deadline koneksi/client yang tidak selesai tetap tanggung jawab runtime listener. Tidak ada timer/scheduler, histori observasi atau goroutine latar baru.
+Accounting tersebut konservatif untuk komponen ini, bukan bukti RSS proses atau resource accounting gabungan semua fitur mendatang. Deadline koneksi/client yang tidak selesai tetap tanggung jawab runtime listener. T06 historis tidak membuat timer/scheduler; S02 menambah scheduler fixture terpisah yang hanya berjalan melalui Run eksplisit, tanpa histori observasi.
 
 ## Bukti penerimaan
 

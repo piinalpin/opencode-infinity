@@ -31,7 +31,7 @@ func (modelTimeoutError) Error() string   { return "synthetic-private-timeout" }
 func (modelTimeoutError) Timeout() bool   { return true }
 func (modelTimeoutError) Temporary() bool { return true }
 func TestModelCoordinatorTimeoutCategory(t *testing.T) {
-	c, err := New(modelConfig(t), dispatchFunc(func(*http.Request, config.Relay) (*http.Response, error) { return nil, modelTimeoutError{} }))
+	c, err := newFixtureCoordinator(modelConfig(t), dispatchFunc(func(*http.Request, config.Relay) (*http.Response, error) { return nil, modelTimeoutError{} }))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -44,7 +44,7 @@ func TestModelCoordinatorRejectRedirect(t *testing.T) {
 		t.Run(strconv.Itoa(status), func(t *testing.T) {
 			body := &countedBody{Reader: strings.NewReader("synthetic-private-redirect")}
 			calls := 0
-			c, err := New(modelConfig(t, "max_active_requests: 20", "max_active_requests: 1"), dispatchFunc(func(*http.Request, config.Relay) (*http.Response, error) {
+			c, err := newFixtureCoordinator(modelConfig(t, "max_active_requests: 20", "max_active_requests: 1"), dispatchFunc(func(*http.Request, config.Relay) (*http.Response, error) {
 				calls++
 				if calls == 1 {
 					return &http.Response{StatusCode: status, Header: http.Header{"Content-Type": {"text/event-stream"}, "Location": {"https://other.invalid/private"}}, Body: body}, nil
@@ -86,7 +86,7 @@ func assertFailure(t *testing.T, err error, code string) {
 
 func TestModelCoordinatorLifecycle(t *testing.T) {
 	body := &countedBody{Reader: strings.NewReader(`{"ok":true}`)}
-	c, err := New(modelConfig(t, "max_active_requests: 20", "max_active_requests: 1"), dispatchFunc(func(*http.Request, config.Relay) (*http.Response, error) {
+	c, err := newFixtureCoordinator(modelConfig(t, "max_active_requests: 20", "max_active_requests: 1"), dispatchFunc(func(*http.Request, config.Relay) (*http.Response, error) {
 		return &http.Response{StatusCode: 200, Body: body}, nil
 	}))
 	if err != nil {
@@ -123,7 +123,7 @@ func TestModelCoordinatorRejectsAndReleases(t *testing.T) {
 		calls++
 		return nil, errors.New("synthetic-private-network-error")
 	})
-	c, err := New(modelConfig(t, "max_active_requests: 20", "max_active_requests: 1"), dispatcher)
+	c, err := newFixtureCoordinator(modelConfig(t, "max_active_requests: 20", "max_active_requests: 1"), dispatcher)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -144,17 +144,17 @@ func TestModelCoordinatorRejectsAndReleases(t *testing.T) {
 		t.Fatal("request ditolak melakukan dispatch")
 	}
 	for _, d := range []Dispatcher{nil, dispatchFunc(nil)} {
-		if c, err := New(modelConfig(t), d); err == nil || c != nil {
+		if c, err := newFixtureCoordinator(modelConfig(t), d); err == nil || c != nil {
 			t.Fatal("dispatcher nil diterima")
 		}
 	}
-	if c, err := New(nil, dispatcher); err == nil || c != nil {
+	if c, err := newFixtureCoordinator(nil, dispatcher); err == nil || c != nil {
 		t.Fatal("snapshot nil diterima")
 	}
 	// Context dipertahankan sampai adapter; error mentah tidak menjadi error komponen.
 	cancelled, cancel := context.WithCancel(context.Background())
 	cancel()
-	c, err = New(modelConfig(t), dispatchFunc(func(r *http.Request, _ config.Relay) (*http.Response, error) {
+	c, err = newFixtureCoordinator(modelConfig(t), dispatchFunc(func(r *http.Request, _ config.Relay) (*http.Response, error) {
 		if r.Context().Err() == nil {
 			t.Fatal("context cancellation hilang")
 		}
@@ -186,7 +186,7 @@ func modelConfig(t *testing.T, edits ...string) *config.Config {
 }
 
 func TestModelCatalog(t *testing.T) {
-	c, err := New(modelConfig(t), dispatchFunc(func(*http.Request, config.Relay) (*http.Response, error) {
+	c, err := newFixtureCoordinator(modelConfig(t), dispatchFunc(func(*http.Request, config.Relay) (*http.Response, error) {
 		t.Fatal("katalog melakukan dispatch")
 		return nil, nil
 	}))
@@ -215,7 +215,7 @@ func chatRequest(body string) *http.Request {
 }
 func TestModelCoordinatorDispatch(t *testing.T) {
 	calls := 0
-	c, err := New(modelConfig(t), dispatchFunc(func(r *http.Request, relay config.Relay) (*http.Response, error) {
+	c, err := newFixtureCoordinator(modelConfig(t), dispatchFunc(func(r *http.Request, relay config.Relay) (*http.Response, error) {
 		calls++
 		b, err := io.ReadAll(r.Body)
 		if err != nil || string(b) != `{"model":"provider-model-id","n":9007199254740993}` || r.URL.String() != "https://api.provider.example/v1/chat/completions" || r.Header.Get("Authorization") != "Bearer synthetic-provider-key" || r.GetBody != nil || relay.ID != "warp-1" {
@@ -241,7 +241,7 @@ func TestGatewayStreamAdmission(t *testing.T) {
 	for _, requested := range []bool{true, false} {
 		calls := 0
 		body := &countedBody{Reader: strings.NewReader("data: [DONE]\n\n")}
-		c, err := New(modelConfig(t, "stream_buffer_bytes: 8388608", "stream_buffer_bytes: 16384"), dispatchFunc(func(*http.Request, config.Relay) (*http.Response, error) {
+		c, err := newFixtureCoordinator(modelConfig(t, "stream_buffer_bytes: 8388608", "stream_buffer_bytes: 16384"), dispatchFunc(func(*http.Request, config.Relay) (*http.Response, error) {
 			calls++
 			return &http.Response{StatusCode: 200, Header: http.Header{"Content-Type": {"text/event-stream; charset=utf-8"}}, Body: body}, nil
 		}))
@@ -267,7 +267,7 @@ func TestGatewayStreamAdmission(t *testing.T) {
 		}
 	}
 	calls := 0
-	c, err := New(modelConfig(t, "stream_buffer_bytes: 8388608", "stream_buffer_bytes: 32768"), dispatchFunc(func(r *http.Request, _ config.Relay) (*http.Response, error) {
+	c, err := newFixtureCoordinator(modelConfig(t, "stream_buffer_bytes: 8388608", "stream_buffer_bytes: 32768"), dispatchFunc(func(r *http.Request, _ config.Relay) (*http.Response, error) {
 		calls++
 		data, _ := io.ReadAll(r.Body)
 		if string(data) != `{"model":"provider-model-id","stream":true}` {

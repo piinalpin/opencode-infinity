@@ -10,30 +10,27 @@ import (
 	"opencode-infinity/internal/pool"
 	"opencode-infinity/internal/status"
 	"sync"
-	"time"
 )
 
 // NewHealthAPI merakit handler operasional terpisah, tanpa dispatcher atau probe.
 // shortcut: pasang pada listener privat saat runtime dirakit; guard bukan bukti binding jaringan.
-func NewHealthAPI(c *config.Config, build status.Build, clock func() time.Time) (http.Handler, *pool.Health, error) {
+func newHealthAPI(c *config.Config, build status.Build, state *pool.Manager) (http.Handler, error) {
 	if !c.Validated() {
-		return nil, nil, errors.New("health_invalid_component")
+		return nil, errors.New("health_invalid_component")
 	}
 	owned := *c
 	limits := owned.Limits()
 	// Batas konservatif schema tetap: envelope/build/time dan tiap relay (ID <=64).
 	// Tiga kali bound mencakup salinan view/proyeksi serta buffer encode/body.
-	bound := int64(2048 + 1024*len(owned.Relays()))
-	if limits.SnapshotBytes < bound || limits.ParallelStatus > limits.MonitoringBytes/(3*bound) {
-		return nil, nil, errors.New("health_invalid_component")
-	}
-	state, err := pool.NewHealth(&owned, clock)
-	if err != nil {
-		return nil, nil, errors.New("health_invalid_component")
+	bound := int64(4096 + 2048*len(owned.Relays()) + 1024*len(state.View().Models))
+	// Worker probe memakai scratch bounded; perkalian view aman karena registry finite.
+	workerBytes := int64(state.ProbeConcurrency()) * 4096
+	if limits.SnapshotBytes < bound || limits.ParallelStatus > (limits.MonitoringBytes-workerBytes)/(3*bound) {
+		return nil, errors.New("health_invalid_component")
 	}
 	projection, err := status.NewHealth(build)
 	if err != nil {
-		return nil, nil, errors.New("health_invalid_component")
+		return nil, errors.New("health_invalid_component")
 	}
 	policy, _ := access.New(&owned)
 	h := &healthHandler{state: state, projection: projection, maxSnapshot: limits.SnapshotBytes, maxParallel: limits.ParallelStatus}
@@ -49,11 +46,11 @@ func NewHealthAPI(c *config.Config, build status.Build, clock func() time.Time) 
 		writeModelError(w, newRequestID(), &gateway.Failure{Code: "endpoint_not_found", Status: 404})
 	})
 	guard, _ := RequireAdmin(policy, canonicalRoutes(mux))
-	return guard, state, nil
+	return guard, nil
 }
 
 type healthHandler struct {
-	state                            *pool.Health
+	state                            *pool.Manager
 	projection                       *status.Health
 	mu                               sync.Mutex
 	active, maxParallel, maxSnapshot int64

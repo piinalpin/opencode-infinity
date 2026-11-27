@@ -23,7 +23,7 @@ func TestFixedAdmissionCapacityCategory(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			calls := 0
-			c, err := New(modelConfig(t, tc.edits...), dispatchFunc(func(*http.Request, config.Relay) (*http.Response, error) {
+			c, err := newFixtureCoordinator(modelConfig(t, tc.edits...), dispatchFunc(func(*http.Request, config.Relay) (*http.Response, error) {
 				calls++
 				return &http.Response{StatusCode: 200, Body: io.NopCloser(strings.NewReader(`{}`))}, nil
 			}))
@@ -77,7 +77,7 @@ func TestFixedAdmissionBodyBudget(t *testing.T) {
 	for _, unknown := range []bool{false, true} {
 		t.Run(map[bool]string{false: "known", true: "unknown"}[unknown], func(t *testing.T) {
 			var calls atomic.Int32
-			c, err := New(modelConfig(t, "body_buffer_bytes: 67108864", "body_buffer_bytes: 300000"), dispatchFunc(func(*http.Request, config.Relay) (*http.Response, error) {
+			c, err := newFixtureCoordinator(modelConfig(t, "body_buffer_bytes: 67108864", "body_buffer_bytes: 300000"), dispatchFunc(func(*http.Request, config.Relay) (*http.Response, error) {
 				calls.Add(1)
 				return &http.Response{StatusCode: 200, Body: io.NopCloser(strings.NewReader(`{}`))}, nil
 			}))
@@ -121,7 +121,7 @@ func TestFixedAdmissionBodyBudget(t *testing.T) {
 
 func TestFixedAdmissionPendingWorkAndCatalogue(t *testing.T) {
 	var calls atomic.Int32
-	c, err := New(modelConfig(t, "max_active_requests: 20", "max_active_requests: 1"), dispatchFunc(func(*http.Request, config.Relay) (*http.Response, error) {
+	c, err := newFixtureCoordinator(modelConfig(t, "max_active_requests: 20", "max_active_requests: 1"), dispatchFunc(func(*http.Request, config.Relay) (*http.Response, error) {
 		calls.Add(1)
 		return &http.Response{StatusCode: 200, Body: io.NopCloser(strings.NewReader(`{}`))}, nil
 	}))
@@ -207,7 +207,7 @@ func TestFixedAdmissionReleaseLifecycle(t *testing.T) {
 			t.Run(name, func(t *testing.T) {
 				var calls atomic.Int32
 				body := &countedBody{Reader: fixedTailReader{err: readErr}}
-				c, err := New(modelConfig(t, "max_active_requests: 20", "max_active_requests: 1"), dispatchFunc(func(*http.Request, config.Relay) (*http.Response, error) {
+				c, err := newFixtureCoordinator(modelConfig(t, "max_active_requests: 20", "max_active_requests: 1"), dispatchFunc(func(*http.Request, config.Relay) (*http.Response, error) {
 					if calls.Add(1) == 1 {
 						header := http.Header{"Content-Type": {"application/json"}}
 						if stream {

@@ -1,7 +1,7 @@
 # Keputusan opencode-infinity
 
-Versi: 0.1.22
-Tanggal: 26 November 2026
+Versi: 0.1.23
+Tanggal: 27 November 2026
 
 Catatan ini memisahkan keputusan eksplisit pengguna dari usulan dan pertanyaan yang belum selesai. Keputusan terkonfirmasi diterapkan ke PRD/arsitektur terkait; status keseluruhan draft tidak otomatis menjadi approved.
 
@@ -238,6 +238,16 @@ Catatan ini memisahkan keputusan eksplisit pengguna dari usulan dan pertanyaan y
 - **Finalisasi:** pending maupun admitted dilepas tepat sekali. Lease respons tetap hidup sampai forwarding selesai/caller Close, termasuk setelah EOF/error/cancellation; cleanup jaringan tidak membebaskan buffer yang masih dipakai caller.
 - **Batas:** tidak menghubungkan observasi readiness sebagai precheck eligibility, membuat health/mode/circuit S02, least-inflight, fallback, cooldown, strict binding atau runtime/deployment baru. Accounting byte konservatif bukan bukti RSS; slot outbound bukan seluruh socket idle/probe. Default final, provider/WARP, performa dan gerbang M0 tetap terbuka. Tidak mengotorisasi commit atau push.
 - **Acuan:** EP-03-S01, AC-18, C-4/Q-3/Q-5, D-019/D-022/D-023/D-024/D-025; [kontrak dan bukti admission](admission-fixed.md).
+
+### D-027 Eligibility health dan mode independen EP-03-S02
+
+- **Status:** ditetapkan pengguna pada 27 November 2026 melalui persetujuan cakupan lokal independen dan rencana implementasi S02.
+- **Keputusan:** lanjutkan komponen serta fixture lokal S02 sementara penerimaan produk S01/T06/M0 tetap parsial. Satu owner Pool Manager menggabungkan health/circuit, mode dan reservasi atomik; handler model/admin dirakit dari snapshot serta owner yang sama, tanpa jalur capacity-only opsional.
+- **Policy:** transport SOCKS5/HTTPS unknown/stale atau circuit belum closed menolak generasi baru. Probe tidak mengubah serving/draining/disabled; mode non-serving dan accepting=false menolak assignment baru tanpa membatalkan stream admitted. Availability upstream ID + alias yang unknown tidak dianggap sehat dan tidak memblokir transport sehat; circuit availability open yang fresh hanya memblokir scope terkait, sedangkan expiry kembali unknown. Tidak ada probe generasi berbayar otomatis.
+- **Profil bukti lokal:** threshold 3 gagal/2 sukses; interval 30 detik dengan jitter ±20%, timeout 5 detik, freshness 90 detik, backoff dengan delay maksimal 120 detik. Parameter wajib eksplisit pada constructor; ini bukan default produksi, yang tetap TBD pada S02 sebelum M2.1 diterima.
+- **Resource dan status:** scheduler lokal memiliki dua job transport per relay dan worker bounded, berbagi ledger outbound dengan generasi; adapter fixture menghormati Context dan menutup socket sebelum release. Snapshot teredaksi memisahkan mode/observasi/circuit/scoped availability; read tidak memicu probe. Readiness tetap default_primary_transport, bukan klaim provider atau admission selalu berhasil. State/snapshot/monitoring memperhitungkan registry relay dan model.
+- **Batas:** tidak mengimplementasikan least-inflight, fallback/retry/cooldown, binding, maintenance/shutdown penuh, dashboard, listener/deployment/transport runtime, provider/WARP nyata atau benchmark/RSS. Tidak mengotorisasi commit/push. Hasil AC dan command berada pada [kontrak eligibility](eligibility-relay.md).
+- **Acuan:** EP-03-S02, AC-16, C-4/C-9, Q-2/Q-9, D-025/D-026, [arsitektur](ARCHITECTURE.md#eligibility-dan-kapasitas).
 
 ## Status pertanyaan terbuka
 

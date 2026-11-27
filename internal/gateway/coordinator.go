@@ -20,7 +20,7 @@ import (
 type Coordinator struct {
 	registry        *catalog.Registry
 	boundary        *transport.RequestBoundary
-	admission       *pool.Admission
+	admission       *pool.Manager
 	dispatch        Dispatcher
 	maxBody, budget int64
 	catalogBudget   int64
@@ -64,14 +64,17 @@ func (c *Coordinator) Models(id string) (*http.Response, error) {
 	return &http.Response{StatusCode: 200, Header: http.Header{"Content-Type": {"application/json"}}, Body: &responseBody{body: io.NopCloser(bytes.NewReader(data)), release: lease.Release, cancel: func() {}}}, nil
 }
 
-func New(c *config.Config, d Dispatcher) (*Coordinator, error) {
+func New(c *config.Config, d Dispatcher, clock func() time.Time, policy pool.Policy) (*Coordinator, *pool.Manager, error) {
 	if !c.Validated() || nilDispatcher(d) {
-		return nil, errors.New("invalid_gateway_component")
+		return nil, nil, errors.New("invalid_gateway_component")
 	}
 	owned := *c
 	registry, _ := catalog.New(&owned)
 	boundary, _ := transport.NewRequestBoundary(&owned)
-	admission, _ := pool.NewAdmission(&owned)
+	admission, err := pool.New(&owned, clock, policy)
+	if err != nil {
+		return nil, nil, errors.New("invalid_gateway_component")
+	}
 	// Dua salinan metadata maksimum: resolve coordinator dan boundary credential.
 	// 128 byte membatasi header struct Model; setiap elemen slice string 16 byte pada amd64.
 	var metadata int64
@@ -87,7 +90,7 @@ func New(c *config.Config, d Dispatcher) (*Coordinator, error) {
 	maxBody := owned.Server().MaxBodyBytes
 	// Dua buffer wire/remap; 256 KiB untuk scanner JSON, header, key dan copy respons 32 KiB.
 	budget := 2*(maxBody+1) + 2*metadata + 256*1024
-	return &Coordinator{registry: registry, boundary: boundary, admission: admission, dispatch: d, maxBody: maxBody, budget: budget, catalogBudget: 2*metadata + 256*1024, timeout: time.Duration(owned.Timeouts().TotalRequestSeconds) * time.Second, idle: time.Duration(owned.Timeouts().StreamIdleSeconds) * time.Second}, nil
+	return &Coordinator{registry: registry, boundary: boundary, admission: admission, dispatch: d, maxBody: maxBody, budget: budget, catalogBudget: 2*metadata + 256*1024, timeout: time.Duration(owned.Timeouts().TotalRequestSeconds) * time.Second, idle: time.Duration(owned.Timeouts().StreamIdleSeconds) * time.Second}, admission, nil
 }
 
 func nilDispatcher(d Dispatcher) bool {
@@ -180,7 +183,11 @@ func (c *Coordinator) Chat(in *http.Request, id string) (*http.Response, error) 
 	if streamReserved {
 		streamBytes = StreamCopyBytes
 	}
-	if err := reservation.AdmitFixed(model.PrimaryRelay, streamBytes); err != nil {
+	upstreamID := id
+	if upstreamID == "" {
+		upstreamID = c.registry.DefaultUpstream()
+	}
+	if err := reservation.AdmitFixed(upstreamID, model.Alias, streamBytes); err != nil {
 		if errors.Is(err, pool.ErrCapacityExceeded) {
 			return nil, failure("gateway_capacity_exceeded")
 		}

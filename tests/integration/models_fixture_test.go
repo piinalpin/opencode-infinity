@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"opencode-infinity/internal/config"
-	"opencode-infinity/internal/httpapi"
 	"opencode-infinity/internal/testutil"
 )
 
@@ -33,6 +32,7 @@ func (d *modelFixtureDispatcher) Dispatch(r *http.Request, relay config.Relay) (
 }
 
 type modelHarness struct {
+	config             *config.Config
 	handler            http.Handler
 	primary, secondary *testutil.Upstream
 	a, b               *testutil.SOCKS5
@@ -89,11 +89,11 @@ func newModelHarness(t *testing.T, primary, secondary http.HandlerFunc, edits ..
 		client.Transport.(*http.Transport).ResponseHeaderTimeout = time.Duration(c.Timeouts().ResponseHeadersSeconds) * time.Second
 	}
 	clients := map[string]*http.Client{"warp-1": ca, "warp-2": cb}
-	h, err := httpapi.NewAPI(c, &modelFixtureDispatcher{clients: clients})
+	h, err := fixtureAPI(c, &modelFixtureDispatcher{clients: clients})
 	if err != nil {
 		t.Fatal(err)
 	}
-	return &modelHarness{handler: h, primary: p, secondary: s, a: a, b: b, logs: []*dialLog{da, db}, clients: clients}
+	return &modelHarness{config: c, handler: h, primary: p, secondary: s, a: a, b: b, logs: []*dialLog{da, db}, clients: clients}
 }
 
 func (h *modelHarness) verifyPath(t *testing.T) {
