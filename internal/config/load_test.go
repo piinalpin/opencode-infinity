@@ -224,3 +224,28 @@ func FuzzTargetsAndLimits(f *testing.F) {
 		}
 	})
 }
+
+func TestLeastInflightConfiguration(t *testing.T) {
+	for _, affinity := range []string{"", "        affinity: none\n"} {
+		if _, err := loadTest(validYAML + "        routing: least_inflight\n        stateless: true\n" + affinity); err != nil {
+			t.Fatalf("least-inflight stateless eksplisit ditolak: %v", err)
+		}
+	}
+	for _, value := range []string{"false", "'true'", "'false'", "yes", "no", "on", "off", "TRUE", "False", "1", "null", "''", "[]", "{}", "!custom true"} {
+		t.Run(value, func(t *testing.T) {
+			rejectConfig(t, validYAML+"        routing: least_inflight\n        stateless: "+value+"\n")
+		})
+	}
+	rejectConfig(t, validYAML+"        routing: least_inflight\n")
+	rejectConfig(t, validYAML+"        routing: least_inflight\n        stateless: true\n        affinity: strict\n")
+	rejectConfig(t, validYAML+"        routing: fixed\n        stateless: true\n        affinity: strict\n")
+	rejectConfig(t, validYAML+"        stateless: true\n        stateless: true\n")
+	for _, field := range []string{"routing", "alias", "upstream_model", "primary_relay"} {
+		rejectConfig(t, validYAML+"        "+field+": true\n")
+	}
+	for _, value := range []string{"true", "false"} {
+		if _, err := loadTest(validYAML + "        stateless: " + value + "\n"); err != nil {
+			t.Fatalf("fixed dengan boolean canonical %s ditolak", value)
+		}
+	}
+}

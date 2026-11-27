@@ -9,7 +9,7 @@ Aturan kontribusi dan guardrail agent tersedia di [AGENTS.md](../AGENTS.md).
 | Dokumen | Isi | Status acuan |
 |---|---|---|
 | [PRD](PRD.md) | Masalah, pengguna, cakupan, kapabilitas, target kualitas, dan keputusan terbuka | Draft 0.1.13 |
-| [DECISIONS](DECISIONS.md) | Keputusan eksplisit pengguna dan bagian pertanyaan yang masih terbuka | Catatan 0.1.23; D-001–D-027 terkonfirmasi; profil D-019 provisional |
+| [DECISIONS](DECISIONS.md) | Keputusan eksplisit pengguna dan bagian pertanyaan yang masih terbuka | Catatan 0.1.24; D-001–D-028 terkonfirmasi; profil D-019 provisional |
 | [ARCHITECTURE](ARCHITECTURE.md) | Komponen, alur, state, lifecycle, dan [struktur project](ARCHITECTURE.md#13-struktur-project-yang-disarankan), termasuk MicroWARP | Draft 0.1.4 |
 | [TECHSTACK](TECHSTACK.md) | Pilihan stack/pin untuk spike serta batas validasi lanjutan | Spike M0 0.1.3; pin dan fixture T02 tersedia |
 | [ROADMAP](ROADMAP.md) | Milestone M0–M3, dependensi, serta gerbang MVP/P1 | Draft 0.1.2 |
@@ -49,6 +49,8 @@ Hasil pemeriksaan lingkungan tidak menyatakan integrasi client, transport WARP, 
 [Admission kapasitas primary fixed](admission-fixed.md) tersedia melalui EP-03-S01/D-026: persiapan body tetap dibatasi sebelum parsing, lalu kapasitas gateway/relay/outbound dan stream deklaratif diambil secara atomik. Saturasi memberi `429 gateway_capacity_exceeded`; finalisasi mempertahankan lease sampai forwarding selesai dan melepas tepat sekali. Bukti S01 dilengkapi eligibility health/mode lokal S02; cooldown S05 tetap terbuka. Bukti lokal tidak menggantikan accounting koneksi runtime, penerimaan produk atau M0.
 
 [Eligibility health dan mode](eligibility-relay.md) tersedia melalui EP-03-S02/D-027: satu owner melakukan pemeriksaan transport/circuit/mode bersama reservasi atomik. Scheduler fixture bounded berbagi cap outbound; probe sukses tidak mengaktifkan draining/disabled, dan penolakan 503 tidak menambah koneksi generasi/direct. Availability model tetap unknown tanpa sumber aman; default produksi, runtime/provider/WARP, cooldown S05 dan penerimaan M0 tetap terbuka.
+
+[Least-inflight model stateless](least-inflight.md) tersedia melalui EP-03-S03/D-028: opt-in stateless true/none, kandidat ordered upstream allowlist, minimum total inflight dengan tie stabil, serta pemilihan/reservasi/dispatch relay yang konsisten. Cooldown relay minimum eksplisit, kapasitas dan stream diuji pada dua SOCKS5 ke satu upstream TLS. Interpretasi 429 S05, retry S04, provider/WARP, performa dan penerimaan produk tetap terbuka; fixed tetap default.
 
 ## Indeks epic MVP
 

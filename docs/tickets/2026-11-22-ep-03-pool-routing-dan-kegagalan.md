@@ -1,7 +1,7 @@
 ---
 title: "Request tetap terkendali ketika kondisi relay berubah"
 date: 2026-11-22
-version: 2
+version: 3
 status: approved
 approved_by: pengguna
 approved_at: 2026-11-23
@@ -197,6 +197,16 @@ Least-inflight hanya aman untuk model yang dinyatakan stateless dan tidak memaka
 - Di luar scope: Rebinding strict otomatis, pergantian upstream/key, rotasi WARP otomatis, serta controller P1.
 - Diblokir oleh: [EP-03-S02](#ep-03-s02)
 - Acuan keputusan dan penjabaran: mengikuti bagian Keputusan dan kesiapan pada epic ini; persetujuan tercatat pada D-015.
+
+### Hasil pengerjaan 27 November 2026
+
+[D-028](../DECISIONS.md#d-028-least-inflight-stateless-dan-cooldown-minimum-ep-03-s03) menyetujui komponen dan fixture lokal independen, termasuk cooldown minimum agar seluruh AC4 terbukti. [Kontrak least-inflight dan hasil tes](../least-inflight.md) tersedia. Status approved tetap persetujuan tiket; penerimaan produk S02/S01/T06/M0 tetap parsial.
+
+- **AC1 parsial produk:** kandidat allowlist upstream dipilih menurut total generasi inflight per relay bersama reservasi atomik. ID pilihan dipakai pada dispatch; dua SOCKS5 menuju authority TLS yang sama membuktikan stream aktif menahan slot dan request berikutnya memakai relay lain.
+- **AC2 parsial produk:** tie memilih anggota pertama dalam urutan allowlist, termasuk urutan warp-2 sebelum warp-1 dan pengulangan serial setelah release. Tidak menjanjikan round-robin/fairness serial.
+- **AC3 parsial produk:** least_inflight hanya stateless true/affinity none; missing/false/strict/boolean ambigu dan mode unknown ditolak. Fixed tetap default; metadata config/catalog disalin. Provider/model nyata tidak dinyatakan stateless dari fixture.
+- **AC4 parsial produk:** kandidat cooldown maupun full-low dilewati, deadline exact expiry pulih, dan probe sukses tidak menghapus cooldown. Semua state-ineligible memberi 503; kandidat state-eligible penuh memberi 429, tanpa dispatch tambahan. Cooldown minimum relay-wide eksplisit tidak menafsirkan 429/Retry-After S05.
+- Konkurensi/release, budget, metadata teredaksi, dan batas fixture dibuktikan pada command di dokumen kontrak. Tidak ada runtime/deployment/provider/WARP/native, benchmark/RSS, retry S04 atau scope 429 pada S05 baru. Contoh default tetap fixed.
 
 <a id="ep-03-s04"></a>
 

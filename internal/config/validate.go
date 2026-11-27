@@ -92,8 +92,8 @@ func validateDocument(d *document) error {
 			if m.Affinity == "" {
 				m.Affinity = "none"
 			}
-			// shortcut: fixed/none saja; mode lain menunggu kontrak dan implementasi task pool/affinity.
-			if m.Routing != "fixed" || m.Affinity != "none" {
+			// shortcut: strict binding menunggu EP-04; least hanya deklarasi stateless eksplisit.
+			if m.Affinity != "none" || (m.Routing != "fixed" && m.Routing != "least_inflight") || (m.Routing == "least_inflight" && !m.Stateless) {
 				return errors.New("config_unsupported_routing")
 			}
 		}

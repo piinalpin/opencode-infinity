@@ -21,7 +21,7 @@ Snapshot yang sudah dimuat tidak mengikuti perubahan reader, environment atau fi
 Contoh lengkap: [examples/infinity.yaml](../examples/infinity.yaml). Angka contoh adalah profil provisional untuk pengembangan/pengujian, bukan default numerik produk final atau konfigurasi deployment pengguna.
 
 - Satu dokumen mapping YAML dengan `version: 1`; input kosong, dokumen tambahan termasuk kosong, trailing rusak, unknown field dan duplicate key ditolak.
-- Tipe scalar mengikuti field: integer untuk angka, string untuk identifier/URL/reference/mode. Nilai `null` dan string kosong eksplisit ditolak, termasuk pada field opsional; menghilangkan field opsional berbeda dari memberi nilai kosong.
+- Tipe scalar mengikuti field: integer untuk angka, string untuk identifier/URL/reference/mode, boolean canonical true/false untuk stateless sejak S03. Nilai `null` dan string kosong eksplisit ditolak, termasuk pada field opsional; menghilangkan field opsional berbeda dari memberi nilai kosong.
 - Anchor, alias, merge key dan custom tag ditolak. Komentar/whitespace akhir diperbolehkan. Tidak ada interpolasi environment/shell dalam isi YAML.
 - Maksimal 1 MiB input, dibaca paling banyak cap+1; depth 32, 20.000 node dan 4 KiB per scalar. Batas depth diberlakukan juga oleh parser sebelum konstruksi struct. Guard ini membatasi input konfigurasi, bukan membuktikan RSS runtime.
 - Maksimal 128 relay, 64 upstream, 256 model per upstream, 1.024 model total, serta 128 referensi pada setiap daftar relay. Minimal satu relay, satu upstream dan satu model per upstream.
@@ -41,9 +41,11 @@ Loader memakai `go.yaml.in/yaml/v4 v4.0.0`, pin [T02](M0-stack-dan-versi.md#2-ve
 | `relays[]` | `id`, `proxy_url`, `max_inflight` | Wajib; ID unik global; slot positif |
 | `upstreams[]` | `id`, `base_url`, `api_key_env` / `api_key_file`, `relays`, `models` | ID unik global; satu sumber key; allowlist relay tidak kosong dan tidak ganda |
 | `models[]` | `alias`, `upstream_model`, `primary_relay` | Wajib; alias unik per upstream; primary anggota allowlist upstream |
+| `models[]` | `stateless` | Opsional boolean canonical true/false, default false; least_inflight mensyaratkan true |
 | `models[]` | `routing`, `affinity`, `fallback_relays` | Jika dihilangkan menjadi `fixed`, `none`, dan daftar kosong; nilai eksplisit harus valid |
 
-Tahap ini menerima `fixed`/`none`. `strict`, `least_inflight`, kombinasi keduanya, serta mode tak dikenal ditolak sebagai tidak didukung. Dukungan mode berikutnya memerlukan kontrak dan implementasi pada task pemilik; tidak ada klaim strict affinity client nyata. Semua referensi relay harus ada; fallback harus anggota allowlist, tidak ganda dan tidak memuat primary. Alias yang sama boleh dipakai upstream berbeda.
+Sejak [EP-03-S03/D-028](least-inflight.md), routing menerima fixed atau least_inflight, hanya dengan affinity none. Least-inflight wajib stateless true eksplisit; absent/false, strict dan mode unknown ditolak. Boolean stateless hanya true/false huruf kecil; string, yes/no/on/off, angka, null dan uppercase boolean ditolak sebelum decode typed. Fixed tetap default, termasuk jika stateless true. Kandidat least memakai urutan allowlist upstream.relays; primary tetap wajib valid, dan fallback tidak mengaktifkan retry. Semua referensi relay harus ada; fallback anggota allowlist, tidak ganda dan tidak memuat primary. Alias yang sama boleh dipakai upstream berbeda. Kontrak dan contoh fixture opt-in tersedia pada [dokumen least-inflight](least-inflight.md#konfigurasi-dan-kandidat); contoh infinity.yaml tetap fixed.
+
 
 Listener contoh memakai loopback. Wildcard yang dipilih secara eksplisit hanya mengatur bind proses/container. Publish port host tetap loopback sesuai [D-006](DECISIONS.md#d-006-host-uji-amd64-dan-tailscale-di-host); parser tidak memvalidasi Compose/Tailscale atau menetapkan listener/tailnet deployment aktif.
 

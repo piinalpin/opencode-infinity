@@ -9,13 +9,13 @@ import (
 	"testing"
 )
 
-func fixture(t *testing.T) *config.Config {
+func fixture(t *testing.T, edits ...string) *config.Config {
 	t.Helper()
 	b, err := os.ReadFile("../../examples/infinity.yaml")
 	if err != nil {
 		t.Fatal(err)
 	}
-	c, err := config.Load(strings.NewReader(string(b)), config.Sources{LookupEnv: func(name string) (string, bool) {
+	c, err := config.Load(strings.NewReader(strings.NewReplacer(edits...).Replace(string(b))), config.Sources{LookupEnv: func(name string) (string, bool) {
 		v, ok := map[string]string{"INFINITY_GATEWAY_TOKEN": "synthetic-gateway-credential-12345", "INFINITY_ADMIN_TOKEN": "synthetic-admin-credential-67890", "INFINITY_UPSTREAM_KEY": "synthetic-provider-credential"}[name]
 		return v, ok
 	}})
@@ -117,4 +117,24 @@ func TestConcurrentCatalogCopies(t *testing.T) {
 		}()
 	}
 	wg.Wait()
+}
+
+func TestLeastInflightMetadataCopies(t *testing.T) {
+	c := fixture(t, "routing: fixed", "routing: least_inflight\n        stateless: true")
+	r, err := New(c)
+	if err != nil {
+		t.Fatal(err)
+	}
+	u, m, ok := r.Resolve("primary", "coding-default")
+	if !ok || !m.Stateless || m.Routing != "least_inflight" {
+		t.Fatal("deklarasi stateless hilang dari registry")
+	}
+	m.Stateless = false
+	u.Models[0].Stateless = false
+	u.Models[0].Routing = "fixed"
+	u.Relays[0] = "mutated"
+	_, next, ok := r.Resolve("primary", "coding-default")
+	if !ok || !next.Stateless || next.Routing != "least_inflight" || !c.Upstreams()[0].Models[0].Stateless {
+		t.Fatal("metadata least dimutasi melalui salinan")
+	}
 }

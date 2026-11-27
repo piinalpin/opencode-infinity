@@ -57,12 +57,16 @@ type HealthSnapshot struct {
 }
 
 type ModelHealth struct {
+	Routing      string      `json:"routing"`
+	Stateless    bool        `json:"stateless"`
 	Upstream     string      `json:"upstream"`
 	Alias        string      `json:"alias"`
 	PrimaryRelay string      `json:"primary_relay"`
 	Availability Observation `json:"availability"`
 }
 type RelayHealth struct {
+	CooldownUntil  *time.Time  `json:"cooldown_until"`
+	CooldownActive bool        `json:"cooldown_active"`
 	Mode           string      `json:"mode"`
 	ID             string      `json:"id"`
 	DefaultPrimary bool        `json:"default_primary"`
@@ -80,10 +84,15 @@ type Observation struct {
 func (h *Health) Snapshot(view pool.HealthView) HealthSnapshot {
 	result := HealthSnapshot{Scope: "default_primary_transport", Live: view.Revision != 0, Ready: view.Ready, Accepting: view.Accepting, Application: h.build, Revision: view.Revision, StateChangedAt: view.StateChangedAt.UTC(), SnapshotAt: view.SnapshotAt.UTC(), DefaultUpstream: view.DefaultUpstream, UpstreamModel: "unknown", Relays: make([]RelayHealth, 0, len(view.Relays))}
 	for _, r := range view.Relays {
-		result.Relays = append(result.Relays, RelayHealth{ID: r.ID, Mode: r.Mode, DefaultPrimary: r.DefaultPrimary, SOCKS5: observation(r.SOCKS5), HTTPS: observation(r.HTTPS)})
+		var until *time.Time
+		if !r.CooldownUntil.IsZero() {
+			utc := r.CooldownUntil.UTC()
+			until = &utc
+		}
+		result.Relays = append(result.Relays, RelayHealth{CooldownUntil: until, CooldownActive: r.CooldownActive, ID: r.ID, Mode: r.Mode, DefaultPrimary: r.DefaultPrimary, SOCKS5: observation(r.SOCKS5), HTTPS: observation(r.HTTPS)})
 	}
 	for _, m := range view.Models {
-		result.Models = append(result.Models, ModelHealth{Upstream: m.Upstream, Alias: m.Alias, PrimaryRelay: m.PrimaryRelay, Availability: observation(m.Availability)})
+		result.Models = append(result.Models, ModelHealth{Routing: m.Routing, Stateless: m.Stateless, Upstream: m.Upstream, Alias: m.Alias, PrimaryRelay: m.PrimaryRelay, Availability: observation(m.Availability)})
 	}
 	return result
 }

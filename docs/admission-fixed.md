@@ -4,7 +4,7 @@ Tanggal: 26 November 2026
 Task: [EP-03-S01](tickets/2026-11-22-ep-03-pool-routing-dan-kegagalan.md#ep-03-s01)  
 Status: komponen dan fixture lokal tersedia; penerimaan produk terintegrasi tetap terbuka
 
-[D-026](DECISIONS.md#d-026-admission-fixed-independen-ep-03-s01) menyetujui pekerjaan lokal independen sementara EP-02-S05, EP-01-T06 dan gerbang M0 masih parsial. Pembuktian ini memakai primary fixture yang tersedia. Keanggotaan relay dalam konfigurasi bukan bukti health runtime. Pembaruan 27 November 2026 menambahkan [eligibility health/mode/circuit lokal S02](eligibility-relay.md), sedangkan cooldown mengikuti S05; tidak ada snapshot readiness yang dipakai sebagai pemeriksaan sebelum reservasi.
+[D-026](DECISIONS.md#d-026-admission-fixed-independen-ep-03-s01) menyetujui pekerjaan lokal independen sementara EP-02-S05, EP-01-T06 dan gerbang M0 masih parsial. Pembuktian ini memakai primary fixture yang tersedia. Keanggotaan relay dalam konfigurasi bukan bukti health runtime. Pembaruan 27 November 2026 menambahkan [eligibility health/mode/circuit lokal S02](eligibility-relay.md), S03 menambahkan cooldown relay minimum eksplisit, sedangkan interpretasi 429/cooldown provider mengikuti S05; tidak ada snapshot readiness yang dipakai sebagai pemeriksaan sebelum reservasi.
 
 ## Pemilik dan transisi lease
 
@@ -14,7 +14,7 @@ Status: komponen dan fixture lokal tersedia; penerimaan produk terintegrasi teta
 |---|---|
 | `pool.New(snapshot, clock, policy)` | Memerlukan snapshot tervalidasi; mengambil batas eksplisit dari konfigurasi |
 | `Begin(bytes)` | Memeriksa `pending + active < max_active_requests` dan sisa buffer body sebelum alokasi/read; mengambil satu pending lease serta byte konservatif |
-| `Reservation.AdmitFixed(upstream, alias, streamBytes)` | Menentukan primary dari scope mapping server; memeriksa lease, mode/health/circuit serta kapasitas gateway/relay/outbound/stream; lalu memindahkan pending ke active dan mengambil seluruh slot terkait dalam satu commit |
+| `Reservation.Admit(upstream, alias, streamBytes) (relayID, error)` | Menentukan primary dari scope mapping server; memeriksa lease, mode/health/circuit serta kapasitas gateway/relay/outbound/stream; lalu memindahkan pending ke active dan mengambil seluruh slot terkait dalam satu commit |
 | `Reservation.AdmitLocal()` | Memindahkan pending ke active untuk katalog lokal; tidak mengambil relay, outbound atau stream |
 | `Reservation.ReserveStream(bytes)` | Hanya untuk generasi yang sudah di-admit dan mendapat SSE tanpa deklarasi stream; mengambil byte sebelum alokasi buffer forwarding |
 | `Reservation.Release()` | Mengurangi counter sesuai tahap pending/admitted tepat sekali; panggilan berulang atau konkuren tidak menggandakan pelepasan |
@@ -23,7 +23,7 @@ Lease berada dalam satu tahap: pending, admitted, lalu released. Lease tidak bol
 
 Seluruh pemeriksaan promosi mendahului mutasi counter di bawah mutex. Promosi gagal tidak mengambil sebagian slot gateway/relay/outbound/stream. Pending dan byte yang sudah dimiliki dilepas melalui finalisasi caller. Fixed tidak mencari relay pengganti ketika primary penuh; request untuk primary lain masih dapat berjalan jika batas global dan primary tersebut mencukupi.
 
-Sejak [S02/D-027](eligibility-relay.md), `AdmitFixed` memeriksa mode, transport fresh/circuit closed dan availability scoped bersama kapasitas di owner yang sama. Startup unknown tidak di-admit. Availability model unknown tidak diklaim sehat dan tidak memblokir transport sehat. Constructor capacity-only lama digantikan; tidak ada snapshot readiness sebagai precheck. Cooldown, binding dan penerimaan runtime tetap terbuka.
+Sejak [S02/D-027](eligibility-relay.md), `Admit` memeriksa mode, transport fresh/circuit closed dan availability scoped bersama kapasitas di owner yang sama. Startup unknown tidak di-admit. Availability model unknown tidak diklaim sehat dan tidak memblokir transport sehat. Constructor capacity-only lama digantikan; tidak ada snapshot readiness sebagai precheck. Sejak [S03/D-028](least-inflight.md), operasi mengembalikan ID relay yang benar-benar direservasi; fixed tetap primary, least opt-in memakai kandidat upstream yang tervalidasi. Cooldown relay minimum eksplisit tersedia; cooldown provider, binding dan penerimaan runtime tetap terbuka.
 
 ## Byte sebelum alokasi
 

@@ -11,37 +11,63 @@ var (
 	ErrInvalidReservation = errors.New("invalid_reservation")
 )
 
-// AdmitFixed menerima primary dari mapping server tervalidasi, tanpa fallback.
-// Seluruh pemeriksaan mendahului satu commit gateway/relay/outbound/stream.
-func (r *Reservation) AdmitFixed(upstream, alias string, streamBytes int64) error {
+// Admit memilih dari mapping server dan mereservasi seluruh kapasitas secara atomik.
+// ID hasil adalah satu-satunya relay yang boleh dipakai caller untuk dispatch.
+func (r *Reservation) Admit(upstream, alias string, streamBytes int64) (string, error) {
 	if r == nil || r.owner == nil {
-		return ErrInvalidReservation
+		return "", ErrInvalidReservation
 	}
 	a := r.owner
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	if r.released || r.admitted || streamBytes < 0 {
-		return ErrInvalidReservation
+		return "", ErrInvalidReservation
 	}
-	relay := ""
-	for _, m := range a.view.Models {
+	now := a.clock()
+	var model *ModelHealthView
+	for i := range a.view.Models {
+		m := &a.view.Models[i]
 		if m.Upstream == upstream && m.Alias == alias {
-			relay = m.PrimaryRelay
-			if fresh(m.Availability, a.clock()) && m.Availability.Circuit == CircuitOpen {
-				return ErrNoEligibleRelay
-			}
+			model = m
 			break
 		}
 	}
-	if !a.transportEligibleLocked(relay, a.clock()) {
-		return ErrNoEligibleRelay
+	if model == nil || (fresh(model.Availability, now) && model.Availability.Circuit == CircuitOpen) {
+		return "", ErrNoEligibleRelay
 	}
-	cap, ok := a.relays[relay]
-	if !ok {
-		return ErrNoEligibleRelay
+	candidates := []string{model.PrimaryRelay}
+	if model.Routing == "least_inflight" {
+		if !model.Stateless {
+			return "", ErrNoEligibleRelay
+		}
+		candidates = a.candidates[upstream]
 	}
-	if a.active >= a.maxActive || a.outbound >= a.maxOutbound || a.used[relay] >= cap || streamBytes > a.maxStreamBytes-a.streamBytes {
-		return ErrCapacityExceeded
+	relay := ""
+	eligible := false
+	for _, id := range candidates {
+		if !a.transportEligibleLocked(id, now) {
+			continue
+		}
+		cap, ok := a.relays[id]
+		if !ok {
+			continue
+		}
+		eligible = true
+		if a.used[id] >= cap {
+			continue
+		}
+		if relay == "" || a.used[id] < a.used[relay] {
+			relay = id
+		}
+	}
+	if relay == "" {
+		if eligible {
+			return "", ErrCapacityExceeded
+		}
+		return "", ErrNoEligibleRelay
+	}
+	if a.active >= a.maxActive || a.outbound >= a.maxOutbound || streamBytes > a.maxStreamBytes-a.streamBytes {
+		return "", ErrCapacityExceeded
 	}
 	a.pending--
 	a.active++
@@ -51,7 +77,7 @@ func (r *Reservation) AdmitFixed(upstream, alias string, streamBytes int64) erro
 	r.admitted = true
 	r.relay = relay
 	r.streamBytes = streamBytes
-	return nil
+	return relay, nil
 }
 
 type Reservation struct {
@@ -84,7 +110,7 @@ func (r *Reservation) AdmitLocal() error {
 }
 
 // ReserveStream untuk SSE yang baru diketahui setelah header; caller wajib sudah di-admit.
-// Panggil sebelum membuat buffer forwarding. Stream deklaratif memakai AdmitFixed.
+// Panggil sebelum membuat buffer forwarding. Stream deklaratif memakai Admit.
 func (r *Reservation) ReserveStream(bytes int64) bool {
 	if r == nil || r.owner == nil {
 		return false

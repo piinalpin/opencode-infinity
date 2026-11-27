@@ -1,6 +1,6 @@
 # Keputusan opencode-infinity
 
-Versi: 0.1.23
+Versi: 0.1.24
 Tanggal: 27 November 2026
 
 Catatan ini memisahkan keputusan eksplisit pengguna dari usulan dan pertanyaan yang belum selesai. Keputusan terkonfirmasi diterapkan ke PRD/arsitektur terkait; status keseluruhan draft tidak otomatis menjadi approved.
@@ -248,6 +248,16 @@ Catatan ini memisahkan keputusan eksplisit pengguna dari usulan dan pertanyaan y
 - **Resource dan status:** scheduler lokal memiliki dua job transport per relay dan worker bounded, berbagi ledger outbound dengan generasi; adapter fixture menghormati Context dan menutup socket sebelum release. Snapshot teredaksi memisahkan mode/observasi/circuit/scoped availability; read tidak memicu probe. Readiness tetap default_primary_transport, bukan klaim provider atau admission selalu berhasil. State/snapshot/monitoring memperhitungkan registry relay dan model.
 - **Batas:** tidak mengimplementasikan least-inflight, fallback/retry/cooldown, binding, maintenance/shutdown penuh, dashboard, listener/deployment/transport runtime, provider/WARP nyata atau benchmark/RSS. Tidak mengotorisasi commit/push. Hasil AC dan command berada pada [kontrak eligibility](eligibility-relay.md).
 - **Acuan:** EP-03-S02, AC-16, C-4/C-9, Q-2/Q-9, D-025/D-026, [arsitektur](ARCHITECTURE.md#eligibility-dan-kapasitas).
+
+### D-028 Least-inflight stateless dan cooldown minimum EP-03-S03
+
+- **Status:** ditetapkan pengguna pada 27 November 2026 melalui persetujuan kebutuhan/cakupan lokal independen dan rencana S03.
+- **Keputusan:** lanjutkan komponen/fixture S03 dengan `stateless` boolean canonical true/false, default false. Least-inflight hanya true/none; fixed tetap default dan strict tetap ditolak. Model nyata tidak dinyatakan stateless dari fixture. Penerimaan produk S02/S01/T06/M0 tetap parsial.
+- **Kandidat dan tie:** ordered allowlist upstream.relays; minimum total generasi inflight per relay lintas alias/upstream, tie anggota pertama. Primary tetap valid pada schema/readiness tetapi tidak memberi bias least. Pemilihan dan seluruh reservasi atomik; gateway memakai ID relay hasil admission untuk satu dispatch. Tidak ada round-robin, retry/fallback atau pergantian model/upstream/key.
+- **Cooldown minimum:** deadline relay-wide eksplisit dari server tepercaya, extend-only, berlaku fixed/least. Unknown/invalid/past ditolak; future lebih pendek/sama no-op; expiry otomatis tepat deadline tanpa perubahan revisi. Tidak membatalkan lease admitted atau dihapus oleh probe sukses. Interpretasi 429/Retry-After dan scope upstream/model/credential tetap S05, bukan otomatis relay cooldown.
+- **Error dan resource:** semua kandidat state-ineligible 503; kandidat state-eligible tetapi penuh/global capacity habis 429. Pending/body precheck tetap 429; SSE tak terduga mengikuti D-023. Kandidat privat disimpan per upstream sekali, dengan allowance state 64 byte per referensi dan deadline finite per relay. Snapshot teredaksi menampilkan deklarasi dan deadline/active; readiness tetap default_primary_transport D-027.
+- **Batas:** tanpa transport/listener/deployment runtime, provider/WARP/native, benchmark/RSS, binding/maintenance/dashboard atau perubahan default numerik. Tidak mengotorisasi commit/push. [Kontrak least-inflight dan bukti AC](least-inflight.md) memisahkan kelulusan lokal dari penerimaan produk.
+- **Acuan:** EP-03-S03 AC1–AC4, C-4/Q-3/Q-5, D-013/D-027, [arsitektur routing](ARCHITECTURE.md#eligibility-dan-kapasitas).
 
 ## Status pertanyaan terbuka
 

@@ -42,6 +42,7 @@ type Relay struct {
 	MaxInflight int64  `yaml:"max_inflight"`
 }
 type Model struct {
+	Stateless      bool     `yaml:"stateless"`
 	Alias          string   `yaml:"alias"`
 	UpstreamModel  string   `yaml:"upstream_model"`
 	Routing        string   `yaml:"routing"`

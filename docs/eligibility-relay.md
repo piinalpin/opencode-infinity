@@ -10,9 +10,9 @@ Status: komponen dan fixture lokal independen; penerimaan produk terintegrasi te
 
 `pool.New(config, clock, policy)` menghasilkan satu `Manager`. Owner ini menyimpan observasi transport, availability mapping, circuit, mode operator, accepting, dan counter reservasi dalam satu mutex. `gateway.New(config, dispatcher, clock, policy)` membentuk coordinator serta owner itu dari snapshot yang sama. `httpapi.NewComponents(config, dispatcher, build, clock, policy)` menghasilkan `Models`, `Health` dan `Pool`; handler model serta handler admin memakai owner yang sama. Constructor lama `NewAdmission`, `pool.NewHealth`, `httpapi.NewAPI` dan `NewHealthAPI` digantikan, sehingga tidak ada jalur capacity-only atau pemeriksaan health opsional.
 
-Konfigurasi loader/catalog, credential boundary, guard gateway/admin, dan kontrak response body S01 tetap digunakan. Pool menyimpan identifier konfigurasi, bukan credential atau URL. Operasi mutasi hanya melalui `Observe`, `ObserveModel`, `SetMode`, `SetAccepting`, dan lease pool; handler/prober tidak menulis map/counter langsung. Clock harus thread-safe dan tidak mundur. Scheduler dan clock owner menggunakan basis waktu yang sama; fixture scheduler memakai `time.Now`, termasuk waktu virtual `testing/synctest`.
+Konfigurasi loader/catalog, credential boundary, guard gateway/admin, dan kontrak response body S01 tetap digunakan. Pool menyimpan identifier konfigurasi, bukan credential atau URL. Operasi mutasi hanya melalui `Observe`, `ObserveModel`, `SetMode`, `SetAccepting`, `ExtendRelayCooldown` (S03), dan lease pool; handler/prober tidak menulis map/counter langsung. Clock harus thread-safe dan tidak mundur. Scheduler dan clock owner menggunakan basis waktu yang sama; fixture scheduler memakai `time.Now`, termasuk waktu virtual `testing/synctest`.
 
-`Reservation.AdmitFixed(upstream, alias, streamBytes)` menerima scope hasil resolve registry server, mengambil primary mapping, memeriksa eligibility serta kapasitas, lalu melakukan commit pending/admitted/gateway/relay/outbound/stream di bawah mutex yang sama. Tidak membaca readiness/snapshot sebagai precheck. Tidak ada fallback, retry, least-inflight, binding atau cooldown baru.
+Sejak [S03/D-028](least-inflight.md), `Reservation.Admit(upstream, alias, streamBytes) (relayID, error)` menerima scope hasil resolve registry server, memilih primary fixed atau kandidat least tervalidasi, memeriksa eligibility serta kapasitas, lalu melakukan commit pending/admitted/gateway/relay/outbound/stream di bawah mutex yang sama. Tidak membaca readiness/snapshot sebagai precheck. S03 menambahkan least-inflight opt-in serta cooldown relay eksplisit; interpretasi 429/cooldown provider, fallback/retry dan binding tetap task berikutnya.
 
 ## Lapisan, circuit dan mode
 
@@ -27,6 +27,8 @@ Mode operator hanya `serving`, `draining` atau `disabled`. Probe tidak mengubah 
 Availability tanpa pemeriksaan aman tetap **unknown** dan tidak memblokir transport sehat. Availability circuit open yang masih fresh memblokir mapping itu saja; expiry kembali efektif unknown, bukan healthy. Tidak ada probe generasi otomatis untuk mengisi availability. `ObserveModel` membuktikan scope dan threshold pada data fixture eksplisit; ketersediaan provider/model nyata belum dibuktikan.
 
 Readiness tetap `default_primary_transport`: accepting, mode serving dan dua circuit transport closed/fresh pada sedikitnya satu primary mapping default. Model availability dan saturasi kapasitas tidak mengubah readiness menjadi janji generasi pasti berhasil. Field agregat historis `upstream_model` tetap unknown; daftar `models[].availability` adalah observasi scoped yang aktual.
+
+Pembaruan S03 menampilkan deklarasi routing/stateless dan cooldown_until/cooldown_active yang terpisah dari health/circuit. Deadline relay berlaku untuk fixed/least, hanya diperpanjang, tidak dihapus probe, dan expiry tidak mengubah revisi. Readiness tetap primary transport; kapasitas/cooldown tidak menjadi klaim kesiapan generasi. [Bukti dan batas S03](least-inflight.md) tetap terpisah dari penerimaan produk.
 
 ## Scheduler dan batas resource
 
@@ -51,7 +53,7 @@ Adapter fixture melakukan greeting SOCKS5 serta GET HTTPS non-generasi melalui p
 
 State tetap finite pada 128 relay dan 1.024 mapping model. Accounting konservatif:
 
-- State owner/job/circuit: `4096 + 1024 × relay + 1024 × model` byte.
+- State owner/job/circuit: `4096 + 1024 × relay + 1024 × model + 64 × referensi_upstream_relay` byte sejak S03.
 - Bound snapshot: `4096 + 2048 × relay + 1024 × model` byte.
 - Monitoring: `parallel_status × 3 × bound_snapshot + worker × 4096` byte untuk copy/proyeksi/encode dan scratch worker.
 

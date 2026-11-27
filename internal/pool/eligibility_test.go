@@ -17,7 +17,7 @@ func TestEligibilityUnknownRejects(t *testing.T) {
 		t.Fatal("persiapan ditolak")
 	}
 	defer r.Release()
-	if err := r.AdmitFixed("primary", "coding-default", 0); !errors.Is(err, ErrNoEligibleRelay) {
+	if err := admitOnly(r, "primary", "coding-default", 0); !errors.Is(err, ErrNoEligibleRelay) {
 		t.Fatalf("startup tanpa observasi harus no_eligible_relay, mendapat %v", err)
 	}
 }
@@ -81,7 +81,7 @@ func TestEligibilityModeAndActiveLease(t *testing.T) {
 	}
 	for _, mode := range []string{"draining", "disabled"} {
 		active, _ := a.Begin(100)
-		if err := active.AdmitFixed("primary", "coding-default", 0); err != nil {
+		if err := admitOnly(active, "primary", "coding-default", 0); err != nil {
 			t.Fatal(err)
 		}
 		if err := operator.SetMode("warp-1", mode); err != nil {
@@ -97,7 +97,7 @@ func TestEligibilityModeAndActiveLease(t *testing.T) {
 			t.Fatal("mode non-serving tetap ready setelah probe sukses")
 		}
 		next, _ := a.Begin(100)
-		if !errors.Is(next.AdmitFixed("primary", "coding-default", 0), ErrNoEligibleRelay) {
+		if !errors.Is(admitOnly(next, "primary", "coding-default", 0), ErrNoEligibleRelay) {
 			t.Fatal("probe mengaktifkan mode non-serving")
 		}
 		next.Release()
@@ -119,7 +119,7 @@ func TestEligibilityModeAndActiveLease(t *testing.T) {
 	}
 	r, _ := a.Begin(100)
 	defer r.Release()
-	if !errors.Is(r.AdmitFixed("primary", "coding-default", 0), ErrNoEligibleRelay) {
+	if !errors.Is(admitOnly(r, "primary", "coding-default", 0), ErrNoEligibleRelay) {
 		t.Fatal("proses non-accepting menerima generasi")
 	}
 }
@@ -146,7 +146,7 @@ func TestEligibilityModelScope(t *testing.T) {
 		t.Helper()
 		r, _ := a.Begin(100)
 		defer r.Release()
-		if err := r.AdmitFixed("primary", alias, 0); !errors.Is(err, want) {
+		if err := admitOnly(r, "primary", alias, 0); !errors.Is(err, want) {
 			t.Fatalf("scope %s: %v, ingin %v", alias, err, want)
 		}
 	}
@@ -209,12 +209,12 @@ func TestEligibilityProbeSharesOutbound(t *testing.T) {
 		t.Fatal("batas probe/outbound terlampaui")
 	}
 	r, _ := a.Begin(100)
-	if !errors.Is(r.AdmitFixed("primary", "coding-default", 0), ErrCapacityExceeded) {
+	if !errors.Is(admitOnly(r, "primary", "coding-default", 0), ErrCapacityExceeded) {
 		t.Fatal("generasi mengabaikan slot probe")
 	}
 	release()
 	release()
-	if r.AdmitFixed("primary", "coding-default", 0) != nil {
+	if admitOnly(r, "primary", "coding-default", 0) != nil {
 		t.Fatal("slot probe tidak pulih")
 	}
 	if _, ok := prober.TryProbe("warp-1", HealthHTTPS); ok {
@@ -257,7 +257,7 @@ func TestEligibilityLinearizationAndReplay(t *testing.T) {
 				if !ok {
 					continue
 				}
-				_ = r.AdmitFixed("primary", "coding-default", 0)
+				_ = admitOnly(r, "primary", "coding-default", 0)
 				r.Release()
 				r.Release()
 				assertFixedLedger(t, a, false)
@@ -269,7 +269,7 @@ func TestEligibilityLinearizationAndReplay(t *testing.T) {
 			t.Fatal(err)
 		}
 		if r, ok := a.Begin(100); ok {
-			if err := r.AdmitFixed("primary", "coding-default", 0); !errors.Is(err, ErrNoEligibleRelay) {
+			if err := admitOnly(r, "primary", "coding-default", 0); !errors.Is(err, ErrNoEligibleRelay) {
 				t.Error("promotion sesudah update drain berhasil")
 			}
 			r.Release()
@@ -320,7 +320,7 @@ func TestEligibilityLinearizationAndReplay(t *testing.T) {
 	now = two.ValidUntil
 	r, _ := a.Begin(100)
 	defer r.Release()
-	if !errors.Is(r.AdmitFixed("primary", "coding-default", 0), ErrNoEligibleRelay) {
+	if !errors.Is(admitOnly(r, "primary", "coding-default", 0), ErrNoEligibleRelay) {
 		t.Fatal("expiry tepat valid_until masih eligible")
 	}
 }

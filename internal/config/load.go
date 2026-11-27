@@ -78,7 +78,7 @@ func schemaNodes(n *yaml.Node, depth int, count *int) bool {
 	}
 	switch n.Kind {
 	case yaml.ScalarNode:
-		if (n.Tag != "!!str" && n.Tag != "!!int") || n.Value == "" || len(n.Value) > 4096 {
+		if (n.Tag != "!!str" && n.Tag != "!!int" && n.Tag != "!!bool") || n.Value == "" || len(n.Value) > 4096 {
 			return false
 		}
 	case yaml.MappingNode:
@@ -92,6 +92,12 @@ func schemaNodes(n *yaml.Node, depth int, count *int) bool {
 			}
 			if v.Kind == yaml.ScalarNode {
 				expected := "!!str"
+				if k.Value == "stateless" {
+					expected = "!!bool"
+					if v.Value != "true" && v.Value != "false" {
+						return false
+					}
+				}
 				if numericField(k.Value) {
 					expected = "!!int"
 				}

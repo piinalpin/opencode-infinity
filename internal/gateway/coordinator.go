@@ -187,13 +187,17 @@ func (c *Coordinator) Chat(in *http.Request, id string) (*http.Response, error) 
 	if upstreamID == "" {
 		upstreamID = c.registry.DefaultUpstream()
 	}
-	if err := reservation.AdmitFixed(upstreamID, model.Alias, streamBytes); err != nil {
+	selectedRelay, err := reservation.Admit(upstreamID, model.Alias, streamBytes)
+	if err != nil {
 		if errors.Is(err, pool.ErrCapacityExceeded) {
 			return nil, failure("gateway_capacity_exceeded")
 		}
 		return nil, failure("no_eligible_relay")
 	}
-	relay, _ := c.registry.Relay(model.PrimaryRelay)
+	relay, ok := c.registry.Relay(selectedRelay)
+	if !ok {
+		return nil, failure("no_eligible_relay")
+	}
 	mapped := parsed.remap(body, replacement)
 	prepared = prepared.WithContext(ctx)
 	prepared.Body = io.NopCloser(bytes.NewReader(mapped))

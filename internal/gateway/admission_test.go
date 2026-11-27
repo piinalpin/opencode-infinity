@@ -260,3 +260,81 @@ func TestFixedAdmissionReleaseLifecycle(t *testing.T) {
 type fixedTailReader struct{ err error }
 
 func (r fixedTailReader) Read(p []byte) (int, error) { return copy(p, "tail"), r.err }
+
+func TestLeastInflightCoordinatorSelectedRelay(t *testing.T) {
+	cfg := modelConfig(t, "upstreams:", "  - id: warp-2\n    proxy_url: socks5h://warp-2:1080\n    max_inflight: 5\nupstreams:", "relays: [warp-1]", "relays: [warp-2, warp-1]", "routing: fixed", "routing: least_inflight\n        stateless: true")
+	var visits []string
+	c, err := newFixtureCoordinator(cfg, dispatchFunc(func(r *http.Request, relay config.Relay) (*http.Response, error) {
+		visits = append(visits, relay.ID)
+		if r.URL.Host != "api.provider.example" || r.URL.Path != "/v1/chat/completions" {
+			t.Error("pilihan relay mengganti target upstream")
+		}
+		body, err := io.ReadAll(r.Body)
+		if err != nil || !strings.Contains(string(body), "provider-model-id") {
+			t.Error("mapping model berubah")
+		}
+		return &http.Response{StatusCode: 200, Header: http.Header{"Content-Type": {"application/json"}}, Body: io.NopCloser(strings.NewReader(`{}`))}, nil
+	}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	one, err := c.Chat(chatRequest(`{"model":"coding-default"}`), "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer one.Body.Close()
+	two, err := c.Chat(chatRequest(`{"model":"coding-default"}`), "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer two.Body.Close()
+	if len(visits) != 2 || visits[0] != "warp-2" || visits[1] != "warp-1" {
+		t.Fatalf("dispatch tidak mengikuti relay reservasi: %v", visits)
+	}
+}
+
+func TestLeastInflightSingleDispatchOnFailure(t *testing.T) {
+	for _, kind := range []string{"transport", "redirect", "upstream429"} {
+		t.Run(kind, func(t *testing.T) {
+			cfg := modelConfig(t, "upstreams:", "  - id: warp-2\n    proxy_url: socks5h://warp-2:1080\n    max_inflight: 5\nupstreams:", "relays: [warp-1]", "relays: [warp-2, warp-1]", "routing: fixed", "routing: least_inflight\n        stateless: true")
+			calls := 0
+			c, err := newFixtureCoordinator(cfg, dispatchFunc(func(r *http.Request, relay config.Relay) (*http.Response, error) {
+				calls++
+				if relay.ID != "warp-2" {
+					t.Error("pilihan awal tidak stabil")
+				}
+				if kind == "transport" {
+					return nil, errors.New("fixture-transport-failure")
+				}
+				code := 429
+				if kind == "redirect" {
+					code = 302
+				}
+				return &http.Response{StatusCode: code, Header: http.Header{"Content-Type": {"application/json"}, "Retry-After": {"60"}, "Location": {"https://other.invalid"}}, Body: io.NopCloser(strings.NewReader(`{"error":"fixture"}`))}, nil
+			}))
+			if err != nil {
+				t.Fatal(err)
+			}
+			response, err := c.Chat(chatRequest(`{"model":"coding-default"}`), "")
+			switch kind {
+			case "transport":
+				assertFailure(t, err, "upstream_transport_error")
+			case "redirect":
+				assertFailure(t, err, "upstream_redirect_rejected")
+			default:
+				if err != nil || response == nil || response.StatusCode != 429 || response.Header.Get("Retry-After") != "60" {
+					t.Fatal("upstream429 berubah")
+				}
+				response.Body.Close()
+			}
+			if calls != 1 {
+				t.Fatal("least menjalankan retry/fallback otomatis")
+			}
+			for _, r := range c.admission.View().Relays {
+				if !r.CooldownUntil.IsZero() {
+					t.Fatal("upstream429 otomatis diubah menjadi relay cooldown")
+				}
+			}
+		})
+	}
+}

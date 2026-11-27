@@ -38,6 +38,8 @@ type ObservationView struct {
 }
 
 type RelayHealthView struct {
+	CooldownUntil  time.Time
+	CooldownActive bool
 	ID             string
 	Mode           string
 	DefaultPrimary bool
@@ -65,6 +67,7 @@ func (h *Manager) View() HealthView {
 	view.SnapshotAt = h.clock()
 	for i := range view.Relays {
 		relay := &view.Relays[i]
+		relay.CooldownActive = healthTime(view.SnapshotAt) && view.SnapshotAt.Before(relay.CooldownUntil)
 		for _, observation := range []*ObservationView{&relay.SOCKS5, &relay.HTTPS} {
 			if observation.State != HealthUnknown && (!healthTime(view.SnapshotAt) || view.SnapshotAt.Before(observation.ObservedAt) || !view.SnapshotAt.Before(observation.ValidUntil)) {
 				observation.State = HealthStale

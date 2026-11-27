@@ -363,3 +363,56 @@ func TestEligibilityMaximumModelSnapshot(t *testing.T) {
 		t.Fatal("snapshot maksimum model tidak bounded/utuh")
 	}
 }
+
+func TestLeastInflightMetadataAndCooldown(t *testing.T) {
+	now := time.Date(2026, 11, 27, 10, 0, 0, 0, time.FixedZone("fixture", 7*3600))
+	c := apiConfig(t, "routing: fixed", "routing: least_inflight\n        stateless: true")
+	components, err := NewComponents(c, modelDispatch(func(*http.Request, config.Relay) (*http.Response, error) {
+		t.Fatal("metadata memicu dispatch")
+		return nil, nil
+	}), status.Build{}, func() time.Time { return now }, pool.Policy{Failures: 1, Successes: 1})
+	if err != nil {
+		t.Fatal(err)
+	}
+	read := func(active bool, until *time.Time) {
+		t.Helper()
+		r := httptest.NewRequest("GET", "/health/live", nil)
+		r.Header.Set("Authorization", "Bearer "+adminToken)
+		w := httptest.NewRecorder()
+		components.Health.ServeHTTP(w, r)
+		var wire struct {
+			Health struct {
+				Relays []struct {
+					CooldownUntil  *time.Time `json:"cooldown_until"`
+					CooldownActive bool       `json:"cooldown_active"`
+				}
+				Models []struct {
+					Routing   string
+					Stateless bool
+				}
+			}
+		}
+		if w.Code != 200 || json.Unmarshal(w.Body.Bytes(), &wire) != nil || len(wire.Health.Models) != 1 || wire.Health.Models[0].Routing != "least_inflight" || !wire.Health.Models[0].Stateless || len(wire.Health.Relays) != 1 || wire.Health.Relays[0].CooldownActive != active {
+			t.Fatal("snapshot belum memuat deklarasi routing/stateless dan cooldown")
+		}
+		got := wire.Health.Relays[0].CooldownUntil
+		if (got == nil) != (until == nil) || (got != nil && !got.Equal(*until)) {
+			t.Fatal("deadline cooldown null/UTC salah")
+		}
+		if strings.Contains(w.Body.String(), "+07:00") || strings.Contains(w.Body.String(), upstreamKey) {
+			t.Fatal("proyeksi waktu/secret salah")
+		}
+	}
+	read(false, nil)
+	until := now.Add(time.Minute)
+	if err := components.Pool.ExtendRelayCooldown("warp-1", until); err != nil {
+		t.Fatal(err)
+	}
+	revision := components.Pool.View().Revision
+	read(true, &until)
+	now = until
+	read(false, &until)
+	if components.Pool.View().Revision != revision {
+		t.Fatal("expiry snapshot mengubah revisi")
+	}
+}

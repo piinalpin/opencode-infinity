@@ -40,5 +40,11 @@ func admitFixtureRelay(r *Reservation, relay string, bytes int64) error {
 	if relay == "warp-2" {
 		alias = "coding-warp-2"
 	}
-	return r.AdmitFixed("primary", alias, bytes)
+	return admitOnly(r, "primary", alias, bytes)
+}
+
+// Helper mempertahankan assertion error pada tes fixed lama; API produk mengembalikan ID.
+func admitOnly(r *Reservation, upstream, alias string, bytes int64) error {
+	_, err := r.Admit(upstream, alias, bytes)
+	return err
 }
